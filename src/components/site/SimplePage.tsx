@@ -5,7 +5,6 @@ import { CheckCircle2 } from "lucide-react";
 import { useEffect } from "react";
 
 interface Props {
-  title: string;
   metaTitle: string;
   metaDesc: string;
   eyebrow: string;
