@@ -6,7 +6,7 @@ import heroBg from "@/assets/hero-bg.png";
 export const Hero = () => (
   <section className="relative overflow-hidden bg-background pt-20 pb-24 lg:pt-28 lg:pb-32">
     {/* background image */}
-    <img src={heroBg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-25 pointer-events-none" style={{ objectPosition: "center 30%" }} />
+    <img src={heroBg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-15 pointer-events-none" style={{ objectPosition: "center 30%" }} />
     {/* fine grid */}
     <div className="absolute inset-0 grid-bg-fine pointer-events-none" />
 
