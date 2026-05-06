@@ -105,6 +105,19 @@
     mask-image: radial-gradient(ellipse at center, black 40%, transparent 80%);
   }
 
+  .grid-bg-fine {
+    background-image:
+      linear-gradient(hsl(222 40% 88% / 0.5) 1px, transparent 1px),
+      linear-gradient(90deg, hsl(222 40% 88% / 0.5) 1px, transparent 1px);
+    background-size: 40px 40px;
+    mask-image: radial-gradient(ellipse 70% 60% at 50% 45%, black 30%, transparent 85%);
+  }
+
+  .arc-glow {
+    background: radial-gradient(circle at 50% 100%, hsl(220 95% 60% / 0.35), hsl(260 80% 60% / 0.18) 35%, transparent 60%);
+    filter: blur(40px);
+  }
+
   .eyebrow {
     @apply inline-flex items-center gap-2 text-xs font-semibold uppercase tracking-[0.18em] text-electric;
   }
