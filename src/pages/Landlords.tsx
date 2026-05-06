@@ -1,25 +1,415 @@
-import { SimplePage } from "@/components/site/SimplePage";
-import segLandlord from "@/assets/segment-landlord.jpg";
+import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { ArrowRight, Users, Gauge, Plug, ShieldCheck, Leaf, TrendingUp, Sun, Battery, ClipboardList, Activity, FileBarChart, Flame, Building, Hotel, Building2, Layers, Briefcase, MapPin, Check } from "lucide-react";
+import { Button } from "@/components/ui/button";
+import { SiteLayout } from "@/components/site/SiteLayout";
+import { ReviewForm } from "@/components/site/ReviewForm";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
+import landlordHero from "@/assets/landlord-hero.jpg";
 
-export default () => (
-  <SimplePage
-    metaTitle="Landlord Energy Upgrades | Clean Energy Gurus"
-    metaDesc="Upgrade portfolios with solar, batteries and EV charging. Improve EPC ratings, attract better tenants and protect asset values."
-    eyebrow="For Landlords"
-    heroTitle={<>Portfolio-wide <span className="text-gradient">energy upgrades</span>.</>}
-    lead="Improve EPC ratings, futureproof against MEES legislation and turn rental properties into desirable, energy-efficient assets."
-    image={segLandlord}
-    bullets={[
-      "EPC-improving solar and efficiency upgrades",
-      "Tenant-friendly battery and EV charging options",
-      "Roll-out planning across multi-property portfolios",
-      "Compliance with MEES and forthcoming standards",
-      "Per-property reporting and asset documentation",
-      "Finance pathways for landlord-friendly capex",
-    ]}
-    sections={[
-      { title: "Portfolio thinking", body: "We plan installations as a programme — not one-off jobs — for predictable cost and consistent quality." },
-      { title: "Better tenants, longer leases", body: "Lower running costs and EV-ready properties attract higher-quality, longer-term tenants." },
-    ]}
-  />
-);
+const reasons = [
+  { icon: Users, title: "Tenant demand", desc: "Lower bills, EV charging and modern amenities now drive lettings decisions." },
+  { icon: Gauge, title: "Energy performance", desc: "EPC ratings and MEES standards continue to tighten — proactive upgrades de-risk portfolios." },
+  { icon: Plug, title: "EV charging", desc: "Charging is becoming a baseline expectation — not a premium feature." },
+  { icon: ShieldCheck, title: "Asset resilience", desc: "On-site generation and storage protect operations against grid and price shocks." },
+  { icon: Leaf, title: "ESG expectations", desc: "Lenders, investors and corporate tenants now expect verifiable performance data." },
+  { icon: TrendingUp, title: "Future-proofing", desc: "Properties built for the next 25 years of energy retain and grow value." },
+];
+
+const solutions = [
+  { icon: Sun, title: "Common-parts solar", desc: "Power landlord-supplied loads in lifts, lighting, pumps and shared services." },
+  { icon: Plug, title: "Tenant EV charging", desc: "OZEV partner-led charging with tenant billing and load balancing." },
+  { icon: Battery, title: "Battery storage", desc: "Peak-shave, store and dispatch — reducing landlord-supply costs." },
+  { icon: ClipboardList, title: "Portfolio energy audits", desc: "Site-by-site assessment with prioritised intervention plans." },
+  { icon: Activity, title: "Maintenance & monitoring", desc: "Lifecycle oversight across every installed asset in your portfolio." },
+  { icon: FileBarChart, title: "Reporting subscriptions", desc: "Quarterly performance, ESG and ROI reporting for boards and investors." },
+  { icon: Flame, title: "Heat pumps & efficiency", desc: "Partner-led heat pump and efficiency referrals to complete the system." },
+];
+
+const propertyTypes = [
+  { icon: Building, label: "Residential blocks" },
+  { icon: Hotel, label: "HMOs" },
+  { icon: Building2, label: "Serviced accommodation" },
+  { icon: Layers, label: "Build-to-rent" },
+  { icon: Briefcase, label: "Commercial units" },
+  { icon: Building, label: "Mixed-use properties" },
+  { icon: MapPin, label: "Multi-site portfolios" },
+];
+
+const packages = [
+  {
+    name: "Landlord EV Charging",
+    sub: "Tenant-ready charging, professionally delivered.",
+    items: ["OZEV partner-led installation", "AC and DC charger options", "Tenant billing & access management", "Load balancing across the site", "Remote monitoring and fault alerts"],
+    cta: "Best for blocks adding tenant EV provision",
+  },
+  {
+    name: "Block Energy Upgrade",
+    sub: "Solar, battery and EV in one programme.",
+    items: ["Common-parts solar PV", "Battery storage for shared loads", "Integrated EV charging", "Quarterly performance reporting", "Maintenance & lifecycle management"],
+    cta: "Best for residential blocks and mixed-use sites",
+    featured: true,
+  },
+  {
+    name: "Portfolio Energy Programme",
+    sub: "A managed programme across multiple sites.",
+    items: ["Portfolio audit and roadmap", "Phased installation programme", "Gurus Optimise™ portfolio dashboard", "Investor-grade reporting", "Dedicated portfolio manager"],
+    cta: "Best for institutional landlords and BTR operators",
+  },
+];
+
+const sites = [
+  { name: "Riverside Court, Bristol", units: 84, status: "Optimised", ev: 12 },
+  { name: "Northgate Quarter, Leeds", units: 142, status: "Generating", ev: 18 },
+  { name: "Hawthorn Mews, London", units: 36, status: "Action needed", ev: 6 },
+  { name: "Stationworks, Manchester", units: 96, status: "Optimised", ev: 14 },
+];
+
+const process = [
+  ["01", "Portfolio Review", "Free initial review of your sites, supplies and ambitions."],
+  ["02", "Data Collection", "MPAN data, bills, EPCs and existing assets gathered."],
+  ["03", "Audit & Roadmap", "Site-by-site audit with prioritised recommendations."],
+  ["04", "Proposal", "Phased plan with finance, ROI and reporting cadence."],
+  ["05", "Install", "Accredited MCS / OZEV partner-led delivery."],
+  ["06", "Handover", "Full asset documentation per site."],
+  ["07", "Optimisation", "Portfolio monitoring, reporting and ongoing optimisation."],
+];
+
+const faqs = [
+  ["Who pays for the energy generated by common-parts solar?", "Most often, the landlord-supply benefits — reducing service-charge costs. Tenant-supplied energy can be addressed through separate arrangements where applicable."],
+  ["How are tenant EV chargers billed?", "Through OZEV-compliant smart-charging platforms with per-session billing — recoverable from tenants automatically."],
+  ["Can this improve our EPC ratings?", "Yes. Solar, battery, EV and partner-led efficiency upgrades all contribute to better EPC outcomes and MEES compliance."],
+  ["What about leaseholder consent and Section 20?", "We work with managing agents and provide the technical documentation needed for consultation processes."],
+  ["Do you support build-to-rent operators?", "Yes — from single asset to nationwide portfolio, with investor-grade reporting and dedicated programme management."],
+  ["What ongoing costs should we expect?", "Maintenance and platform subscriptions are transparent and proportional to portfolio size. We share these upfront."],
+];
+
+const Landlords = () => {
+  useEffect(() => {
+    document.title = "Landlord Energy Upgrade | Clean Energy Gurus";
+    const m = document.querySelector('meta[name="description"]') as HTMLMetaElement;
+    if (m) m.content = "Upgrade your property portfolio for energy performance, tenant demand and long-term value. Solar, batteries, EV charging and portfolio energy reporting.";
+  }, []);
+
+  return (
+    <SiteLayout>
+      {/* HERO */}
+      <section className="relative overflow-hidden bg-background pt-16 pb-20 lg:pt-24 lg:pb-28">
+        <div className="absolute inset-0 grid-bg-fine pointer-events-none" />
+        <div className="absolute -top-40 -right-40 h-[500px] w-[500px] rounded-full bg-gradient-electric opacity-20 blur-3xl pointer-events-none" />
+        <div className="container-tight relative">
+          <div className="grid lg:grid-cols-12 gap-12 items-center">
+            <div className="lg:col-span-7 animate-fade-in-up">
+              <span className="eyebrow">
+                <span className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" />
+                Landlords & Property Owners
+              </span>
+              <h1 className="mt-5 text-4xl sm:text-5xl lg:text-[60px] leading-[1.04] font-display font-semibold text-navy">
+                Upgrade your portfolio for <span className="text-gradient">energy performance, tenant demand and long-term value</span>.
+              </h1>
+              <p className="mt-6 text-lg text-navy-soft max-w-2xl leading-relaxed">
+                Clean Energy Gurus helps landlords and property owners assess
+                solar, battery storage, EV charging, common-area energy upgrades,
+                maintenance and portfolio energy reporting.
+              </p>
+              <div className="mt-9 flex flex-col sm:flex-row gap-3">
+                <Link to="/contact">
+                  <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow">
+                    Assess My Portfolio <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Button>
+                </Link>
+                <Link to="/services">
+                  <Button size="lg" variant="outline" className="rounded-full px-7 h-12 border-navy/15 text-navy hover:bg-navy hover:text-white">
+                    Explore Solutions
+                  </Button>
+                </Link>
+              </div>
+              <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
+                {[["EPC ↑", "rating uplift"], ["Multi-site", "delivery"], ["Quarterly", "reporting"]].map(([n, l]) => (
+                  <div key={l}>
+                    <div className="text-2xl font-display font-semibold text-navy">{n}</div>
+                    <div className="text-xs text-muted-foreground mt-1">{l}</div>
+                  </div>
+                ))}
+              </div>
+            </div>
+            <div className="lg:col-span-5 animate-scale-in">
+              <div className="relative rounded-3xl overflow-hidden shadow-elegant border border-border/60">
+                <img src={landlordHero} alt="UK residential block with EV charging and rooftop solar" width={1600} height={1200} className="w-full h-auto object-cover" />
+                <div className="absolute inset-0 bg-gradient-to-tr from-navy/15 via-transparent to-transparent" />
+                <div className="absolute bottom-4 left-4 right-4 grid grid-cols-2 gap-3">
+                  <div className="rounded-xl bg-background/95 backdrop-blur p-3">
+                    <div className="text-[10px] uppercase tracking-wider text-electric font-semibold">EV ports</div>
+                    <div className="text-sm font-medium text-navy mt-0.5">14 active</div>
+                  </div>
+                  <div className="rounded-xl bg-background/95 backdrop-blur p-3">
+                    <div className="text-[10px] uppercase tracking-wider text-electric font-semibold">Common parts</div>
+                    <div className="text-sm font-medium text-navy mt-0.5">62% solar today</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* WHY ACT */}
+      <section className="py-20 lg:py-28">
+        <div className="container-tight">
+          <div className="max-w-3xl mb-14">
+            <span className="eyebrow">Why act now</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              Energy is moving from a back-office issue to a front-of-portfolio decision.
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {reasons.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="card-premium p-7">
+                <div className="h-11 w-11 rounded-xl bg-accent grid place-items-center text-electric">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-5 text-lg font-display font-semibold text-navy">{title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* SOLUTIONS */}
+      <section className="py-20 lg:py-28 bg-surface">
+        <div className="container-tight">
+          <div className="max-w-3xl mb-14">
+            <span className="eyebrow">Landlord solutions</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              A complete portfolio energy stack — <span className="text-gradient">delivered as a programme</span>.
+            </h2>
+          </div>
+          <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+            {solutions.map(({ icon: Icon, title, desc }) => (
+              <div key={title} className="card-premium p-7">
+                <div className="h-12 w-12 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <h3 className="mt-5 text-lg font-display font-semibold text-navy">{title}</h3>
+                <p className="mt-2 text-sm text-muted-foreground">{desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PROPERTY TYPES */}
+      <section className="py-20 lg:py-28">
+        <div className="container-tight">
+          <div className="max-w-3xl mb-14">
+            <span className="eyebrow">Property types</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              Built for every kind of property in your portfolio.
+            </h2>
+          </div>
+          <div className="grid grid-cols-2 sm:grid-cols-3 lg:grid-cols-4 gap-3">
+            {propertyTypes.map(({ icon: Icon, label }) => (
+              <div key={label} className="rounded-2xl border border-border bg-card p-6 flex items-center gap-4 hover:border-electric/30 hover:shadow-card transition-all">
+                <div className="h-11 w-11 rounded-xl bg-accent grid place-items-center text-electric flex-shrink-0">
+                  <Icon className="h-5 w-5" />
+                </div>
+                <div className="text-sm font-display font-semibold text-navy">{label}</div>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PACKAGES */}
+      <section className="py-20 lg:py-28 bg-surface">
+        <div className="container-tight">
+          <div className="text-center max-w-3xl mx-auto mb-14">
+            <span className="eyebrow justify-center">Landlord packages</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              Three pathways. From single block to national portfolio.
+            </h2>
+          </div>
+          <div className="grid lg:grid-cols-3 gap-6">
+            {packages.map((p) => (
+              <div
+                key={p.name}
+                className={`relative rounded-3xl p-8 flex flex-col ${
+                  p.featured
+                    ? "bg-navy text-white border border-navy shadow-elegant scale-[1.02]"
+                    : "bg-card border border-border shadow-card"
+                }`}
+              >
+                {p.featured && (
+                  <div className="absolute -top-3 left-1/2 -translate-x-1/2 px-3 py-1 rounded-full bg-gradient-electric text-white text-[10px] font-semibold uppercase tracking-[0.16em] shadow-glow">
+                    Most popular
+                  </div>
+                )}
+                <h3 className={`text-xl font-display font-semibold ${p.featured ? "text-white" : "text-navy"}`}>{p.name}</h3>
+                <p className={`mt-1.5 text-sm ${p.featured ? "text-white/70" : "text-muted-foreground"}`}>{p.sub}</p>
+                <ul className="mt-6 space-y-2.5 flex-1">
+                  {p.items.map((it) => (
+                    <li key={it} className={`flex items-start gap-2.5 text-sm ${p.featured ? "text-white/90" : "text-navy"}`}>
+                      <Check className="h-4.5 w-4.5 mt-0.5 flex-shrink-0 text-electric" />
+                      <span>{it}</span>
+                    </li>
+                  ))}
+                </ul>
+                <div className={`mt-6 pt-5 border-t text-xs ${p.featured ? "border-white/15 text-white/65" : "border-border text-muted-foreground"}`}>
+                  {p.cta}
+                </div>
+                <Link to="/contact" className="mt-5">
+                  <Button className={`w-full rounded-full ${p.featured ? "bg-gradient-electric text-white border-0 shadow-glow" : "bg-navy text-white hover:bg-navy/90"}`}>
+                    Request proposal
+                  </Button>
+                </Link>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* PORTFOLIO PLATFORM */}
+      <section className="py-20 lg:py-28 bg-navy text-white relative overflow-hidden">
+        <div className="absolute inset-0 grid-bg opacity-10" />
+        <div className="absolute -top-40 right-0 h-[500px] w-[700px] bg-gradient-electric opacity-25 blur-3xl rounded-full" />
+        <div className="container-tight relative">
+          <div className="max-w-3xl mb-12">
+            <span className="eyebrow">Portfolio Energy Reporting</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-white">
+              One view across every property you own.
+            </h2>
+            <p className="mt-5 text-white/75 text-lg leading-relaxed">
+              Performance, EV utilisation, maintenance status and optimisation
+              opportunities — across the entire portfolio, in one operating layer.
+            </p>
+          </div>
+
+          <div className="rounded-3xl border border-white/10 bg-white/[0.04] backdrop-blur-xl p-6 sm:p-8 shadow-2xl">
+            <div className="flex items-center justify-between pb-5 mb-6 border-b border-white/10">
+              <div className="text-xs text-white/60 font-mono">gurus-optimise.io / portfolio</div>
+              <div className="flex items-center gap-2 text-[11px] text-white/60">
+                <span className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" /> Live · 4 sites
+              </div>
+            </div>
+
+            {/* portfolio stats */}
+            <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-4 mb-6">
+              {[
+                { label: "Properties", value: "4", trend: "Active" },
+                { label: "Total units", value: "358", trend: "Across portfolio" },
+                { label: "EV ports", value: "50", trend: "11 active now" },
+                { label: "Maintenance", value: "1 alert", trend: "Hawthorn Mews" },
+              ].map((t) => (
+                <div key={t.label} className="rounded-2xl bg-white/[0.04] border border-white/10 p-5">
+                  <div className="text-[10px] font-semibold uppercase tracking-[0.16em] text-white/55">{t.label}</div>
+                  <div className="mt-3 text-2xl font-display font-semibold">{t.value}</div>
+                  <div className="mt-1 text-xs text-white/55">{t.trend}</div>
+                </div>
+              ))}
+            </div>
+
+            {/* sites table */}
+            <div className="rounded-2xl border border-white/10 overflow-hidden">
+              <div className="grid grid-cols-12 px-5 py-3 text-[10px] uppercase tracking-[0.16em] text-white/45 bg-white/[0.03] border-b border-white/10">
+                <div className="col-span-5">Site</div>
+                <div className="col-span-2">Units</div>
+                <div className="col-span-2">EV ports</div>
+                <div className="col-span-3">Status</div>
+              </div>
+              {sites.map((s) => (
+                <div key={s.name} className="grid grid-cols-12 px-5 py-4 items-center text-sm border-b border-white/5 last:border-0 hover:bg-white/[0.03] transition-colors">
+                  <div className="col-span-5 font-medium text-white">{s.name}</div>
+                  <div className="col-span-2 text-white/70">{s.units}</div>
+                  <div className="col-span-2 text-white/70">{s.ev}</div>
+                  <div className="col-span-3">
+                    <span className={`inline-flex items-center gap-2 px-2.5 py-1 rounded-full text-[11px] font-medium ${
+                      s.status === "Action needed"
+                        ? "bg-destructive/20 text-destructive"
+                        : "bg-electric/15 text-electric"
+                    }`}>
+                      <span className="h-1.5 w-1.5 rounded-full bg-current" /> {s.status}
+                    </span>
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        </div>
+      </section>
+
+      {/* PROCESS */}
+      <section className="py-20 lg:py-28">
+        <div className="container-tight">
+          <div className="max-w-3xl mb-14">
+            <span className="eyebrow">How it works</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              From portfolio review to phased delivery.
+            </h2>
+          </div>
+          <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-px bg-border rounded-3xl overflow-hidden border border-border">
+            {process.map(([n, t, d]) => (
+              <div key={n} className="bg-card p-7 hover:bg-surface transition-colors">
+                <div className="text-electric font-display text-2xl font-semibold">{n}</div>
+                <h3 className="mt-3 text-base font-display font-semibold text-navy">{t}</h3>
+                <p className="mt-2 text-xs text-muted-foreground leading-relaxed">{d}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </section>
+
+      {/* FAQ */}
+      <section className="py-20 lg:py-28 bg-surface">
+        <div className="container-tight grid lg:grid-cols-12 gap-12">
+          <div className="lg:col-span-4">
+            <span className="eyebrow">FAQ</span>
+            <h2 className="mt-3 text-3xl sm:text-4xl font-display font-semibold text-navy">
+              Common questions from landlords and property owners.
+            </h2>
+            <p className="mt-5 text-navy-soft">If your question isn't here, raise it during the portfolio review.</p>
+          </div>
+          <div className="lg:col-span-8">
+            <Accordion type="single" collapsible className="space-y-3">
+              {faqs.map(([q, a], i) => (
+                <AccordionItem key={i} value={`item-${i}`} className="border border-border rounded-2xl px-6 bg-card">
+                  <AccordionTrigger className="text-left text-navy font-display font-semibold hover:no-underline py-5">
+                    {q}
+                  </AccordionTrigger>
+                  <AccordionContent className="text-muted-foreground pb-5">{a}</AccordionContent>
+                </AccordionItem>
+              ))}
+            </Accordion>
+          </div>
+        </div>
+      </section>
+
+      {/* LEAD FORM */}
+      <section className="py-20">
+        <div className="container-tight">
+          <div className="relative overflow-hidden rounded-3xl bg-navy text-white p-8 sm:p-14 lg:p-20">
+            <div className="absolute inset-0 grid-bg opacity-10" />
+            <div className="absolute -top-32 -right-32 h-[400px] w-[400px] bg-gradient-electric opacity-30 blur-3xl rounded-full" />
+            <div className="relative grid lg:grid-cols-2 gap-12 items-center">
+              <div>
+                <span className="eyebrow">Start here</span>
+                <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-white">
+                  Assess my portfolio.
+                </h2>
+                <p className="mt-5 text-white/75 text-lg leading-relaxed max-w-md">
+                  Tell us about your sites. We'll respond within one business day
+                  with a clear, phased path forward.
+                </p>
+              </div>
+              <div className="rounded-2xl bg-white p-6 sm:p-8 shadow-elegant">
+                <ReviewForm />
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+    </SiteLayout>
+  );
+};
+
+export default Landlords;
