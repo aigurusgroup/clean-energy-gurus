@@ -27,12 +27,15 @@ export const Segments = () => (
         </p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
-        {segments.map(({ icon: Icon, title, line, to, img }) => (
-          <Link key={title} to={to} className="card-premium overflow-hidden group">
-            <div className="aspect-[4/3] overflow-hidden bg-muted">
+        {segments.map(({ icon: Icon, title, line, to, img }, i) => (
+          <Link key={title} to={to} className="card-premium overflow-hidden group flex flex-col">
+            <div className="aspect-[4/3] overflow-hidden bg-muted relative">
               <img src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
+              <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-background/90 backdrop-blur text-[10px] font-semibold uppercase tracking-[0.16em] text-navy">
+                Pathway 0{i + 1}
+              </div>
             </div>
-            <div className="p-6">
+            <div className="p-6 flex-1 flex flex-col">
               <div className="flex items-center justify-between">
                 <div className="h-10 w-10 rounded-xl bg-accent grid place-items-center text-electric">
                   <Icon className="h-5 w-5" />
@@ -40,7 +43,10 @@ export const Segments = () => (
                 <ArrowUpRight className="h-5 w-5 text-muted-foreground group-hover:text-electric transition-colors" />
               </div>
               <h3 className="mt-4 text-xl font-display font-semibold text-navy">{title}</h3>
-              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed">{line}</p>
+              <p className="mt-1.5 text-sm text-muted-foreground leading-relaxed flex-1">{line}</p>
+              <div className="mt-5 pt-4 border-t border-border/60 text-xs font-semibold uppercase tracking-[0.16em] text-electric">
+                Explore pathway →
+              </div>
             </div>
           </Link>
         ))}
