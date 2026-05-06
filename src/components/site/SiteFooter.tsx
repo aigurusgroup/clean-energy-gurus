@@ -49,7 +49,7 @@ export const SiteFooter = () => (
       <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
         <div className="lg:col-span-2">
           <Link to="/" className="flex items-center" aria-label="Clean Energy Gurus home">
-            <img src={logo} alt="Clean Energy Gurus" className="h-32 w-auto object-contain -my-4" width={1240} height={1240} />
+            <img src={logo} alt="Clean Energy Gurus" className="h-16 w-auto object-contain" width={1165} height={306} />
           </Link>
           <p className="mt-5 text-sm text-muted-foreground max-w-sm leading-relaxed">
             We help homes, businesses, farms and landlords across the UK reduce energy
