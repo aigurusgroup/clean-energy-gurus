@@ -36,7 +36,7 @@ export const SiteHeader = () => {
           <img src={logo} alt="Clean Energy Gurus" className="h-14 sm:h-16 lg:h-20 w-auto object-contain" width={1165} height={306} />
         </Link>
 
-        <nav className="hidden xl:flex items-center gap-1">
+        <nav className="hidden xl:flex items-center gap-1 ml-8 lg:ml-12">
           {nav.map((n) => (
             <NavLink
               key={n.to}
