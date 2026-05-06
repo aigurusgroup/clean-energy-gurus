@@ -34,7 +34,7 @@ export const SiteHeader = () => {
     <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? "bg-background/85 backdrop-blur-xl border-b border-border/60" : "bg-background/40 backdrop-blur-sm"}`}>
       <div className="container-tight flex h-18 items-center justify-between py-4">
         <Link to="/" className="flex items-center group" aria-label="Clean Energy Gurus home">
-          <img src={logo} alt="Clean Energy Gurus" className="h-24 sm:h-32 lg:h-40 w-auto object-contain -my-6" width={1240} height={1240} />
+          <img src={logo} alt="Clean Energy Gurus" className="h-14 sm:h-16 lg:h-20 w-auto object-contain" width={1165} height={306} />
         </Link>
 
         <nav className="hidden xl:flex items-center gap-1">
