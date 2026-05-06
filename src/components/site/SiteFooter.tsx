@@ -48,14 +48,8 @@ export const SiteFooter = () => (
     <div className="container-tight py-16">
       <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
         <div className="lg:col-span-2">
-          <Link to="/" className="flex items-center gap-2.5">
-            <div className="h-9 w-9 rounded-xl bg-gradient-electric grid place-items-center">
-              <Zap className="h-4 w-4 text-white" strokeWidth={2.5} />
-            </div>
-            <div className="leading-tight">
-              <div className="text-sm font-semibold text-navy">Clean Energy Gurus</div>
-              <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Managed Energy</div>
-            </div>
+          <Link to="/" className="flex items-center" aria-label="Clean Energy Gurus home">
+            <img src={logo} alt="Clean Energy Gurus" className="h-12 w-auto object-contain" width={1240} height={1240} />
           </Link>
           <p className="mt-5 text-sm text-muted-foreground max-w-sm leading-relaxed">
             We help homes, businesses, farms and landlords across the UK reduce energy

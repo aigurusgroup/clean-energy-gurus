@@ -1,7 +1,8 @@
 import { Link, NavLink, useLocation } from "react-router-dom";
 import { useEffect, useState } from "react";
-import { Menu, X, Zap } from "lucide-react";
+import { Menu, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import logo from "@/assets/logo.png";
 
 const nav = [
   { to: "/", label: "Home" },
@@ -32,14 +33,8 @@ export const SiteHeader = () => {
   return (
     <header className={`sticky top-0 z-50 w-full transition-all duration-300 ${scrolled ? "bg-background/85 backdrop-blur-xl border-b border-border/60" : "bg-background/40 backdrop-blur-sm"}`}>
       <div className="container-tight flex h-18 items-center justify-between py-4">
-        <Link to="/" className="flex items-center gap-2.5 group" aria-label="Clean Energy Gurus home">
-          <div className="relative h-9 w-9 rounded-xl bg-gradient-electric grid place-items-center shadow-glow">
-            <Zap className="h-4.5 w-4.5 text-white" strokeWidth={2.5} />
-          </div>
-          <div className="leading-tight">
-            <div className="text-[15px] font-semibold text-navy tracking-tight">Clean Energy Gurus</div>
-            <div className="text-[10px] font-medium uppercase tracking-[0.2em] text-muted-foreground">Managed Energy Platform</div>
-          </div>
+        <Link to="/" className="flex items-center group" aria-label="Clean Energy Gurus home">
+          <img src={logo} alt="Clean Energy Gurus" className="h-11 sm:h-12 w-auto object-contain" width={1240} height={1240} />
         </Link>
 
         <nav className="hidden xl:flex items-center gap-1">
