@@ -6,10 +6,10 @@ import segLandlord from "@/assets/segment-landlord.jpg";
 import segHome from "@/assets/segment-home.jpg";
 
 const segments = [
-  { icon: Building2, title: "Businesses", line: "Cut grid costs and protect against price volatility.", to: "/business", img: segBusiness },
-  { icon: Sprout, title: "Farms", line: "Power barns, irrigation and operations year-round.", to: "/farms", img: segFarm },
-  { icon: Key, title: "Landlords", line: "Upgrade portfolios, improve EPC and tenant value.", to: "/landlords", img: segLandlord },
-  { icon: Home, title: "Homes", line: "High-consumption homes that demand more.", to: "/homes", img: segHome },
+  { icon: Building2, title: "Businesses", line: "Reduce operating costs and improve site resilience.", to: "/business", img: segBusiness },
+  { icon: Sprout, title: "Farms", line: "Use roofs, land and high daytime load to build energy independence.", to: "/farms", img: segFarm },
+  { icon: Key, title: "Landlords", line: "Upgrade assets, support tenants and future-proof portfolios.", to: "/landlords", img: segLandlord },
+  { icon: Home, title: "Homes", line: "Optimise solar, batteries, EV charging and export performance.", to: "/homes", img: segHome },
 ];
 
 export const Segments = () => (
@@ -19,7 +19,7 @@ export const Segments = () => (
         <div>
           <span className="eyebrow">Built for your property</span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy max-w-2xl">
-            One platform. Four segments. Tailored economics.
+            One platform. Four advisory pathways.
           </h2>
         </div>
         <p className="text-navy-soft max-w-md">
