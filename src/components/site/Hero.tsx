@@ -1,9 +1,12 @@
 import { Link } from "react-router-dom";
 import { ArrowRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
+import heroBg from "@/assets/hero-bg.png";
 
 export const Hero = () => (
   <section className="relative overflow-hidden bg-background pt-20 pb-24 lg:pt-28 lg:pb-32">
+    {/* background image */}
+    <img src={heroBg} alt="" aria-hidden className="absolute inset-0 w-full h-full object-cover opacity-50 pointer-events-none" />
     {/* fine grid */}
     <div className="absolute inset-0 grid-bg-fine pointer-events-none" />
 
