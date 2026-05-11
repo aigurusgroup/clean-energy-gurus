@@ -46,9 +46,10 @@ interface Props {
   segment: SegmentType;
   selectable?: boolean;
   className?: string;
+  hideHeading?: boolean;
 }
 
-export const SolarCalculator = ({ segment, selectable = false, className = "" }: Props) => {
+export const SolarCalculator = ({ segment, selectable = false, className = "", hideHeading = false }: Props) => {
   const { toast } = useToast();
   const mapEl = useRef<HTMLDivElement | null>(null);
   const searchEl = useRef<HTMLInputElement | null>(null);
