@@ -48,19 +48,16 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawingMgrRef = useRef<any>(null);
 
-  // Wizard state. Step 1=postcode, 2=draw, 3=customer, 4=roof, 5=building, 6=results
-  const totalSteps = selectable ? 6 : 5;
+  // Wizard state. Step 1=postcode, 2=draw, 3=contact CTA
+  const totalSteps = 3;
   const [step, setStep] = useState(1);
-  const [activeSegment, setActiveSegment] = useState<SegmentType>(segment);
   const [postcode, setPostcode] = useState("");
   const [address, setAddress] = useState("");
   const [areaM2, setAreaM2] = useState(0);
-  const [roof, setRoof] = useState<RoofType | null>(null);
-  const [building, setBuilding] = useState<string | null>(null);
   const [mapStatus, setMapStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
   const [mapError, setMapError] = useState("");
-  const [email, setEmail] = useState("");
-  const [emailSent, setEmailSent] = useState(false);
+  const [contact, setContact] = useState({ business: "", name: "", email: "", phone: "" });
+  const [submitted, setSubmitted] = useState(false);
 
   // Init map when its container becomes available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
