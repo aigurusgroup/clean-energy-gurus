@@ -1,10 +1,23 @@
 import { useState } from "react";
 import { z } from "zod";
-import { Check, ArrowRight, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Sun, PoundSterling, Zap, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+
+export type SolarEstimate = {
+  address: string;
+  postcode: string;
+  area: number;
+  kWp: number;
+  annualKwh: number;
+  annualSaving: number;
+  systemCost: number;
+  payback: number;
+  roof: string;
+  building: string;
+};
 
 // ---------------- Schema ----------------
 const schema = z.object({
@@ -118,10 +131,18 @@ const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => v
 const FieldError = ({ msg }: { msg?: string }) => msg ? <p className="text-xs text-destructive mt-1.5">{msg}</p> : null;
 
 // ---------------- Main form ----------------
-export const ReviewForm = ({ compact = false }: { compact?: boolean }) => {
+export const ReviewForm = ({
+  compact = false,
+  prefill,
+  estimate,
+}: {
+  compact?: boolean;
+  prefill?: Partial<FormData>;
+  estimate?: SolarEstimate;
+}) => {
   void compact;
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<FormData>(initialData);
+  const [data, setData] = useState<FormData>({ ...initialData, ...prefill });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
@@ -191,7 +212,16 @@ export const ReviewForm = ({ compact = false }: { compact?: boolean }) => {
     // window.gtag?.("event", "generate_lead", { value: 1, currency: "GBP" });
     // window.fbq?.("track", "Lead");
 
-    toast({ title: "Request received", description: "We'll be in touch within one business day." });
+    // Attach solar estimate (if present) to the lead payload for downstream tracking.
+    const payload = { ...r.data, solarEstimate: estimate ?? null };
+    void payload;
+
+    toast({
+      title: "Request received",
+      description: estimate
+        ? `We'll be in touch about your ~£${estimate.annualSaving.toLocaleString("en-GB")}/yr solar estimate within one business day.`
+        : "We'll be in touch within one business day.",
+    });
     setSubmitted(true);
   };
 
@@ -234,6 +264,35 @@ export const ReviewForm = ({ compact = false }: { compact?: boolean }) => {
   // ---------------- Stepper UI ----------------
   return (
     <form onSubmit={submit} className="space-y-6" noValidate>
+      {estimate && estimate.area > 0 && (
+        <div className="rounded-2xl bg-navy text-white p-5 sm:p-6 relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
+          <div className="relative">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold flex items-center gap-1.5">
+              <Sun className="h-3.5 w-3.5 text-electric" />
+              Your solar estimate
+            </div>
+            {estimate.address && (
+              <div className="mt-1 text-sm text-white/80 truncate">{estimate.address}</div>
+            )}
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <EstStat icon={<PoundSterling className="h-3.5 w-3.5" />} label="Saving / yr" value={`£${estimate.annualSaving.toLocaleString("en-GB")}`} />
+              <EstStat icon={<Zap className="h-3.5 w-3.5" />} label="System size" value={`${estimate.kWp.toFixed(1)} kWp`} />
+              <EstStat icon={<Pencil className="h-3.5 w-3.5" />} label="Roof area" value={`${estimate.area.toLocaleString("en-GB")} m²`} />
+              <EstStat label="Payback" value={estimate.payback ? `${estimate.payback.toFixed(1)} yrs` : "—"} />
+            </div>
+            {(estimate.roof || estimate.building) && (
+              <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] text-white/70">
+                {estimate.roof && <span className="rounded-full bg-white/10 px-2.5 py-1">Roof: {estimate.roof}</span>}
+                {estimate.building && <span className="rounded-full bg-white/10 px-2.5 py-1">{estimate.building}</span>}
+              </div>
+            )}
+            <p className="mt-3 text-[11px] text-white/55">
+              We've attached this estimate to your request — just confirm your details below.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Progress */}
       <div>
         <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-muted-foreground mb-3">
@@ -419,3 +478,13 @@ export const ReviewForm = ({ compact = false }: { compact?: boolean }) => {
     </form>
   );
 };
+
+const EstStat = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
+  <div className="rounded-xl bg-white/[0.05] border border-white/10 p-2.5">
+    <div className="text-[10px] uppercase tracking-[0.16em] text-white/55 font-semibold flex items-center gap-1.5">
+      {icon}
+      {label}
+    </div>
+    <div className="mt-1 text-sm font-display font-semibold text-white">{value}</div>
+  </div>
+);

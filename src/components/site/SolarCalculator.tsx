@@ -255,12 +255,24 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
     toast({ title: "Estimate on its way", description: `We'll send a copy to ${r.data}.` });
   };
 
+  // Try to extract a UK postcode from the autocomplete address string
+  const postcodeFromAddress = (() => {
+    const m = address.match(/[A-Z]{1,2}\d[A-Z\d]?\s?\d[A-Z]{2}/i);
+    return m ? m[0].toUpperCase() : "";
+  })();
+
   const contactQuery = new URLSearchParams({
     type: activeSegment,
     address,
+    postcode: postcodeFromAddress,
     area: Math.round(areaM2).toString(),
     kwp: result.kWp.toFixed(1),
+    kwh: Math.round(result.annualKwh).toString(),
     saving: Math.round(result.annualSavings).toString(),
+    cost: Math.round(result.systemCost).toString(),
+    payback: result.payback.toFixed(1),
+    roof: roof ?? "",
+    building: building ?? "",
   }).toString();
 
   return (
