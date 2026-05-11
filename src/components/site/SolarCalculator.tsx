@@ -65,6 +65,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const [mapError, setMapError] = useState("");
   const [contact, setContact] = useState({ business: "", name: "", email: "", phone: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [intent, setIntent] = useState<"book" | "email">("book");
 
   // Init map when its container becomes available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
