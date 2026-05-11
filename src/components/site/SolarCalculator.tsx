@@ -121,6 +121,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         if (mapRef.current) {
           mapRef.current.setCenter(place.geometry.location);
           mapRef.current.setZoom(20);
+          mapRef.current.setMapTypeId("satellite");
         }
       }, 0);
     });
