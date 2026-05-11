@@ -1,10 +1,23 @@
 import { useState } from "react";
 import { z } from "zod";
-import { Check, ArrowRight, ArrowLeft, CheckCircle2, Sparkles } from "lucide-react";
+import { Check, ArrowRight, ArrowLeft, CheckCircle2, Sparkles, Sun, PoundSterling, Zap, Pencil } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { toast } from "@/hooks/use-toast";
+
+export type SolarEstimate = {
+  address: string;
+  postcode: string;
+  area: number;
+  kWp: number;
+  annualKwh: number;
+  annualSaving: number;
+  systemCost: number;
+  payback: number;
+  roof: string;
+  building: string;
+};
 
 // ---------------- Schema ----------------
 const schema = z.object({
