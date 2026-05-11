@@ -225,10 +225,24 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const fmt = (n: number, d = 0) =>
     n.toLocaleString("en-GB", { minimumFractionDigits: d, maximumFractionDigits: d });
 
-  // Indicative system size from drawn area (used in the contact handoff only)
-  const estKwp = areaM2 * 0.7 * KWP_PER_M2;
+  // Solar specification estimate from drawn area
+  const usableM2 = areaM2 * USABLE_FACTOR;
+  const kWp = usableM2 * KWP_PER_M2;
+  const annualKwh = kWp * YIELD_PER_KWP;
+  const cfg = segmentDefaults[segment];
+  const annualSavings =
+    annualKwh * cfg.selfUse * UNIT_RATE +
+    annualKwh * (1 - cfg.selfUse) * cfg.exportRate;
+  const panels = Math.max(0, Math.round(kWp / PANEL_WATTS));
+  const lifetimeCo2Kg = annualKwh * CO2_PER_KWH * SYSTEM_LIFETIME_YRS;
+  const treesEquivalent = Math.round(lifetimeCo2Kg / TREE_KG_CO2);
+  const savingsHeadline = (() => {
+    const v = annualSavings;
+    if (v >= 1000) return `£${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
+    return `£${fmt(v)}`;
+  })();
 
-  const visibleSteps = [1, 2, 3];
+  const visibleSteps = [1, 2, 3, 4];
   const currentVisibleIndex = visibleSteps.indexOf(step) + 1;
 
   const goNextSkipping = () => setStep((s) => Math.min(s + 1, totalSteps));
