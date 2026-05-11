@@ -1,18 +1,18 @@
 // Lightweight on-demand loader for the Google Maps JS API.
 // Set VITE_GOOGLE_MAPS_API_KEY in your environment.
 
-let loadingPromise: Promise<typeof google> | null = null;
+/* eslint-disable @typescript-eslint/no-explicit-any */
+let loadingPromise: Promise<any> | null = null;
 
 export const GOOGLE_MAPS_API_KEY: string =
   (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ?? "";
 
-export const loadGoogleMaps = (): Promise<typeof google> => {
+export const loadGoogleMaps = (): Promise<any> => {
   if (typeof window === "undefined") {
     return Promise.reject(new Error("Google Maps can only load in the browser"));
   }
-  if ((window as unknown as { google?: typeof google }).google?.maps) {
-    return Promise.resolve((window as unknown as { google: typeof google }).google);
-  }
+  const w = window as any;
+  if (w.google?.maps) return Promise.resolve(w.google);
   if (loadingPromise) return loadingPromise;
   if (!GOOGLE_MAPS_API_KEY) {
     return Promise.reject(new Error("Missing VITE_GOOGLE_MAPS_API_KEY"));
@@ -26,7 +26,7 @@ export const loadGoogleMaps = (): Promise<typeof google> => {
     script.async = true;
     script.defer = true;
     script.onload = () => {
-      const g = (window as unknown as { google?: typeof google }).google;
+      const g = (window as any).google;
       if (g?.maps) resolve(g);
       else reject(new Error("Google Maps failed to initialise"));
     };

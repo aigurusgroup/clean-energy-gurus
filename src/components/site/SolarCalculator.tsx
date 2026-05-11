@@ -39,9 +39,12 @@ interface Props {
 export const SolarCalculator = ({ segment, selectable = false, className = "" }: Props) => {
   const mapEl = useRef<HTMLDivElement | null>(null);
   const searchEl = useRef<HTMLInputElement | null>(null);
-  const mapRef = useRef<google.maps.Map | null>(null);
-  const polygonRef = useRef<google.maps.Polygon | null>(null);
-  const drawingMgrRef = useRef<google.maps.drawing.DrawingManager | null>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const mapRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const polygonRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const drawingMgrRef = useRef<any>(null);
 
   const [activeSegment, setActiveSegment] = useState<SegmentType>(segment);
   const [status, setStatus] = useState<"idle" | "loading" | "ready" | "error">("idle");
@@ -60,7 +63,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
     }
     setStatus("loading");
     loadGoogleMaps()
-      .then((google) => {
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      .then((google: any) => {
         if (cancelled || !mapEl.current) return;
         const map = new google.maps.Map(mapEl.current, {
           center: { lat: 54.5, lng: -2.5 }, // UK
@@ -90,7 +94,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
         drawingManager.setMap(map);
         drawingMgrRef.current = drawingManager;
 
-        google.maps.event.addListener(drawingManager, "polygoncomplete", (poly: google.maps.Polygon) => {
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        google.maps.event.addListener(drawingManager, "polygoncomplete", (poly: any) => {
           if (polygonRef.current) polygonRef.current.setMap(null);
           polygonRef.current = poly;
           drawingManager.setDrawingMode(null);
@@ -131,7 +136,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
   }, []);
 
   const startDrawing = () => {
-    const g = (window as unknown as { google?: typeof google }).google;
+    const g = (window as unknown as { google?: any }).google;
     if (!drawingMgrRef.current || !g) return;
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
@@ -151,7 +156,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
   };
 
   const handlePostcodeSearch = async () => {
-    const g = (window as unknown as { google?: typeof google }).google;
+    const g = (window as unknown as { google?: any }).google;
     if (!g || !mapRef.current || !postcode.trim()) return;
     const geocoder = new g.maps.Geocoder();
     try {
