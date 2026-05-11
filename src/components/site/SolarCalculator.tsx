@@ -2,9 +2,9 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { z } from "zod";
 import {
-  Search, Sun, Pencil, RotateCcw, ArrowRight, ArrowLeft, Zap, Leaf,
-  PoundSterling, Info, Building2, Tractor, KeyRound, Home as HomeIcon,
-  Triangle, Minus, HelpCircle, Mail, CheckCircle2, CalendarCheck,
+  Search, Pencil, RotateCcw, ArrowRight, ArrowLeft,
+  Info, Building2, Tractor, KeyRound, Home as HomeIcon,
+  Mail, CheckCircle2, CalendarCheck, User, Phone, Briefcase,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
