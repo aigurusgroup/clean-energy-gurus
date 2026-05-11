@@ -182,7 +182,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .then((res: any) => {
           const loc = res.results[0]?.geometry.location;
-          if (loc) { map.setCenter(loc); map.setZoom(20); }
+          if (loc) { map.setCenter(loc); map.setZoom(20); map.setMapTypeId("satellite"); }
         })
         .catch(() => {});
     }
