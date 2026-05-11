@@ -65,6 +65,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const [mapError, setMapError] = useState("");
   const [contact, setContact] = useState({ business: "", name: "", email: "", phone: "" });
   const [submitted, setSubmitted] = useState(false);
+  const [intent, setIntent] = useState<"book" | "email">("book");
 
   // Init map when its container becomes available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -559,17 +560,26 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                     </p>
                   </div>
 
-                  <div className="mt-6 flex gap-2">
-                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
-                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
-                    </Button>
+                  <div className="mt-6 flex flex-col gap-2">
                     <Button
                       type="button"
-                      onClick={goNextSkipping}
-                      className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
+                      onClick={() => { setIntent("book"); goNextSkipping(); }}
+                      className="w-full rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
                     >
                       <CalendarCheck className="h-4 w-4 mr-1.5" />
                       Book my free review <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => { setIntent("email"); goNextSkipping(); }}
+                      className="w-full rounded-full h-11"
+                    >
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Email me a copy
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={goBackSkipping} className="rounded-full h-10 px-4 self-start text-muted-foreground">
+                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
                     </Button>
                   </div>
                 </div>
@@ -584,15 +594,16 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                         <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
                         <div className="relative">
                           <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold flex items-center gap-1.5">
-                            <CalendarCheck className="h-3.5 w-3.5 text-electric" />
-                            Book your free energy review
+                            {intent === "email" ? <Mail className="h-3.5 w-3.5 text-electric" /> : <CalendarCheck className="h-3.5 w-3.5 text-electric" />}
+                            {intent === "email" ? "Email me my solar estimate" : "Book your free energy review"}
                           </div>
                           <div className="mt-2 text-2xl sm:text-3xl font-display font-semibold leading-tight">
-                            A quick call. A clear plan. No pressure.
+                            {intent === "email" ? "A few details and your copy is on its way." : "A quick call. A clear plan. No pressure."}
                           </div>
                           <p className="mt-2 text-sm text-white/70 leading-relaxed">
-                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr)
-                            and call you back within one UK business day with next steps.
+                            {intent === "email"
+                              ? <>We'll email your tailored estimate ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr) and a specialist will follow up within one UK business day.</>
+                              : <>We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr) and call you back within one UK business day with next steps.</>}
                           </p>
                         </div>
                       </div>
@@ -674,8 +685,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                           onClick={handleContactSubmit}
                           className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
                         >
-                          <CalendarCheck className="h-4 w-4 mr-1.5" />
-                          Book my free review
+                          {intent === "email" ? <Mail className="h-4 w-4 mr-1.5" /> : <CalendarCheck className="h-4 w-4 mr-1.5" />}
+                          {intent === "email" ? "Email me my estimate" : "Book my free review"}
                         </Button>
                       </div>
                       <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
