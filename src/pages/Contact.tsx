@@ -73,7 +73,7 @@ const Contact = () => {
         lead="Tell us about your property. We'll respond within one business day and outline the next steps — no obligation, no sales pressure."
         cta={false}
       />
-      {!estimate && <SolarCalculator segment="home" selectable className="bg-surface pt-0" />}
+      {!estimate && <SolarCalculator segment="home" selectable hideHeading className="bg-surface pt-0 pb-10" />}
       <section className="pb-24">
         <div className="container-tight grid lg:grid-cols-5 gap-10">
           <div className="lg:col-span-3 card-premium p-8 sm:p-10">
