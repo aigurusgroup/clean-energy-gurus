@@ -255,6 +255,35 @@ export const ReviewForm = ({
   // ---------------- Stepper UI ----------------
   return (
     <form onSubmit={submit} className="space-y-6" noValidate>
+      {estimate && estimate.area > 0 && (
+        <div className="rounded-2xl bg-navy text-white p-5 sm:p-6 relative overflow-hidden">
+          <div className="absolute -top-16 -right-16 h-40 w-40 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
+          <div className="relative">
+            <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold flex items-center gap-1.5">
+              <Sun className="h-3.5 w-3.5 text-electric" />
+              Your solar estimate
+            </div>
+            {estimate.address && (
+              <div className="mt-1 text-sm text-white/80 truncate">{estimate.address}</div>
+            )}
+            <div className="mt-4 grid grid-cols-2 sm:grid-cols-4 gap-3">
+              <EstStat icon={<PoundSterling className="h-3.5 w-3.5" />} label="Saving / yr" value={`£${estimate.annualSaving.toLocaleString("en-GB")}`} />
+              <EstStat icon={<Zap className="h-3.5 w-3.5" />} label="System size" value={`${estimate.kWp.toFixed(1)} kWp`} />
+              <EstStat icon={<Pencil className="h-3.5 w-3.5" />} label="Roof area" value={`${estimate.area.toLocaleString("en-GB")} m²`} />
+              <EstStat label="Payback" value={estimate.payback ? `${estimate.payback.toFixed(1)} yrs` : "—"} />
+            </div>
+            {(estimate.roof || estimate.building) && (
+              <div className="mt-3 flex flex-wrap gap-1.5 text-[11px] text-white/70">
+                {estimate.roof && <span className="rounded-full bg-white/10 px-2.5 py-1">Roof: {estimate.roof}</span>}
+                {estimate.building && <span className="rounded-full bg-white/10 px-2.5 py-1">{estimate.building}</span>}
+              </div>
+            )}
+            <p className="mt-3 text-[11px] text-white/55">
+              We've attached this estimate to your request — just confirm your details below.
+            </p>
+          </div>
+        </div>
+      )}
       {/* Progress */}
       <div>
         <div className="flex items-center justify-between text-[11px] uppercase tracking-[0.16em] text-muted-foreground mb-3">
