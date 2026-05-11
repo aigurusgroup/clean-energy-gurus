@@ -211,22 +211,29 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     const g = (window as unknown as { google?: any }).google;
     if (!g || !mapRef.current || !postcode.trim()) return;
     const geocoder = new g.maps.Geocoder();
-    try {
-      const res = await geocoder.geocode({
-        address: postcode,
-        componentRestrictions: { country: "GB" },
-      });
-      const loc = res.results[0]?.geometry.location;
-      if (loc) {
+    geocoder.geocode(
+      { address: postcode, componentRestrictions: { country: "GB" } },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (results: any, status: string) => {
+        if (status !== "OK" || !results?.[0]) {
+          console.warn("[SolarCalculator] Geocoder status:", status, "for postcode:", postcode);
+          const friendly =
+            status === "REQUEST_DENIED"
+              ? "Map service denied the request — the Google Maps API key likely needs the Geocoding API enabled and this domain whitelisted."
+              : status === "OVER_QUERY_LIMIT"
+              ? "Map service is over its quota — please try again later."
+              : "Please check the postcode and try again.";
+          toast({ title: "Couldn't find that postcode", description: friendly });
+          return;
+        }
+        const loc = results[0].geometry.location;
         mapRef.current.setCenter(loc);
         mapRef.current.setZoom(19);
         mapRef.current.setMapTypeId("satellite");
-        setAddress(res.results[0].formatted_address);
+        setAddress(results[0].formatted_address);
         setStep(2);
-      }
-    } catch {
-      toast({ title: "Couldn't find that postcode", description: "Please check and try again." });
-    }
+      },
+    );
   };
 
   const fmt = (n: number, d = 0) =>
