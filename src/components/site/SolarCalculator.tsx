@@ -409,201 +409,134 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                 </div>
               )}
 
-              {/* STEP 3 — Customer type (only if selectable) */}
-              {step === 3 && selectable && (
+              {/* STEP 3 — Book a call CTA */}
+              {step === 3 && (
                 <div className="mt-5">
-                  <h3 className="text-2xl font-display font-semibold text-navy">
-                    Is this for a…
-                  </h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    Helps us tailor your tariff and self-use assumptions.
-                  </p>
-                  <div className="mt-5 grid grid-cols-2 gap-3">
-                    {(Object.keys(segmentDefaults) as SegmentType[]).map((s) => {
-                      const Icon = segmentDefaults[s].icon;
-                      const selected = activeSegment === s;
-                      return (
-                        <button
-                          key={s}
-                          type="button"
-                          onClick={() => setActiveSegment(s)}
-                          className={`rounded-2xl border p-4 text-left transition-all ${
-                            selected
-                              ? "border-electric bg-electric/5 shadow-card"
-                              : "border-border bg-card hover:border-electric/40"
-                          }`}
-                        >
-                          <Icon className={`h-6 w-6 ${selected ? "text-electric" : "text-navy"}`} />
-                          <div className="mt-2 text-sm font-display font-semibold text-navy">
-                            {segmentDefaults[s].label}
+                  {!submitted ? (
+                    <>
+                      <div className="rounded-2xl bg-navy text-white p-5 sm:p-6 relative overflow-hidden mb-5">
+                        <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
+                        <div className="relative">
+                          <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold flex items-center gap-1.5">
+                            <CalendarCheck className="h-3.5 w-3.5 text-electric" />
+                            Book your free energy review
                           </div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-6 flex gap-2">
-                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
-                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
-                    </Button>
-                    <Button type="button" onClick={goNextSkipping} className="flex-1 rounded-full h-11 bg-navy text-white hover:bg-navy/90">
-                      Next <ArrowRight className="h-4 w-4 ml-1.5" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 4 — Roof type */}
-              {step === 4 && (
-                <div className="mt-5">
-                  <h3 className="text-2xl font-display font-semibold text-navy">
-                    What type of roof do you have?
-                  </h3>
-                  <div className="mt-5 grid grid-cols-3 gap-3">
-                    {roofOptions.map((r) => {
-                      const Icon = r.icon;
-                      const selected = roof === r.v;
-                      return (
-                        <button
-                          key={r.v}
-                          type="button"
-                          onClick={() => setRoof(r.v)}
-                          className={`rounded-2xl border p-4 text-center transition-all ${
-                            selected
-                              ? "border-electric bg-electric/5 shadow-card"
-                              : "border-border bg-card hover:border-electric/40"
-                          }`}
-                        >
-                          <Icon className={`h-7 w-7 mx-auto ${selected ? "text-electric" : "text-navy"}`} />
-                          <div className="mt-2 text-sm font-display font-semibold text-navy">{r.title}</div>
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-6 flex gap-2">
-                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
-                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
-                    </Button>
-                    <Button type="button" onClick={goNextSkipping} disabled={!roof} className="flex-1 rounded-full h-11 bg-navy text-white hover:bg-navy/90">
-                      Next <ArrowRight className="h-4 w-4 ml-1.5" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 5 — Building type */}
-              {step === 5 && (
-                <div className="mt-5">
-                  <h3 className="text-2xl font-display font-semibold text-navy">
-                    What type of building?
-                  </h3>
-                  <div className="mt-5 grid grid-cols-2 gap-2.5">
-                    {buildingByCustomer[activeSegment].map((b) => {
-                      const selected = building === b;
-                      return (
-                        <button
-                          key={b}
-                          type="button"
-                          onClick={() => setBuilding(b)}
-                          className={`rounded-xl border px-3 py-3 text-sm font-medium transition-all ${
-                            selected
-                              ? "border-electric bg-electric/5 text-navy"
-                              : "border-border bg-card text-navy hover:border-electric/40"
-                          }`}
-                        >
-                          {b}
-                        </button>
-                      );
-                    })}
-                  </div>
-                  <div className="mt-6 flex gap-2">
-                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
-                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
-                    </Button>
-                    <Button type="button" onClick={goNextSkipping} disabled={!building} className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow">
-                      See my savings <ArrowRight className="h-4 w-4 ml-1.5" />
-                    </Button>
-                  </div>
-                </div>
-              )}
-
-              {/* STEP 6 — Results */}
-              {step === 6 && (
-                <div className="mt-5">
-                  <div className="rounded-2xl bg-navy text-white p-5 sm:p-6 relative overflow-hidden">
-                    <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
-                    <div className="relative">
-                      <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold flex items-center gap-1.5">
-                        <Sun className="h-3.5 w-3.5 text-electric" />
-                        Going solar could save you
-                      </div>
-                      <div className="mt-2 text-6xl font-display font-semibold leading-none tracking-tight">
-                        {savingsHeadline}
-                      </div>
-                      <div className="mt-1 text-sm text-white/65">per year (year 1)</div>
-
-                      <div className="mt-5 grid grid-cols-2 gap-3">
-                        <Stat label="System size" value={`${fmt(result.kWp, 1)} kWp`} />
-                        <Stat label="Panels" value={`~${result.panels}`} />
-                        <Stat label="Generation" value={`${fmt(result.annualKwh)} kWh`} icon={<Zap className="h-3.5 w-3.5" />} />
-                        <Stat label="CO₂ / yr" value={`${fmt(result.co2Tonnes, 1)} t`} icon={<Leaf className="h-3.5 w-3.5" />} />
-                        <Stat label="System cost" value={`£${fmt(result.systemCost)}`} icon={<PoundSterling className="h-3.5 w-3.5" />} />
-                        <Stat label="Payback" value={`${result.payback ? result.payback.toFixed(1) : "—"} yrs`} />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Email + CTA */}
-                  <div className="mt-5 space-y-3">
-                    {!emailSent ? (
-                      <div className="flex flex-col sm:flex-row gap-2">
-                        <div className="relative flex-1">
-                          <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-                          <Input
-                            type="email"
-                            value={email}
-                            onChange={(e) => setEmail(e.target.value)}
-                            placeholder="you@email.com"
-                            className="pl-9 h-11 rounded-full"
-                            maxLength={255}
-                          />
+                          <div className="mt-2 text-2xl sm:text-3xl font-display font-semibold leading-tight">
+                            A quick call. A clear plan. No pressure.
+                          </div>
+                          <p className="mt-2 text-sm text-white/70 leading-relaxed">
+                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(estKwp, 1)} kWp indicative)
+                            and call you back within one UK business day with next steps.
+                          </p>
                         </div>
+                      </div>
+
+                      <div className="space-y-3">
+                        <div>
+                          <Label htmlFor="solar-business" className="text-xs font-semibold text-navy">
+                            Business name <span className="text-muted-foreground font-normal">(if applicable)</span>
+                          </Label>
+                          <div className="relative mt-1.5">
+                            <Briefcase className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="solar-business"
+                              value={contact.business}
+                              onChange={(e) => setContact((c) => ({ ...c, business: e.target.value }))}
+                              placeholder="Acme Ltd"
+                              className="pl-9 h-11 rounded-full"
+                              maxLength={120}
+                            />
+                          </div>
+                        </div>
+                        <div>
+                          <Label htmlFor="solar-name" className="text-xs font-semibold text-navy">Your name</Label>
+                          <div className="relative mt-1.5">
+                            <User className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                            <Input
+                              id="solar-name"
+                              value={contact.name}
+                              onChange={(e) => setContact((c) => ({ ...c, name: e.target.value }))}
+                              placeholder="Jane Smith"
+                              className="pl-9 h-11 rounded-full"
+                              maxLength={100}
+                              required
+                            />
+                          </div>
+                        </div>
+                        <div className="grid sm:grid-cols-2 gap-3">
+                          <div>
+                            <Label htmlFor="solar-email" className="text-xs font-semibold text-navy">Email</Label>
+                            <div className="relative mt-1.5">
+                              <Mail className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                id="solar-email"
+                                type="email"
+                                value={contact.email}
+                                onChange={(e) => setContact((c) => ({ ...c, email: e.target.value }))}
+                                placeholder="you@email.com"
+                                className="pl-9 h-11 rounded-full"
+                                maxLength={255}
+                                required
+                              />
+                            </div>
+                          </div>
+                          <div>
+                            <Label htmlFor="solar-phone" className="text-xs font-semibold text-navy">Phone</Label>
+                            <div className="relative mt-1.5">
+                              <Phone className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+                              <Input
+                                id="solar-phone"
+                                type="tel"
+                                value={contact.phone}
+                                onChange={(e) => setContact((c) => ({ ...c, phone: e.target.value }))}
+                                placeholder="07000 000000"
+                                className="pl-9 h-11 rounded-full"
+                                maxLength={30}
+                                required
+                              />
+                            </div>
+                          </div>
+                        </div>
+                      </div>
+
+                      <div className="mt-6 flex gap-2">
+                        <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
+                          <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
+                        </Button>
                         <Button
                           type="button"
-                          onClick={handleEmailSend}
-                          variant="outline"
-                          className="rounded-full h-11 px-5 border-navy/15 text-navy hover:bg-navy hover:text-white"
+                          onClick={handleContactSubmit}
+                          className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
                         >
-                          Email me a copy
+                          <CalendarCheck className="h-4 w-4 mr-1.5" />
+                          Book my free review
                         </Button>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-2 rounded-full bg-electric/10 border border-electric/30 px-4 py-2.5 text-sm text-navy">
-                        <CheckCircle2 className="h-4 w-4 text-electric" />
-                        Sent! Check your inbox shortly.
+                      <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
+                        We'll only use these details to contact you about your enquiry.
+                        Address {postcodeFromAddress ? `(${postcodeFromAddress}) ` : ""}and roof outline are
+                        included automatically.
+                      </p>
+                    </>
+                  ) : (
+                    <div className="rounded-2xl bg-electric/5 border border-electric/30 p-6 text-center">
+                      <div className="mx-auto h-12 w-12 rounded-full bg-electric/15 grid place-items-center text-electric">
+                        <CheckCircle2 className="h-6 w-6" />
                       </div>
-                    )}
-
-                    <Link to={`/contact?${contactQuery}`} className="block">
-                      <Button className="w-full rounded-full h-12 bg-gradient-electric text-white border-0 shadow-glow">
-                        <CalendarCheck className="h-4 w-4 mr-1.5" />
-                        Book a free energy review <ArrowRight className="h-4 w-4 ml-1.5" />
-                      </Button>
-                    </Link>
-
-                    <button
-                      type="button"
-                      onClick={() => setStep(1)}
-                      className="text-xs text-muted-foreground hover:text-navy transition-colors"
-                    >
-                      ← Start over
-                    </button>
-                  </div>
-
-                  <p className="text-[11px] text-muted-foreground mt-4 leading-relaxed">
-                    Indicative figures based on UK averages (irradiance, panel
-                    density, tariff and {Math.round(result.cfg.selfUse * 100)}% self-use).
-                    A site survey will confirm the real numbers.
-                  </p>
+                      <h3 className="mt-3 text-xl font-display font-semibold text-navy">Request received</h3>
+                      <p className="mt-2 text-sm text-navy-soft">
+                        Thanks {contact.name.split(" ")[0]} — we'll be in touch within one UK business day
+                        to schedule your free energy review.
+                      </p>
+                      <button
+                        type="button"
+                        onClick={() => { setStep(1); setSubmitted(false); }}
+                        className="mt-4 text-xs text-muted-foreground hover:text-navy transition-colors"
+                      >
+                        ← Start a new estimate
+                      </button>
+                    </div>
+                  )}
                 </div>
               )}
             </div>
