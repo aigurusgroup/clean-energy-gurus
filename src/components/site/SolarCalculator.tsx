@@ -46,9 +46,10 @@ interface Props {
   segment: SegmentType;
   selectable?: boolean;
   className?: string;
+  hideHeading?: boolean;
 }
 
-export const SolarCalculator = ({ segment, selectable = false, className = "" }: Props) => {
+export const SolarCalculator = ({ segment, selectable = false, className = "", hideHeading = false }: Props) => {
   const { toast } = useToast();
   const mapEl = useRef<HTMLDivElement | null>(null);
   const searchEl = useRef<HTMLInputElement | null>(null);
@@ -120,6 +121,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
         if (mapRef.current) {
           mapRef.current.setCenter(place.geometry.location);
           mapRef.current.setZoom(20);
+          mapRef.current.setMapTypeId("satellite");
         }
       }, 0);
     });
@@ -130,9 +132,9 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
     const google = googleRef.current;
     if (!google || !mapEl.current || mapRef.current) return;
     const map = new google.maps.Map(mapEl.current, {
-      center: { lat: 54.5, lng: -2.5 },
-      zoom: 6,
-      mapTypeId: "satellite",
+      center: { lat: 50.854, lng: -0.554 }, // Arundel, UK
+      zoom: 14,
+      mapTypeId: "roadmap",
       tilt: 0,
       mapTypeControl: false,
       streetViewControl: false,
@@ -180,7 +182,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
         // eslint-disable-next-line @typescript-eslint/no-explicit-any
         .then((res: any) => {
           const loc = res.results[0]?.geometry.location;
-          if (loc) { map.setCenter(loc); map.setZoom(20); }
+          if (loc) { map.setCenter(loc); map.setZoom(20); map.setMapTypeId("satellite"); }
         })
         .catch(() => {});
     }
@@ -219,6 +221,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
       if (loc) {
         mapRef.current.setCenter(loc);
         mapRef.current.setZoom(19);
+        mapRef.current.setMapTypeId("satellite");
         setAddress(res.results[0].formatted_address);
         setStep(2);
       }
@@ -309,20 +312,22 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
   return (
     <section className={`py-20 lg:py-28 ${className}`}>
       <div className="container-tight">
-        <div className="max-w-3xl mb-10">
-          <span className="eyebrow">
-            <span className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" />
-            Instant solar estimate
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
-            Outline your roof. <span className="text-gradient">See your solar savings.</span>
-          </h2>
-          <p className="mt-4 text-navy-soft text-lg leading-relaxed">
-            Search your postcode, draw the area you'd like to use for solar
-            and answer a few quick questions — we'll show your estimated
-            annual savings instantly.
-          </p>
-        </div>
+        {!hideHeading && (
+          <div className="max-w-3xl mb-10">
+            <span className="eyebrow">
+              <span className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" />
+              Instant solar estimate
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              Outline your roof. <span className="text-gradient">See your solar savings.</span>
+            </h2>
+            <p className="mt-4 text-navy-soft text-lg leading-relaxed">
+              Search your postcode, draw the area you'd like to use for solar
+              and answer a few quick questions — we'll show your estimated
+              annual savings instantly.
+            </p>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-12 gap-6 items-start">
           {/* Map (always visible) */}
