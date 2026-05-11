@@ -1,6 +1,7 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
+import { SolarFundingOptions } from "@/components/site/SolarFundingOptions";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 const Contact = () => {
@@ -14,6 +15,8 @@ const Contact = () => {
       />
 
       <SolarCalculator segment="home" selectable hideHeading className="bg-surface pt-0 pb-10" />
+
+      <SolarFundingOptions />
 
       <section className="pb-24">
         <div className="container-tight grid lg:grid-cols-3 gap-5">
