@@ -1,6 +1,7 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
+import { SolarFundingOptions } from "@/components/site/SolarFundingOptions";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 const Contact = () => {
