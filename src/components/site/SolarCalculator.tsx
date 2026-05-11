@@ -312,20 +312,22 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   return (
     <section className={`py-20 lg:py-28 ${className}`}>
       <div className="container-tight">
-        <div className="max-w-3xl mb-10">
-          <span className="eyebrow">
-            <span className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" />
-            Instant solar estimate
-          </span>
-          <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
-            Outline your roof. <span className="text-gradient">See your solar savings.</span>
-          </h2>
-          <p className="mt-4 text-navy-soft text-lg leading-relaxed">
-            Search your postcode, draw the area you'd like to use for solar
-            and answer a few quick questions — we'll show your estimated
-            annual savings instantly.
-          </p>
-        </div>
+        {!hideHeading && (
+          <div className="max-w-3xl mb-10">
+            <span className="eyebrow">
+              <span className="h-1.5 w-1.5 rounded-full bg-electric animate-pulse" />
+              Instant solar estimate
+            </span>
+            <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
+              Outline your roof. <span className="text-gradient">See your solar savings.</span>
+            </h2>
+            <p className="mt-4 text-navy-soft text-lg leading-relaxed">
+              Search your postcode, draw the area you'd like to use for solar
+              and answer a few quick questions — we'll show your estimated
+              annual savings instantly.
+            </p>
+          </div>
+        )}
 
         <div className="grid lg:grid-cols-12 gap-6 items-start">
           {/* Map (always visible) */}
