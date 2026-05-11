@@ -131,9 +131,9 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     const google = googleRef.current;
     if (!google || !mapEl.current || mapRef.current) return;
     const map = new google.maps.Map(mapEl.current, {
-      center: { lat: 54.5, lng: -2.5 },
-      zoom: 6,
-      mapTypeId: "satellite",
+      center: { lat: 50.854, lng: -0.554 }, // Arundel, UK
+      zoom: 14,
+      mapTypeId: "roadmap",
       tilt: 0,
       mapTypeControl: false,
       streetViewControl: false,
