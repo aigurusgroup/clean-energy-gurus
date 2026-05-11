@@ -363,6 +363,7 @@ const Landlords = () => {
 
       {/* SOLAR CALCULATOR */}
       <SolarCalculator segment="landlord" />
+      <SolarFundingOptions />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28 bg-surface">
