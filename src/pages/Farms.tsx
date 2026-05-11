@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Snowflake, Droplets, Wrench, Milk, Bird, Wheat, Store, Home, Plug, Sun, Battery, ShieldCheck, Wallet, Activity, Check, Sunrise, Layers, Tractor } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import { ReviewForm } from "@/components/site/ReviewForm";
+import { FinalCTA } from "@/components/site/FinalCTA";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import farmHero from "@/assets/farm-hero.jpg";

@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Users, Gauge, Plug, ShieldCheck, Leaf, TrendingUp, Sun, Battery, ClipboardList, Activity, FileBarChart, Flame, Building, Hotel, Building2, Layers, Briefcase, MapPin, Check } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import { ReviewForm } from "@/components/site/ReviewForm";
+import { FinalCTA } from "@/components/site/FinalCTA";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import landlordHero from "@/assets/landlord-hero.jpg";
