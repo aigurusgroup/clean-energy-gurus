@@ -221,6 +221,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
       if (loc) {
         mapRef.current.setCenter(loc);
         mapRef.current.setZoom(19);
+        mapRef.current.setMapTypeId("satellite");
         setAddress(res.results[0].formatted_address);
         setStep(2);
       }
