@@ -560,17 +560,26 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                     </p>
                   </div>
 
-                  <div className="mt-6 flex gap-2">
-                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
-                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
-                    </Button>
+                  <div className="mt-6 flex flex-col gap-2">
                     <Button
                       type="button"
-                      onClick={goNextSkipping}
-                      className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
+                      onClick={() => { setIntent("book"); goNextSkipping(); }}
+                      className="w-full rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
                     >
                       <CalendarCheck className="h-4 w-4 mr-1.5" />
                       Book my free review <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Button>
+                    <Button
+                      type="button"
+                      variant="outline"
+                      onClick={() => { setIntent("email"); goNextSkipping(); }}
+                      className="w-full rounded-full h-11"
+                    >
+                      <Mail className="h-4 w-4 mr-1.5" />
+                      Email me a copy
+                    </Button>
+                    <Button type="button" variant="ghost" onClick={goBackSkipping} className="rounded-full h-10 px-4 self-start text-muted-foreground">
+                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
                     </Button>
                   </div>
                 </div>
