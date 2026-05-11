@@ -215,64 +215,17 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     }
   };
 
-  const result = useMemo(() => {
-    const opt = roofOptions.find((r) => r.v === (roof ?? "pitched"))!;
-    const usableArea = areaM2 * opt.usable;
-    const kWp = usableArea * KWP_PER_M2;
-    const annualKwh = kWp * opt.yieldPerKwp;
-    const cfg = segmentDefaults[activeSegment];
-    const selfUseKwh = annualKwh * cfg.selfUse;
-    const exportKwh = annualKwh - selfUseKwh;
-    const annualSavings = selfUseKwh * cfg.tariff + exportKwh * cfg.exportRate;
-    const systemCost = kWp * COST_PER_KWP;
-    const payback = annualSavings > 0 ? systemCost / annualSavings : 0;
-    const lifetimeCo2Kg = annualKwh * CO2_PER_KWH * 25;
-    const trees = lifetimeCo2Kg / TREE_KG_CO2;
-    const panels = Math.round(kWp / 0.4); // ~400W panels
-    return {
-      kWp, annualKwh, annualSavings, systemCost, payback,
-      co2Tonnes: (annualKwh * CO2_PER_KWH) / 1000,
-      trees, panels, cfg,
-    };
-  }, [areaM2, roof, activeSegment]);
-
   const fmt = (n: number, d = 0) =>
     n.toLocaleString("en-GB", { minimumFractionDigits: d, maximumFractionDigits: d });
 
-  const savingsHeadline = (() => {
-    const v = result.annualSavings;
-    if (v >= 1000) return `£${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
-    return `£${fmt(v)}`;
-  })();
+  // Indicative system size from drawn area (used in the contact handoff only)
+  const estKwp = areaM2 * 0.7 * KWP_PER_M2;
 
-  // Step navigation helpers
-  const goNext = () => setStep((s) => Math.min(s + 1, 6));
-  const goBack = () => setStep((s) => Math.max(s - 1, 1));
-  // When segment is preset, skip the customer step (step 3)
-  const visibleSteps = selectable ? [1, 2, 3, 4, 5, 6] : [1, 2, 4, 5, 6];
+  const visibleSteps = [1, 2, 3];
   const currentVisibleIndex = visibleSteps.indexOf(step) + 1;
 
-  const goNextSkipping = () => {
-    let next = step + 1;
-    if (!selectable && next === 3) next = 4;
-    setStep(Math.min(next, 6));
-  };
-  const goBackSkipping = () => {
-    let prev = step - 1;
-    if (!selectable && prev === 3) prev = 2;
-    setStep(Math.max(prev, 1));
-  };
-
-  const handleEmailSend = () => {
-    const r = emailSchema.safeParse(email);
-    if (!r.success) {
-      toast({ title: "Check your email", description: r.error.issues[0].message });
-      return;
-    }
-    // Lightweight stub — a follow-up edge function can deliver the PDF.
-    setEmailSent(true);
-    toast({ title: "Estimate on its way", description: `We'll send a copy to ${r.data}.` });
-  };
+  const goNextSkipping = () => setStep((s) => Math.min(s + 1, totalSteps));
+  const goBackSkipping = () => setStep((s) => Math.max(s - 1, 1));
 
   // Try to extract a UK postcode from the autocomplete address string
   const postcodeFromAddress = (() => {
@@ -280,19 +233,19 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     return m ? m[0].toUpperCase() : "";
   })();
 
-  const contactQuery = new URLSearchParams({
-    type: activeSegment,
-    address,
-    postcode: postcodeFromAddress,
-    area: Math.round(areaM2).toString(),
-    kwp: result.kWp.toFixed(1),
-    kwh: Math.round(result.annualKwh).toString(),
-    saving: Math.round(result.annualSavings).toString(),
-    cost: Math.round(result.systemCost).toString(),
-    payback: result.payback.toFixed(1),
-    roof: roof ?? "",
-    building: building ?? "",
-  }).toString();
+  const handleContactSubmit = () => {
+    const r = contactSchema.safeParse(contact);
+    if (!r.success) {
+      toast({ title: "Please check your details", description: r.error.issues[0].message });
+      return;
+    }
+    // Lightweight stub — a Lovable Cloud edge function can deliver this to your inbox / CRM later.
+    setSubmitted(true);
+    toast({
+      title: "Thanks — we'll be in touch",
+      description: `We've received your request${r.data.business ? ` for ${r.data.business}` : ""} and will call ${r.data.name.split(" ")[0]} within one UK business day.`,
+    });
+  };
 
   return (
     <section className={`py-20 lg:py-28 ${className}`}>
