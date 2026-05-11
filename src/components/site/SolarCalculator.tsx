@@ -468,7 +468,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                             A quick call. A clear plan. No pressure.
                           </div>
                           <p className="mt-2 text-sm text-white/70 leading-relaxed">
-                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(estKwp, 1)} kWp indicative)
+                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr)
                             and call you back within one UK business day with next steps.
                           </p>
                         </div>
