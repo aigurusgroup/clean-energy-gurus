@@ -594,15 +594,16 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                         <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
                         <div className="relative">
                           <div className="text-[11px] uppercase tracking-[0.18em] text-white/60 font-semibold flex items-center gap-1.5">
-                            <CalendarCheck className="h-3.5 w-3.5 text-electric" />
-                            Book your free energy review
+                            {intent === "email" ? <Mail className="h-3.5 w-3.5 text-electric" /> : <CalendarCheck className="h-3.5 w-3.5 text-electric" />}
+                            {intent === "email" ? "Email me my solar estimate" : "Book your free energy review"}
                           </div>
                           <div className="mt-2 text-2xl sm:text-3xl font-display font-semibold leading-tight">
-                            A quick call. A clear plan. No pressure.
+                            {intent === "email" ? "A few details and your copy is on its way." : "A quick call. A clear plan. No pressure."}
                           </div>
                           <p className="mt-2 text-sm text-white/70 leading-relaxed">
-                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr)
-                            and call you back within one UK business day with next steps.
+                            {intent === "email"
+                              ? <>We'll email your tailored estimate ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr) and a specialist will follow up within one UK business day.</>
+                              : <>We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr) and call you back within one UK business day with next steps.</>}
                           </p>
                         </div>
                       </div>
