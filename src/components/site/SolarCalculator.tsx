@@ -4,6 +4,7 @@ import {
   Search, Pencil, RotateCcw, ArrowRight, ArrowLeft,
   Info, Building2, Tractor, KeyRound, Home as HomeIcon,
   Mail, CheckCircle2, CalendarCheck, User, Phone, Briefcase,
+  TrendingUp, Sun, Leaf, ShieldCheck, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -20,7 +21,14 @@ const segmentDefaults: Record<SegmentType, { tariff: number; exportRate: number;
   home:     { tariff: 0.27, exportRate: 0.15, selfUse: 0.45, label: "Home",     icon: HomeIcon },
 };
 
-const KWP_PER_M2 = 0.18;
+const KWP_PER_M2 = 0.18;          // kWp per m² of usable roof
+const USABLE_FACTOR = 0.7;         // % of drawn area that can carry panels
+const YIELD_PER_KWP = 900;         // kWh / kWp / yr (UK average)
+const PANEL_WATTS = 0.635;         // tier-1 panel rating (kWp)
+const UNIT_RATE = 0.25;            // £/kWh assumed retail tariff for headline savings
+const CO2_PER_KWH = 0.207;         // kg CO₂ per kWh (UK grid)
+const TREE_KG_CO2 = 21;            // kg CO₂ absorbed per tree per year
+const SYSTEM_LIFETIME_YRS = 25;
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, { message: "Please enter your name" }).max(100),
@@ -47,8 +55,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawingMgrRef = useRef<any>(null);
 
-  // Wizard state. Step 1=postcode, 2=draw, 3=contact CTA
-  const totalSteps = 3;
+  // Wizard state. Step 1=postcode, 2=draw, 3=savings, 4=contact CTA
+  const totalSteps = 4;
   const [step, setStep] = useState(1);
   const [postcode, setPostcode] = useState("");
   const [address, setAddress] = useState("");
@@ -217,10 +225,24 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const fmt = (n: number, d = 0) =>
     n.toLocaleString("en-GB", { minimumFractionDigits: d, maximumFractionDigits: d });
 
-  // Indicative system size from drawn area (used in the contact handoff only)
-  const estKwp = areaM2 * 0.7 * KWP_PER_M2;
+  // Solar specification estimate from drawn area
+  const usableM2 = areaM2 * USABLE_FACTOR;
+  const kWp = usableM2 * KWP_PER_M2;
+  const annualKwh = kWp * YIELD_PER_KWP;
+  const cfg = segmentDefaults[segment];
+  const annualSavings =
+    annualKwh * cfg.selfUse * UNIT_RATE +
+    annualKwh * (1 - cfg.selfUse) * cfg.exportRate;
+  const panels = Math.max(0, Math.round(kWp / PANEL_WATTS));
+  const lifetimeCo2Kg = annualKwh * CO2_PER_KWH * SYSTEM_LIFETIME_YRS;
+  const treesEquivalent = Math.round(lifetimeCo2Kg / TREE_KG_CO2);
+  const savingsHeadline = (() => {
+    const v = annualSavings;
+    if (v >= 1000) return `£${(v / 1000).toFixed(v >= 10000 ? 0 : 1)}k`;
+    return `£${fmt(v)}`;
+  })();
 
-  const visibleSteps = [1, 2, 3];
+  const visibleSteps = [1, 2, 3, 4];
   const currentVisibleIndex = visibleSteps.indexOf(step) + 1;
 
   const goNextSkipping = () => setStep((s) => Math.min(s + 1, totalSteps));
@@ -430,8 +452,117 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                 </div>
               )}
 
-              {/* STEP 3 — Book a call CTA */}
+              {/* STEP 3 — Savings detail */}
               {step === 3 && (
+                <div className="mt-5">
+                  <div className="rounded-2xl bg-navy text-white p-5 sm:p-6 relative overflow-hidden">
+                    <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
+                    <div className="relative">
+                      <div className="text-sm font-display text-white/80">
+                        Cut your electricity bill {segment === "home" ? "at home" : "on site"}
+                      </div>
+                      <div className="mt-3 flex items-end gap-2">
+                        <div className="text-6xl sm:text-7xl font-display font-semibold leading-none tracking-tight text-electric">
+                          {savingsHeadline}
+                        </div>
+                        <TrendingUp className="h-6 w-6 text-electric mb-2" />
+                      </div>
+                      <div className="mt-2 text-sm text-white/70">per year</div>
+                      <p className="mt-5 text-xs text-white/65 leading-relaxed">
+                        No obligation — survey → tailored design → quote.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-2xl bg-card border border-border p-5 sm:p-6">
+                    <h3 className="text-lg font-display font-semibold text-navy">
+                      Your estimated solar specification
+                    </h3>
+                    <ul className="mt-4 space-y-4">
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl">
+                          £{fmt(annualSavings)}
+                        </div>
+                        <div className="text-sm text-navy">Your year 1 potential bill savings</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          (assuming a unit rate of {Math.round(UNIT_RATE * 100)}p/kWh)
+                        </div>
+                      </li>
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl flex items-center gap-1.5">
+                          <Sun className="h-4 w-4" /> System size: {fmt(kWp, 1)} kWp
+                        </div>
+                        <div className="text-sm text-navy">Estimated system size based upon roof area</div>
+                      </li>
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl">
+                          {panels} solar panels
+                        </div>
+                        <div className="text-sm text-navy">
+                          Our recommended tier 1 solar panels{" "}
+                          <span className="text-muted-foreground">({Math.round(PANEL_WATTS * 1000)}W each)</span>
+                        </div>
+                      </li>
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl flex items-center gap-1.5">
+                          <Leaf className="h-4 w-4" /> {fmt(treesEquivalent)} trees planted
+                        </div>
+                        <div className="text-sm text-navy">CO₂e impact over the lifetime of your solar system</div>
+                      </li>
+                    </ul>
+
+                    {/* Accreditations */}
+                    <div className="mt-6 pt-5 border-t border-border">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                        Accredited
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {[
+                          { icon: ShieldCheck, label: "MCS certified" },
+                          { icon: BadgeCheck, label: "RECC" },
+                          { icon: BadgeCheck, label: "OZEV partner" },
+                        ].map(({ icon: I, label }) => (
+                          <div
+                            key={label}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-accent/40 px-3 py-1.5 text-xs font-semibold text-navy"
+                          >
+                            <I className="h-3.5 w-3.5 text-electric" />
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Disclaimer */}
+                    <p className="mt-5 text-[11px] text-muted-foreground leading-relaxed">
+                      Indicative estimate only. Figures are based on your drawn roof
+                      area ({fmt(areaM2)} m² · {Math.round(USABLE_FACTOR * 100)}% usable),
+                      a UK average yield of {YIELD_PER_KWP} kWh/kWp/yr, an assumed
+                      unit rate of {Math.round(UNIT_RATE * 100)}p/kWh and{" "}
+                      {Math.round(cfg.selfUse * 100)}% self-consumption. A site
+                      survey will confirm pitch, orientation, shading, DNO capacity
+                      and the final design. Savings are not guaranteed.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex gap-2">
+                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
+                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={goNextSkipping}
+                      className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
+                    >
+                      <CalendarCheck className="h-4 w-4 mr-1.5" />
+                      Book my free review <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4 — Book a call CTA */}
+              {step === 4 && (
                 <div className="mt-5">
                   {!submitted ? (
                     <>
@@ -446,7 +577,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                             A quick call. A clear plan. No pressure.
                           </div>
                           <p className="mt-2 text-sm text-white/70 leading-relaxed">
-                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(estKwp, 1)} kWp indicative)
+                            We'll review your roof outline ({fmt(areaM2)} m² · ~{fmt(kWp, 1)} kWp · est. {savingsHeadline}/yr)
                             and call you back within one UK business day with next steps.
                           </p>
                         </div>
