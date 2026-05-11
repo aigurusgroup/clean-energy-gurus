@@ -4,6 +4,7 @@ import { ArrowRight, Users, Gauge, Plug, ShieldCheck, Leaf, TrendingUp, Sun, Bat
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ReviewForm } from "@/components/site/ReviewForm";
+import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import landlordHero from "@/assets/landlord-hero.jpg";
 
@@ -358,6 +359,9 @@ const Landlords = () => {
           </div>
         </div>
       </section>
+
+      {/* SOLAR CALCULATOR */}
+      <SolarCalculator segment="landlord" />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28 bg-surface">

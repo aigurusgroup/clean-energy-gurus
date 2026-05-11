@@ -1,6 +1,7 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Hero } from "@/components/site/Hero";
 import { Segments } from "@/components/site/Segments";
+import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Services } from "@/components/site/Services";
 import { Optimisation } from "@/components/site/Optimisation";
 import { Journey } from "@/components/site/Journey";
@@ -25,6 +26,7 @@ const Index = () => {
     <SiteLayout>
       <Hero />
       <Segments />
+      <SolarCalculator segment="home" selectable className="bg-surface" />
       <Services />
       <Optimisation />
       <Journey />

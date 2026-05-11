@@ -4,6 +4,7 @@ import { ArrowRight, TrendingUp, Shield, Plug, Leaf, Wallet, Activity, AlertTria
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ReviewForm } from "@/components/site/ReviewForm";
+import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import bizHero from "@/assets/business-hero.jpg";
 
@@ -324,6 +325,9 @@ const Business = () => {
           </div>
         </div>
       </section>
+
+      {/* SOLAR CALCULATOR */}
+      <SolarCalculator segment="business" className="bg-surface" />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28">

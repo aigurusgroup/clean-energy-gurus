@@ -7,6 +7,7 @@ import {
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { ReviewForm } from "@/components/site/ReviewForm";
+import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import homeHero from "@/assets/home-hero.jpg";
 
@@ -295,6 +296,9 @@ const Homes = () => {
           </div>
         </div>
       </section>
+
+      {/* SOLAR CALCULATOR */}
+      <SolarCalculator segment="home" />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28 bg-surface">
