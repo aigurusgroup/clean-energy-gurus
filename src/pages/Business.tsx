@@ -329,6 +329,7 @@ const Business = () => {
 
       {/* SOLAR CALCULATOR */}
       <SolarCalculator segment="business" className="bg-surface" />
+      <SolarFundingOptions />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28">
