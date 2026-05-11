@@ -21,7 +21,14 @@ const segmentDefaults: Record<SegmentType, { tariff: number; exportRate: number;
   home:     { tariff: 0.27, exportRate: 0.15, selfUse: 0.45, label: "Home",     icon: HomeIcon },
 };
 
-const KWP_PER_M2 = 0.18;
+const KWP_PER_M2 = 0.18;          // kWp per m² of usable roof
+const USABLE_FACTOR = 0.7;         // % of drawn area that can carry panels
+const YIELD_PER_KWP = 900;         // kWh / kWp / yr (UK average)
+const PANEL_WATTS = 0.635;         // tier-1 panel rating (kWp)
+const UNIT_RATE = 0.25;            // £/kWh assumed retail tariff for headline savings
+const CO2_PER_KWH = 0.207;         // kg CO₂ per kWh (UK grid)
+const TREE_KG_CO2 = 21;            // kg CO₂ absorbed per tree per year
+const SYSTEM_LIFETIME_YRS = 25;
 
 const contactSchema = z.object({
   name: z.string().trim().min(2, { message: "Please enter your name" }).max(100),
