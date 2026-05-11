@@ -469,3 +469,13 @@ export const ReviewForm = ({
     </form>
   );
 };
+
+const EstStat = ({ label, value, icon }: { label: string; value: string; icon?: React.ReactNode }) => (
+  <div className="rounded-xl bg-white/[0.05] border border-white/10 p-2.5">
+    <div className="text-[10px] uppercase tracking-[0.16em] text-white/55 font-semibold flex items-center gap-1.5">
+      {icon}
+      {label}
+    </div>
+    <div className="mt-1 text-sm font-display font-semibold text-white">{value}</div>
+  </div>
+);
