@@ -4,6 +4,7 @@ import {
   Search, Pencil, RotateCcw, ArrowRight, ArrowLeft,
   Info, Building2, Tractor, KeyRound, Home as HomeIcon,
   Mail, CheckCircle2, CalendarCheck, User, Phone, Briefcase,
+  TrendingUp, Sun, Leaf, ShieldCheck, BadgeCheck,
 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
