@@ -81,6 +81,12 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
       return;
     }
     setMapStatus("loading");
+    // Surface Google Maps auth failures (bad key / referrer / billing) clearly
+    (window as unknown as { gm_authFailure?: () => void }).gm_authFailure = () => {
+      console.error("[SolarCalculator] Google Maps auth failed — check API key referrer restrictions, billing, and that Maps JavaScript API + Geocoding API + Places API are enabled.");
+      setMapStatus("error");
+      setMapError("Map service rejected this domain. The Google Maps API key needs the preview domain added to its referrer allowlist, and Maps/Geocoding/Places APIs enabled.");
+    };
     loadGoogleMaps()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((google: any) => {
@@ -89,6 +95,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         setMapStatus("ready");
       })
       .catch((e: Error) => {
+        console.error("[SolarCalculator] loadGoogleMaps failed:", e);
         setMapStatus("error");
         setMapError(e.message);
       });
@@ -204,22 +211,29 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     const g = (window as unknown as { google?: any }).google;
     if (!g || !mapRef.current || !postcode.trim()) return;
     const geocoder = new g.maps.Geocoder();
-    try {
-      const res = await geocoder.geocode({
-        address: postcode,
-        componentRestrictions: { country: "GB" },
-      });
-      const loc = res.results[0]?.geometry.location;
-      if (loc) {
+    geocoder.geocode(
+      { address: postcode, componentRestrictions: { country: "GB" } },
+      // eslint-disable-next-line @typescript-eslint/no-explicit-any
+      (results: any, status: string) => {
+        if (status !== "OK" || !results?.[0]) {
+          console.warn("[SolarCalculator] Geocoder status:", status, "for postcode:", postcode);
+          const friendly =
+            status === "REQUEST_DENIED"
+              ? "Map service denied the request — the Google Maps API key likely needs the Geocoding API enabled and this domain whitelisted."
+              : status === "OVER_QUERY_LIMIT"
+              ? "Map service is over its quota — please try again later."
+              : "Please check the postcode and try again.";
+          toast({ title: "Couldn't find that postcode", description: friendly });
+          return;
+        }
+        const loc = results[0].geometry.location;
         mapRef.current.setCenter(loc);
         mapRef.current.setZoom(19);
         mapRef.current.setMapTypeId("satellite");
-        setAddress(res.results[0].formatted_address);
+        setAddress(results[0].formatted_address);
         setStep(2);
-      }
-    } catch {
-      toast({ title: "Couldn't find that postcode", description: "Please check and try again." });
-    }
+      },
+    );
   };
 
   const fmt = (n: number, d = 0) =>
