@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { FinalCTA } from "@/components/site/FinalCTA";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
+import { SolarFundingOptions } from "@/components/site/SolarFundingOptions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import bizHero from "@/assets/business-hero.jpg";
 
