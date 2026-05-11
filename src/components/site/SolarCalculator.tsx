@@ -74,10 +74,14 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
   const [emailSent, setEmailSent] = useState(false);
 
   // Init map when its container becomes available
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const googleRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const autocompleteRef = useRef<any>(null);
+
+  // Load Google Maps script once on mount
   useEffect(() => {
     let cancelled = false;
-    if (mapRef.current) return; // already initialised
-    if (!mapEl.current) return; // container not mounted yet
     if (!GOOGLE_MAPS_API_KEY) {
       setMapStatus("error");
       setMapError("Map preview not configured yet — you can still get an estimate.");
@@ -87,67 +91,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
     loadGoogleMaps()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((google: any) => {
-        if (cancelled || !mapEl.current) return;
-        const map = new google.maps.Map(mapEl.current, {
-          center: { lat: 54.5, lng: -2.5 },
-          zoom: 6,
-          mapTypeId: "satellite",
-          tilt: 0,
-          mapTypeControl: false,
-          streetViewControl: false,
-          fullscreenControl: false,
-          rotateControl: false,
-          gestureHandling: "greedy",
-        });
-        mapRef.current = map;
-
-        const drawingManager = new google.maps.drawing.DrawingManager({
-          drawingMode: null,
-          drawingControl: false,
-          polygonOptions: {
-            fillColor: "#3b82f6",
-            fillOpacity: 0.35,
-            strokeColor: "#22d3ee",
-            strokeWeight: 2,
-            editable: true,
-            clickable: true,
-          },
-        });
-        drawingManager.setMap(map);
-        drawingMgrRef.current = drawingManager;
-
-        // eslint-disable-next-line @typescript-eslint/no-explicit-any
-        google.maps.event.addListener(drawingManager, "polygoncomplete", (poly: any) => {
-          if (polygonRef.current) polygonRef.current.setMap(null);
-          polygonRef.current = poly;
-          drawingManager.setDrawingMode(null);
-          const update = () => {
-            const a = google.maps.geometry.spherical.computeArea(poly.getPath());
-            setAreaM2(a);
-          };
-          update();
-          const path = poly.getPath();
-          path.addListener("set_at", update);
-          path.addListener("insert_at", update);
-          path.addListener("remove_at", update);
-        });
-
-        if (searchEl.current) {
-          const ac = new google.maps.places.Autocomplete(searchEl.current, {
-            componentRestrictions: { country: "gb" },
-            fields: ["geometry", "formatted_address"],
-          });
-          ac.bindTo("bounds", map);
-          ac.addListener("place_changed", () => {
-            const place = ac.getPlace();
-            if (!place.geometry?.location) return;
-            map.setCenter(place.geometry.location);
-            map.setZoom(20);
-            setAddress(place.formatted_address || "");
-            setStep(2);
-          });
-        }
-
+        if (cancelled) return;
+        googleRef.current = google;
         setMapStatus("ready");
       })
       .catch((e: Error) => {
@@ -155,7 +100,91 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
         setMapError(e.message);
       });
     return () => { cancelled = true; };
-  }, [step]);
+  }, []);
+
+  // Attach Places Autocomplete whenever the search input is on screen
+  useEffect(() => {
+    const google = googleRef.current;
+    if (!google || !searchEl.current || autocompleteRef.current) return;
+    const ac = new google.maps.places.Autocomplete(searchEl.current, {
+      componentRestrictions: { country: "gb" },
+      fields: ["geometry", "formatted_address"],
+    });
+    autocompleteRef.current = ac;
+    ac.addListener("place_changed", () => {
+      const place = ac.getPlace();
+      if (!place.geometry?.location) return;
+      setAddress(place.formatted_address || "");
+      setStep(2);
+      setTimeout(() => {
+        if (mapRef.current) {
+          mapRef.current.setCenter(place.geometry.location);
+          mapRef.current.setZoom(20);
+        }
+      }, 0);
+    });
+  }, [step, mapStatus]);
+
+  // Initialise the map when its container appears (step 2)
+  useEffect(() => {
+    const google = googleRef.current;
+    if (!google || !mapEl.current || mapRef.current) return;
+    const map = new google.maps.Map(mapEl.current, {
+      center: { lat: 54.5, lng: -2.5 },
+      zoom: 6,
+      mapTypeId: "satellite",
+      tilt: 0,
+      mapTypeControl: false,
+      streetViewControl: false,
+      fullscreenControl: false,
+      rotateControl: false,
+      gestureHandling: "greedy",
+    });
+    mapRef.current = map;
+
+    const drawingManager = new google.maps.drawing.DrawingManager({
+      drawingMode: null,
+      drawingControl: false,
+      polygonOptions: {
+        fillColor: "#3b82f6",
+        fillOpacity: 0.35,
+        strokeColor: "#22d3ee",
+        strokeWeight: 2,
+        editable: true,
+        clickable: true,
+      },
+    });
+    drawingManager.setMap(map);
+    drawingMgrRef.current = drawingManager;
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    google.maps.event.addListener(drawingManager, "polygoncomplete", (poly: any) => {
+      if (polygonRef.current) polygonRef.current.setMap(null);
+      polygonRef.current = poly;
+      drawingManager.setDrawingMode(null);
+      const update = () => {
+        const a = google.maps.geometry.spherical.computeArea(poly.getPath());
+        setAreaM2(a);
+      };
+      update();
+      const path = poly.getPath();
+      path.addListener("set_at", update);
+      path.addListener("insert_at", update);
+      path.addListener("remove_at", update);
+    });
+
+    // If we already have a selected place address from step 1, recenter
+    if (address && googleRef.current) {
+      const geocoder = new google.maps.Geocoder();
+      geocoder.geocode({ address, componentRestrictions: { country: "GB" } })
+        // eslint-disable-next-line @typescript-eslint/no-explicit-any
+        .then((res: any) => {
+          const loc = res.results[0]?.geometry.location;
+          if (loc) { map.setCenter(loc); map.setZoom(20); }
+        })
+        .catch(() => {});
+    }
+  }, [step, mapStatus, address]);
 
   const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
