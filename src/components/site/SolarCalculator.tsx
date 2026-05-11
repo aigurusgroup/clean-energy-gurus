@@ -21,26 +21,14 @@ const segmentDefaults: Record<SegmentType, { tariff: number; exportRate: number;
   home:     { tariff: 0.27, exportRate: 0.15, selfUse: 0.45, label: "Home",     icon: HomeIcon },
 };
 
-type RoofType = "pitched" | "flat" | "other";
-const roofOptions: { v: RoofType; title: string; icon: React.ComponentType<{ className?: string }>; usable: number; yieldPerKwp: number }[] = [
-  { v: "pitched", title: "Pitched", icon: Triangle,    usable: 0.82, yieldPerKwp: 900 },
-  { v: "flat",    title: "Flat",    icon: Minus,       usable: 0.65, yieldPerKwp: 880 },
-  { v: "other",   title: "Other",   icon: HelpCircle,  usable: 0.70, yieldPerKwp: 820 },
-];
-
-const buildingByCustomer: Record<SegmentType, string[]> = {
-  business: ["Warehouse", "Factory / Industrial", "Office", "Retail", "Hospitality", "Accommodation", "Ground mounted", "Other"],
-  farm:     ["Barn", "Storage shed", "Livestock building", "Glasshouse", "Farmhouse", "Ground mounted", "Other"],
-  landlord: ["HMO", "Apartment block", "Single let", "Mixed-use", "Holiday let", "Other"],
-  home:     ["Detached", "Semi-detached", "Terrace", "Bungalow", "Flat", "Other"],
-};
-
 const KWP_PER_M2 = 0.18;
-const CO2_PER_KWH = 0.207;
-const COST_PER_KWP = 1500; // indicative installed £/kWp
-const TREE_KG_CO2 = 21;    // kg CO2 absorbed per tree per year
 
-const emailSchema = z.string().trim().email({ message: "Enter a valid email" }).max(255);
+const contactSchema = z.object({
+  name: z.string().trim().min(2, { message: "Please enter your name" }).max(100),
+  email: z.string().trim().email({ message: "Enter a valid email" }).max(255),
+  phone: z.string().trim().min(7, { message: "Enter a valid phone number" }).max(30),
+  business: z.string().trim().max(120).optional().or(z.literal("")),
+});
 
 interface Props {
   segment: SegmentType;
