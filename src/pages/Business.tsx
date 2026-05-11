@@ -27,7 +27,7 @@ const solutions = [
 ];
 
 const cases = [
-  { icon: TrendingUp, title: "Lower grid electricity usage", desc: "Cut bought-in power by 40–70% with sized solar and battery." },
+  { icon: TrendingUp, title: "Lower grid electricity usage", desc: "Cut bought-in power by 40-70% with sized solar and battery." },
   { icon: Shield, title: "Improve energy resilience", desc: "Battery backup keeps critical loads running through outages." },
   { icon: Plug, title: "Support EV transition", desc: "Future-proof for staff, fleet and visitor electric vehicles." },
   { icon: Leaf, title: "Strengthen ESG profile", desc: "Auditable Scope 2 reductions for sustainability disclosures." },
@@ -79,7 +79,7 @@ const platformTiles = [
 const faqs = [
   ["What size businesses do you work with?", "From single-site SMEs through to multi-site operators with portfolios of properties. We size every system to actual half-hourly load."],
   ["Do we need capex to get started?", "No. Cash, lease, asset finance and PPA routes are available — including zero-capex options where the business case supports it."],
-  ["How long does installation take?", "Most commercial systems are surveyed in 1–2 weeks and installed within 6–12 weeks of proposal acceptance, depending on DNO timelines."],
+  ["How long does installation take?", "Most commercial systems are surveyed in 1-2 weeks and installed within 6-12 weeks of proposal acceptance, depending on DNO timelines."],
   ["Will it disrupt operations?", "Installations are planned around your operating hours. Rooftop work is typically external and self-contained."],
   ["What happens after handover?", "You're onboarded onto Gurus Optimise™ for monitoring, reporting, tariff review and ongoing optimisation."],
   ["Are you MCS and OZEV accredited?", "We deliver via accredited MCS, OZEV and DNO partners — preserving eligibility for grants, SEG and standards."],
@@ -126,7 +126,7 @@ const Business = () => {
                 </Link>
               </div>
               <div className="mt-10 grid grid-cols-3 gap-6 max-w-md">
-                {[["40–70%", "grid offset"], ["6–12 wk", "typical install"], ["25 yr", "performance horizon"]].map(([n, l]) => (
+                {[["40-70%", "grid offset"], ["6-12 wk", "typical install"], ["25 yr", "performance horizon"]].map(([n, l]) => (
                   <div key={l}>
                     <div className="text-2xl font-display font-semibold text-navy">{n}</div>
                     <div className="text-xs text-muted-foreground mt-1">{l}</div>

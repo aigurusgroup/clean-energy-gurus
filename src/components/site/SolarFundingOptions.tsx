@@ -18,7 +18,7 @@ const options: FundingOption[] = [
     subtitle: "Pay upfront",
     bullets: [
       "Eligible for Annual Investment Allowance tax benefit",
-      "Typical 2.5–5 year return on investment",
+      "Typical 2.5-5 year return on investment",
       "Best price like-for-like guaranteed",
     ],
     ctaLabel: "Start a CAPEX Purchase enquiry",

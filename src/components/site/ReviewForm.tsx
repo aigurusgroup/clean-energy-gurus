@@ -83,11 +83,11 @@ const interestOptions = [
   "Heat Pump / Efficiency Referral",
 ];
 
-const spendRanges = ["Under £2,000", "£2,000–£10,000", "£10,000–£50,000", "£50,000–£250,000", "£250,000+"];
+const spendRanges = ["Under £2,000", "£2,000-£10,000", "£10,000-£50,000", "£50,000-£250,000", "£250,000+"];
 const yesNoUnsure = ["Yes", "No", "Not sure"];
 const propertyTypes = ["Detached / Large home", "Block / Flats", "Office", "Warehouse / Industrial", "Retail / Hospitality", "Farm / Agricultural", "Mixed-use", "Other"];
 const contactMethods = ["Email", "Phone", "WhatsApp", "Either"];
-const callTimes = ["Morning (8–12)", "Afternoon (12–5)", "Evening (5–7)", "Anytime"];
+const callTimes = ["Morning (8-12)", "Afternoon (12-5)", "Evening (5-7)", "Anytime"];
 
 const steps = ["Customer", "Location", "Energy", "Interests", "Contact"];
 

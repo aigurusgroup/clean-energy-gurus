@@ -67,7 +67,7 @@ const faqs = [
   ["Is my home suitable for solar and battery?", "Most modern UK homes are suitable. The Home Energy Review confirms roof, electrics and consumption profile before any commitment."],
   ["Do I need batteries if I already have solar?", "If you're exporting most of your solar at low rates, a battery and tariff review usually transforms the economics. We'll quantify it for you."],
   ["What about the SEG and export?", "We make sure you're enrolled on the right Smart Export Guarantee tariff and that the system is configured to export when prices are best."],
-  ["How long does installation take?", "Solar and battery: typically 1–2 days on site. EV charger: usually half a day. We agree dates upfront and stick to them."],
+  ["How long does installation take?", "Solar and battery: typically 1-2 days on site. EV charger: usually half a day. We agree dates upfront and stick to them."],
   ["What ongoing costs should I expect?", "Maintenance plans are optional and transparent. Most equipment carries long manufacturer warranties; we monitor performance throughout."],
   ["Can you upgrade an older solar system?", "Yes. Battery retrofit, inverter upgrades, smart controls and export enrolment are common upgrades for systems installed 5+ years ago."],
 ];
