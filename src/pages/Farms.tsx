@@ -334,6 +334,7 @@ const Farms = () => {
 
       {/* SOLAR CALCULATOR */}
       <SolarCalculator segment="farm" className="bg-surface" />
+      <SolarFundingOptions />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28">
