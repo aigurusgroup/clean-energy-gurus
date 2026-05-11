@@ -212,7 +212,16 @@ export const ReviewForm = ({
     // window.gtag?.("event", "generate_lead", { value: 1, currency: "GBP" });
     // window.fbq?.("track", "Lead");
 
-    toast({ title: "Request received", description: "We'll be in touch within one business day." });
+    // Attach solar estimate (if present) to the lead payload for downstream tracking.
+    const payload = { ...r.data, solarEstimate: estimate ?? null };
+    void payload;
+
+    toast({
+      title: "Request received",
+      description: estimate
+        ? `We'll be in touch about your ~£${estimate.annualSaving.toLocaleString("en-GB")}/yr solar estimate within one business day.`
+        : "We'll be in touch within one business day.",
+    });
     setSubmitted(true);
   };
 
