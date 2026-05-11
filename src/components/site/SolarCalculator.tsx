@@ -55,8 +55,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawingMgrRef = useRef<any>(null);
 
-  // Wizard state. Step 1=postcode, 2=draw, 3=contact CTA
-  const totalSteps = 3;
+  // Wizard state. Step 1=postcode, 2=draw, 3=savings, 4=contact CTA
+  const totalSteps = 4;
   const [step, setStep] = useState(1);
   const [postcode, setPostcode] = useState("");
   const [address, setAddress] = useState("");
