@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { FinalCTA } from "@/components/site/FinalCTA";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
+import { SolarFundingOptions } from "@/components/site/SolarFundingOptions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import bizHero from "@/assets/business-hero.jpg";
 
@@ -328,6 +329,7 @@ const Business = () => {
 
       {/* SOLAR CALCULATOR */}
       <SolarCalculator segment="business" className="bg-surface" />
+      <SolarFundingOptions />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28">

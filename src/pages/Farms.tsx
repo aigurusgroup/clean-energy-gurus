@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { FinalCTA } from "@/components/site/FinalCTA";
 import { SolarCalculator } from "@/components/site/SolarCalculator";
+import { SolarFundingOptions } from "@/components/site/SolarFundingOptions";
 import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "@/components/ui/accordion";
 import farmHero from "@/assets/farm-hero.jpg";
 
@@ -333,6 +334,7 @@ const Farms = () => {
 
       {/* SOLAR CALCULATOR */}
       <SolarCalculator segment="farm" className="bg-surface" />
+      <SolarFundingOptions />
 
       {/* FAQ */}
       <section className="py-20 lg:py-28">
