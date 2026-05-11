@@ -73,9 +73,11 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
   const [email, setEmail] = useState("");
   const [emailSent, setEmailSent] = useState(false);
 
-  // Init map once
+  // Init map when its container becomes available
   useEffect(() => {
     let cancelled = false;
+    if (mapRef.current) return; // already initialised
+    if (!mapEl.current) return; // container not mounted yet
     if (!GOOGLE_MAPS_API_KEY) {
       setMapStatus("error");
       setMapError("Map preview not configured yet — you can still get an estimate.");
@@ -153,7 +155,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "" }:
         setMapError(e.message);
       });
     return () => { cancelled = true; };
-  }, []);
+  }, [step]);
 
   const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
