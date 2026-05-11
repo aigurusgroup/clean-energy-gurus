@@ -131,10 +131,18 @@ const Chip = ({ active, onClick, children }: { active: boolean; onClick: () => v
 const FieldError = ({ msg }: { msg?: string }) => msg ? <p className="text-xs text-destructive mt-1.5">{msg}</p> : null;
 
 // ---------------- Main form ----------------
-export const ReviewForm = ({ compact = false }: { compact?: boolean }) => {
+export const ReviewForm = ({
+  compact = false,
+  prefill,
+  estimate,
+}: {
+  compact?: boolean;
+  prefill?: Partial<FormData>;
+  estimate?: SolarEstimate;
+}) => {
   void compact;
   const [step, setStep] = useState(0);
-  const [data, setData] = useState<FormData>(initialData);
+  const [data, setData] = useState<FormData>({ ...initialData, ...prefill });
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitted, setSubmitted] = useState(false);
 
