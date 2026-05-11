@@ -24,13 +24,25 @@ export const loadGoogleMaps = (): Promise<any> => {
     const script = document.createElement("script");
     script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
       GOOGLE_MAPS_API_KEY,
-    )}&libraries=drawing,geometry,places&v=weekly&loading=async`;
+    )}&libraries=drawing,geometry,places&v=weekly`;
     script.async = true;
     script.defer = true;
-    script.onload = () => {
+    script.onload = async () => {
       const g = (window as any).google;
-      if (g?.maps) resolve(g);
-      else reject(new Error("Google Maps failed to initialise"));
+      if (!g?.maps) { reject(new Error("Google Maps failed to initialise")); return; }
+      try {
+        if (typeof g.maps.importLibrary === "function") {
+          await Promise.all([
+            g.maps.importLibrary("maps"),
+            g.maps.importLibrary("places"),
+            g.maps.importLibrary("drawing"),
+            g.maps.importLibrary("geometry"),
+          ]);
+        }
+        resolve(g);
+      } catch (err) {
+        reject(err as Error);
+      }
     };
     script.onerror = () => reject(new Error("Failed to load Google Maps script"));
     document.head.appendChild(script);
