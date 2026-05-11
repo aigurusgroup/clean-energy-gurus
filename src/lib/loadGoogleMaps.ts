@@ -4,8 +4,10 @@
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let loadingPromise: Promise<any> | null = null;
 
+// Publishable Google Maps key (restricted by HTTP referrer in Google Cloud Console).
 export const GOOGLE_MAPS_API_KEY: string =
-  (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ?? "";
+  (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ??
+  "AIzaSyDTkgk0PQlPwi-Mx51axe4soT6tlU72eFM";
 
 export const loadGoogleMaps = (): Promise<any> => {
   if (typeof window === "undefined") {
