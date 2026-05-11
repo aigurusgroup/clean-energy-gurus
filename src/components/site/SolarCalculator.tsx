@@ -685,8 +685,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                           onClick={handleContactSubmit}
                           className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
                         >
-                          <CalendarCheck className="h-4 w-4 mr-1.5" />
-                          Book my free review
+                          {intent === "email" ? <Mail className="h-4 w-4 mr-1.5" /> : <CalendarCheck className="h-4 w-4 mr-1.5" />}
+                          {intent === "email" ? "Email me my estimate" : "Book my free review"}
                         </Button>
                       </div>
                       <p className="mt-3 text-[11px] text-muted-foreground leading-relaxed">
