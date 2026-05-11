@@ -224,7 +224,29 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const currentVisibleIndex = visibleSteps.indexOf(step) + 1;
 
   const goNextSkipping = () => setStep((s) => Math.min(s + 1, totalSteps));
-  const goBackSkipping = () => setStep((s) => Math.max(s - 1, 1));
+  const goBackSkipping = () => {
+    setStep((s) => {
+      const next = Math.max(s - 1, 1);
+      // When returning to step 1, reset the map back to the Arundel default
+      // and clear any drawn polygon / search state so the user can start over.
+      if (next === 1) {
+        if (polygonRef.current) {
+          polygonRef.current.setMap(null);
+          polygonRef.current = null;
+        }
+        setAreaM2(0);
+        setAddress("");
+        setPostcode("");
+        drawingMgrRef.current?.setDrawingMode(null);
+        if (mapRef.current) {
+          mapRef.current.setCenter({ lat: 50.854, lng: -0.554 });
+          mapRef.current.setZoom(14);
+          mapRef.current.setMapTypeId("roadmap");
+        }
+      }
+      return next;
+    });
+  };
 
   // Try to extract a UK postcode from the autocomplete address string
   const postcodeFromAddress = (() => {
