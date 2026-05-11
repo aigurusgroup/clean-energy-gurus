@@ -81,6 +81,12 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
       return;
     }
     setMapStatus("loading");
+    // Surface Google Maps auth failures (bad key / referrer / billing) clearly
+    (window as unknown as { gm_authFailure?: () => void }).gm_authFailure = () => {
+      console.error("[SolarCalculator] Google Maps auth failed — check API key referrer restrictions, billing, and that Maps JavaScript API + Geocoding API + Places API are enabled.");
+      setMapStatus("error");
+      setMapError("Map service rejected this domain. The Google Maps API key needs the preview domain added to its referrer allowlist, and Maps/Geocoding/Places APIs enabled.");
+    };
     loadGoogleMaps()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
       .then((google: any) => {
@@ -89,6 +95,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         setMapStatus("ready");
       })
       .catch((e: Error) => {
+        console.error("[SolarCalculator] loadGoogleMaps failed:", e);
         setMapStatus("error");
         setMapError(e.message);
       });
