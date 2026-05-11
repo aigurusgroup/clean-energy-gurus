@@ -452,8 +452,117 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                 </div>
               )}
 
-              {/* STEP 3 — Book a call CTA */}
+              {/* STEP 3 — Savings detail */}
               {step === 3 && (
+                <div className="mt-5">
+                  <div className="rounded-2xl bg-navy text-white p-5 sm:p-6 relative overflow-hidden">
+                    <div className="absolute -top-16 -right-16 h-44 w-44 rounded-full bg-gradient-electric opacity-30 blur-3xl pointer-events-none" />
+                    <div className="relative">
+                      <div className="text-sm font-display text-white/80">
+                        Cut your electricity bill {segment === "home" ? "at home" : "on site"}
+                      </div>
+                      <div className="mt-3 flex items-end gap-2">
+                        <div className="text-6xl sm:text-7xl font-display font-semibold leading-none tracking-tight text-electric">
+                          {savingsHeadline}
+                        </div>
+                        <TrendingUp className="h-6 w-6 text-electric mb-2" />
+                      </div>
+                      <div className="mt-2 text-sm text-white/70">per year</div>
+                      <p className="mt-5 text-xs text-white/65 leading-relaxed">
+                        No obligation — survey → tailored design → quote.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-2xl bg-card border border-border p-5 sm:p-6">
+                    <h3 className="text-lg font-display font-semibold text-navy">
+                      Your estimated solar specification
+                    </h3>
+                    <ul className="mt-4 space-y-4">
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl">
+                          £{fmt(annualSavings)}
+                        </div>
+                        <div className="text-sm text-navy">Your year 1 potential bill savings</div>
+                        <div className="text-[11px] text-muted-foreground mt-0.5">
+                          (assuming a unit rate of {Math.round(UNIT_RATE * 100)}p/kWh)
+                        </div>
+                      </li>
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl flex items-center gap-1.5">
+                          <Sun className="h-4 w-4" /> System size: {fmt(kWp, 1)} kWp
+                        </div>
+                        <div className="text-sm text-navy">Estimated system size based upon roof area</div>
+                      </li>
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl">
+                          {panels} solar panels
+                        </div>
+                        <div className="text-sm text-navy">
+                          Our recommended tier 1 solar panels{" "}
+                          <span className="text-muted-foreground">({Math.round(PANEL_WATTS * 1000)}W each)</span>
+                        </div>
+                      </li>
+                      <li>
+                        <div className="text-electric font-display font-semibold text-xl flex items-center gap-1.5">
+                          <Leaf className="h-4 w-4" /> {fmt(treesEquivalent)} trees planted
+                        </div>
+                        <div className="text-sm text-navy">CO₂e impact over the lifetime of your solar system</div>
+                      </li>
+                    </ul>
+
+                    {/* Accreditations */}
+                    <div className="mt-6 pt-5 border-t border-border">
+                      <div className="text-[11px] uppercase tracking-[0.18em] text-muted-foreground font-semibold">
+                        Accredited
+                      </div>
+                      <div className="mt-3 flex flex-wrap gap-2">
+                        {[
+                          { icon: ShieldCheck, label: "MCS certified" },
+                          { icon: BadgeCheck, label: "RECC" },
+                          { icon: BadgeCheck, label: "OZEV partner" },
+                        ].map(({ icon: I, label }) => (
+                          <div
+                            key={label}
+                            className="inline-flex items-center gap-1.5 rounded-full border border-border bg-accent/40 px-3 py-1.5 text-xs font-semibold text-navy"
+                          >
+                            <I className="h-3.5 w-3.5 text-electric" />
+                            {label}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+
+                    {/* Disclaimer */}
+                    <p className="mt-5 text-[11px] text-muted-foreground leading-relaxed">
+                      Indicative estimate only. Figures are based on your drawn roof
+                      area ({fmt(areaM2)} m² · {Math.round(USABLE_FACTOR * 100)}% usable),
+                      a UK average yield of {YIELD_PER_KWP} kWh/kWp/yr, an assumed
+                      unit rate of {Math.round(UNIT_RATE * 100)}p/kWh and{" "}
+                      {Math.round(cfg.selfUse * 100)}% self-consumption. A site
+                      survey will confirm pitch, orientation, shading, DNO capacity
+                      and the final design. Savings are not guaranteed.
+                    </p>
+                  </div>
+
+                  <div className="mt-6 flex gap-2">
+                    <Button type="button" variant="outline" onClick={goBackSkipping} className="rounded-full h-11 px-5">
+                      <ArrowLeft className="h-4 w-4 mr-1.5" /> Back
+                    </Button>
+                    <Button
+                      type="button"
+                      onClick={goNextSkipping}
+                      className="flex-1 rounded-full h-11 bg-gradient-electric text-white border-0 shadow-glow"
+                    >
+                      <CalendarCheck className="h-4 w-4 mr-1.5" />
+                      Book my free review <ArrowRight className="h-4 w-4 ml-1.5" />
+                    </Button>
+                  </div>
+                </div>
+              )}
+
+              {/* STEP 4 — Book a call CTA */}
+              {step === 4 && (
                 <div className="mt-5">
                   {!submitted ? (
                     <>
