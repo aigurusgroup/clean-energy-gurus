@@ -2,6 +2,7 @@ import { useSearchParams } from "react-router-dom";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { ReviewForm, type SolarEstimate } from "@/components/site/ReviewForm";
+import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Mail, Phone, MapPin } from "lucide-react";
 
 const segmentToCustomerType: Record<string, string> = {
@@ -72,6 +73,7 @@ const Contact = () => {
         lead="Tell us about your property. We'll respond within one business day and outline the next steps — no obligation, no sales pressure."
         cta={false}
       />
+      {!estimate && <SolarCalculator segment="home" selectable className="bg-surface pt-0" />}
       <section className="pb-24">
         <div className="container-tight grid lg:grid-cols-5 gap-10">
           <div className="lg:col-span-3 card-premium p-8 sm:p-10">
