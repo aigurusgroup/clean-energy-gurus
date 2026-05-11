@@ -16,6 +16,8 @@ const Contact = () => {
 
       <SolarCalculator segment="home" selectable hideHeading className="bg-surface pt-0 pb-10" />
 
+      <SolarFundingOptions />
+
       <section className="pb-24">
         <div className="container-tight grid lg:grid-cols-3 gap-5">
           {[
