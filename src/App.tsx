@@ -14,6 +14,7 @@ import Platform from "./pages/Platform";
 import About from "./pages/About";
 import Insights from "./pages/Insights";
 import Contact from "./pages/Contact";
+import Partners from "./pages/Partners";
 import { SolarPV, BatteryStorage, EVCharging, Monitoring, Tariff } from "./pages/ServicePages";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
