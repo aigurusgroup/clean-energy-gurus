@@ -14,6 +14,7 @@ const nav = [
   { to: "/platform", label: "Platform" },
   { to: "/about", label: "About" },
   { to: "/insights", label: "Insights" },
+  { to: "/partners", label: "Partners" },
 ];
 
 export const SiteHeader = () => {
