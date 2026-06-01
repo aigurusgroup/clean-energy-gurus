@@ -54,6 +54,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const polygonRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawingMgrRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const autocompleteRef = useRef<any>(null);
 
   // Wizard state. Step 1=postcode, 2=draw, 3=savings, 4=contact CTA
   const totalSteps = 4;
@@ -160,6 +162,32 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         .catch(() => {});
     }
   }, [step, mapStatus, address]);
+
+  // Attach Places Autocomplete to the postcode input when it renders
+  useEffect(() => {
+    const g = (window as unknown as { google?: any }).google;
+    if (mapStatus !== "ready" || !g?.maps?.places || !searchEl.current || autocompleteRef.current) return;
+    try {
+      const ac = new g.maps.places.Autocomplete(searchEl.current, {
+        componentRestrictions: { country: "gb" },
+        fields: ["formatted_address", "geometry"],
+        types: ["geocode"],
+      });
+      ac.addListener("place_changed", () => {
+        const place = ac.getPlace();
+        const loc = place?.geometry?.location;
+        if (!loc || !mapRef.current) return;
+        mapRef.current.setCenter(loc);
+        mapRef.current.setZoom(20);
+        mapRef.current.setMapTypeId("satellite");
+        if (place.formatted_address) setAddress(place.formatted_address);
+        setStep(2);
+      });
+      autocompleteRef.current = ac;
+    } catch (e) {
+      console.warn("[SolarCalculator] Places Autocomplete unavailable:", e);
+    }
+  }, [step, mapStatus]);
 
   const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
