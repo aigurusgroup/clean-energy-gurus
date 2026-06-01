@@ -30,7 +30,7 @@ export const loadGoogleMaps = (): Promise<any> => {
     const script = document.createElement("script");
     const params = new URLSearchParams({
       key: GOOGLE_MAPS_API_KEY,
-      libraries: "drawing,geometry,places",
+      libraries: "drawing,geometry",
       v: "weekly",
     });
     if (TRACKING_ID) params.set("channel", TRACKING_ID);
@@ -44,7 +44,6 @@ export const loadGoogleMaps = (): Promise<any> => {
         if (typeof g.maps.importLibrary === "function") {
           await Promise.all([
             g.maps.importLibrary("maps"),
-            g.maps.importLibrary("places"),
             g.maps.importLibrary("drawing"),
             g.maps.importLibrary("geometry"),
           ]);

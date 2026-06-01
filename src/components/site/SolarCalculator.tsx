@@ -70,9 +70,6 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   // Init map when its container becomes available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const googleRef = useRef<any>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const autocompleteRef = useRef<any>(null);
-
   // Load Google Maps script once on mount
   useEffect(() => {
     let cancelled = false;
@@ -84,9 +81,9 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     setMapStatus("loading");
     // Surface Google Maps auth failures (bad key / referrer / billing) clearly
     (window as unknown as { gm_authFailure?: () => void }).gm_authFailure = () => {
-      console.error("[SolarCalculator] Google Maps auth failed — check API key referrer restrictions, billing, and that Maps JavaScript API + Geocoding API + Places API are enabled.");
+      console.error("[SolarCalculator] Google Maps auth failed — check API key referrer restrictions, billing, and that Maps JavaScript API + Geocoding API are enabled.");
       setMapStatus("error");
-      setMapError("Map service rejected this domain. The Google Maps API key needs the preview domain added to its referrer allowlist, and Maps/Geocoding/Places APIs enabled.");
+      setMapError("Map service rejected this domain. The Google Maps API key needs this published domain added to its referrer allowlist, and Maps JavaScript + Geocoding APIs enabled.");
     };
     loadGoogleMaps()
       // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -102,30 +99,6 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
       });
     return () => { cancelled = true; };
   }, []);
-
-  // Attach Places Autocomplete whenever the search input is on screen
-  useEffect(() => {
-    const google = googleRef.current;
-    if (!google || !searchEl.current || autocompleteRef.current) return;
-    const ac = new google.maps.places.Autocomplete(searchEl.current, {
-      componentRestrictions: { country: "gb" },
-      fields: ["geometry", "formatted_address"],
-    });
-    autocompleteRef.current = ac;
-    ac.addListener("place_changed", () => {
-      const place = ac.getPlace();
-      if (!place.geometry?.location) return;
-      setAddress(place.formatted_address || "");
-      setStep(2);
-      setTimeout(() => {
-        if (mapRef.current) {
-          mapRef.current.setCenter(place.geometry.location);
-          mapRef.current.setZoom(20);
-          mapRef.current.setMapTypeId("satellite");
-        }
-      }, 0);
-    });
-  }, [step, mapStatus]);
 
   // Initialise the map when its container appears (step 2)
   useEffect(() => {
@@ -408,7 +381,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                     Find my property <ArrowRight className="h-4 w-4 ml-1.5" />
                   </Button>
                   <p className="mt-3 text-[11px] text-muted-foreground">
-                    Start typing for address suggestions, or hit search for the postcode.
+                    Enter a UK postcode and hit search to find the property.
                   </p>
                 </div>
               )}
