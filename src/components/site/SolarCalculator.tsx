@@ -224,7 +224,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     try {
       const place = placePrediction.toPlace();
       await place.fetchFields({ fields: ["formattedAddress", "location"] });
-      const label = place.formattedAddress || placePrediction.text?.toString?.() || postcode;
+      const label = place.formattedAddress || getSuggestionLabel(suggestion) || postcode;
       suppressSuggestionsRef.current = true;
       setPostcode(label);
       setAddress(label);
@@ -241,6 +241,15 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
       console.warn("[SolarCalculator] Place details unavailable:", e);
       toast({ title: "Couldn't select that address", description: "Please try the search button instead." });
     }
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getSuggestionLabel = (suggestion: any) => {
+    const text = suggestion?.placePrediction?.text;
+    if (typeof text === "string") return text;
+    if (typeof text?.text === "string") return text.text;
+    const asString = text?.toString?.();
+    return asString && asString !== "[object Object]" ? asString : "";
   };
 
   const startDrawing = () => {
@@ -448,11 +457,32 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                       ref={searchEl}
                       value={postcode}
                       onChange={(e) => setPostcode(e.target.value)}
+                      onFocus={() => setSuggestionsOpen(placeSuggestions.length > 0)}
+                      onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 150)}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handlePostcodeSearch(); } }}
                       placeholder="e.g. RH2 9AR"
                       className="pl-9 h-12 rounded-full text-base"
                       maxLength={120}
                     />
+                    {suggestionsOpen && placeSuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-border bg-background shadow-card">
+                        {placeSuggestions.map((suggestion, index) => {
+                          const label = getSuggestionLabel(suggestion);
+                          if (!label) return null;
+                          return (
+                            <button
+                              key={suggestion.placePrediction?.placeId ?? `${label}-${index}`}
+                              type="button"
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => handleSuggestionSelect(suggestion)}
+                              className="block w-full px-4 py-3 text-left text-sm text-foreground transition-colors hover:bg-muted focus:bg-muted focus:outline-none"
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <Button
                     type="button"
