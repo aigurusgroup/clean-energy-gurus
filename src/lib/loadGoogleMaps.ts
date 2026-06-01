@@ -44,7 +44,6 @@ export const loadGoogleMaps = (): Promise<any> => {
         if (typeof g.maps.importLibrary === "function") {
           await Promise.all([
             g.maps.importLibrary("maps"),
-            g.maps.importLibrary("places"),
             g.maps.importLibrary("drawing"),
             g.maps.importLibrary("geometry"),
           ]);
