@@ -189,7 +189,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     }
   }, [step, mapStatus]);
 
-
+  const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
     if (!drawingMgrRef.current || !g) return;
     if (polygonRef.current) {
