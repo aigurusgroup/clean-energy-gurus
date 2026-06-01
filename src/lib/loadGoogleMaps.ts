@@ -32,7 +32,6 @@ export const loadGoogleMaps = (): Promise<any> => {
       key: GOOGLE_MAPS_API_KEY,
       libraries: "drawing,geometry,places",
       v: "weekly",
-      loading: "async",
     });
     if (TRACKING_ID) params.set("channel", TRACKING_ID);
     script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
