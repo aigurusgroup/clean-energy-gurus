@@ -55,7 +55,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawingMgrRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const autocompleteRef = useRef<any>(null);
+  const placesSessionTokenRef = useRef<any>(null);
+  const suppressSuggestionsRef = useRef(false);
 
   // Wizard state. Step 1=postcode, 2=draw, 3=savings, 4=contact CTA
   const totalSteps = 4;
@@ -68,6 +69,9 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const [contact, setContact] = useState({ business: "", name: "", email: "", phone: "" });
   const [submitted, setSubmitted] = useState(false);
   const [intent, setIntent] = useState<"book" | "email">("book");
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const [placeSuggestions, setPlaceSuggestions] = useState<any[]>([]);
+  const [suggestionsOpen, setSuggestionsOpen] = useState(false);
 
   // Init map when its container becomes available
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
@@ -163,31 +167,90 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     }
   }, [step, mapStatus, address]);
 
-  // Attach Places Autocomplete to the postcode input when it renders
+  // Fetch postcode suggestions via Places API (New). Avoid legacy google.maps.places.Autocomplete,
+  // which triggers LegacyApiNotActivatedMapError on keys configured only for Places API (New).
   useEffect(() => {
-    const g = (window as unknown as { google?: any }).google;
-    if (mapStatus !== "ready" || !g?.maps?.places || !searchEl.current || autocompleteRef.current) return;
+    const query = postcode.trim();
+    if (suppressSuggestionsRef.current) {
+      suppressSuggestionsRef.current = false;
+      return;
+    }
+    if (mapStatus !== "ready" || query.length < 3) {
+      setPlaceSuggestions([]);
+      setSuggestionsOpen(false);
+      return;
+    }
+
+    let cancelled = false;
+    const timer = window.setTimeout(async () => {
+      try {
+        const g = (window as unknown as { google?: any }).google;
+        if (!g?.maps?.importLibrary) return;
+        const places = await g.maps.importLibrary("places");
+        const { AutocompleteSuggestion, AutocompleteSessionToken } = places;
+        if (!AutocompleteSuggestion || !AutocompleteSessionToken) return;
+        if (!placesSessionTokenRef.current) {
+          placesSessionTokenRef.current = new AutocompleteSessionToken();
+        }
+        const { suggestions = [] } = await AutocompleteSuggestion.fetchAutocompleteSuggestions({
+          input: query,
+          includedRegionCodes: ["gb"],
+          language: "en-GB",
+          sessionToken: placesSessionTokenRef.current,
+        });
+        if (!cancelled) {
+          setPlaceSuggestions(suggestions.slice(0, 5));
+          setSuggestionsOpen(suggestions.length > 0);
+        }
+      } catch (e) {
+        if (!cancelled) {
+          console.warn("[SolarCalculator] Places API (New) suggestions unavailable:", e);
+          setPlaceSuggestions([]);
+          setSuggestionsOpen(false);
+        }
+      }
+    }, 250);
+
+    return () => {
+      cancelled = true;
+      window.clearTimeout(timer);
+    };
+  }, [postcode, mapStatus]);
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const handleSuggestionSelect = async (suggestion: any) => {
+    const placePrediction = suggestion?.placePrediction;
+    if (!placePrediction) return;
     try {
-      const ac = new g.maps.places.Autocomplete(searchEl.current, {
-        componentRestrictions: { country: "gb" },
-        fields: ["formatted_address", "geometry"],
-        types: ["geocode"],
-      });
-      ac.addListener("place_changed", () => {
-        const place = ac.getPlace();
-        const loc = place?.geometry?.location;
-        if (!loc || !mapRef.current) return;
-        mapRef.current.setCenter(loc);
+      const place = placePrediction.toPlace();
+      await place.fetchFields({ fields: ["formattedAddress", "location"] });
+      const label = place.formattedAddress || getSuggestionLabel(suggestion) || postcode;
+      suppressSuggestionsRef.current = true;
+      setPostcode(label);
+      setAddress(label);
+      setPlaceSuggestions([]);
+      setSuggestionsOpen(false);
+      placesSessionTokenRef.current = null;
+      if (place.location && mapRef.current) {
+        mapRef.current.setCenter(place.location);
         mapRef.current.setZoom(20);
         mapRef.current.setMapTypeId("satellite");
-        if (place.formatted_address) setAddress(place.formatted_address);
-        setStep(2);
-      });
-      autocompleteRef.current = ac;
+      }
+      setStep(2);
     } catch (e) {
-      console.warn("[SolarCalculator] Places Autocomplete unavailable:", e);
+      console.warn("[SolarCalculator] Place details unavailable:", e);
+      toast({ title: "Couldn't select that address", description: "Please try the search button instead." });
     }
-  }, [step, mapStatus]);
+  };
+
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const getSuggestionLabel = (suggestion: any) => {
+    const text = suggestion?.placePrediction?.text;
+    if (typeof text === "string") return text;
+    if (typeof text?.text === "string") return text.text;
+    const asString = text?.toString?.();
+    return asString && asString !== "[object Object]" ? asString : "";
+  };
 
   const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
@@ -394,11 +457,32 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
                       ref={searchEl}
                       value={postcode}
                       onChange={(e) => setPostcode(e.target.value)}
+                      onFocus={() => setSuggestionsOpen(placeSuggestions.length > 0)}
+                      onBlur={() => window.setTimeout(() => setSuggestionsOpen(false), 150)}
                       onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); handlePostcodeSearch(); } }}
                       placeholder="e.g. RH2 9AR"
                       className="pl-9 h-12 rounded-full text-base"
                       maxLength={120}
                     />
+                    {suggestionsOpen && placeSuggestions.length > 0 && (
+                      <div className="absolute left-0 right-0 top-[calc(100%+0.5rem)] z-20 overflow-hidden rounded-2xl border border-border bg-background shadow-card">
+                        {placeSuggestions.map((suggestion, index) => {
+                          const label = getSuggestionLabel(suggestion);
+                          if (!label) return null;
+                          return (
+                            <button
+                              key={suggestion.placePrediction?.placeId ?? `${label}-${index}`}
+                              type="button"
+                              onMouseDown={(event) => event.preventDefault()}
+                              onClick={() => handleSuggestionSelect(suggestion)}
+                              className="block w-full px-4 py-3 text-left text-sm text-foreground transition-colors hover:bg-muted focus:bg-muted focus:outline-none"
+                            >
+                              {label}
+                            </button>
+                          );
+                        })}
+                      </div>
+                    )}
                   </div>
                   <Button
                     type="button"
