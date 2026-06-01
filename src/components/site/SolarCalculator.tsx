@@ -54,6 +54,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const polygonRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const drawingMgrRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const autocompleteRef = useRef<any>(null);
 
   // Wizard state. Step 1=postcode, 2=draw, 3=savings, 4=contact CTA
   const totalSteps = 4;
