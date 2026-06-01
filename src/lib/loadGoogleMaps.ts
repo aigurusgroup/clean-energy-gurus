@@ -1,13 +1,19 @@
 // Lightweight on-demand loader for the Google Maps JS API.
-// Set VITE_GOOGLE_MAPS_API_KEY in your environment.
+// Uses the Lovable Google Maps Platform connector browser key.
 
 /* eslint-disable @typescript-eslint/no-explicit-any */
 let loadingPromise: Promise<any> | null = null;
 
-// Publishable Google Maps key (restricted by HTTP referrer in Google Cloud Console).
+// Browser key injected by the Lovable Google Maps Platform connector.
+// Referrer-restricted in Google Cloud Console — safe to expose in client code.
 export const GOOGLE_MAPS_API_KEY: string =
+  (import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_BROWSER_KEY as string | undefined) ??
   (import.meta.env.VITE_GOOGLE_MAPS_API_KEY as string | undefined) ??
   "AIzaSyDTkgk0PQlPwi-Mx51axe4soT6tlU72eFM";
+
+const TRACKING_ID = import.meta.env.VITE_LOVABLE_CONNECTOR_GOOGLE_MAPS_TRACKING_ID as
+  | string
+  | undefined;
 
 export const loadGoogleMaps = (): Promise<any> => {
   if (typeof window === "undefined") {
@@ -17,14 +23,19 @@ export const loadGoogleMaps = (): Promise<any> => {
   if (w.google?.maps) return Promise.resolve(w.google);
   if (loadingPromise) return loadingPromise;
   if (!GOOGLE_MAPS_API_KEY) {
-    return Promise.reject(new Error("Missing VITE_GOOGLE_MAPS_API_KEY"));
+    return Promise.reject(new Error("Missing Google Maps API key"));
   }
 
   loadingPromise = new Promise((resolve, reject) => {
     const script = document.createElement("script");
-    script.src = `https://maps.googleapis.com/maps/api/js?key=${encodeURIComponent(
-      GOOGLE_MAPS_API_KEY,
-    )}&libraries=drawing,geometry,places&v=weekly`;
+    const params = new URLSearchParams({
+      key: GOOGLE_MAPS_API_KEY,
+      libraries: "drawing,geometry,places",
+      v: "weekly",
+      loading: "async",
+    });
+    if (TRACKING_ID) params.set("channel", TRACKING_ID);
+    script.src = `https://maps.googleapis.com/maps/api/js?${params.toString()}`;
     script.async = true;
     script.defer = true;
     script.onload = async () => {
