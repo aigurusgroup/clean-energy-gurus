@@ -163,7 +163,33 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     }
   }, [step, mapStatus, address]);
 
-  const startDrawing = () => {
+  // Attach Places Autocomplete to the postcode input when it renders
+  useEffect(() => {
+    const g = (window as unknown as { google?: any }).google;
+    if (mapStatus !== "ready" || !g?.maps?.places || !searchEl.current || autocompleteRef.current) return;
+    try {
+      const ac = new g.maps.places.Autocomplete(searchEl.current, {
+        componentRestrictions: { country: "gb" },
+        fields: ["formatted_address", "geometry"],
+        types: ["geocode"],
+      });
+      ac.addListener("place_changed", () => {
+        const place = ac.getPlace();
+        const loc = place?.geometry?.location;
+        if (!loc || !mapRef.current) return;
+        mapRef.current.setCenter(loc);
+        mapRef.current.setZoom(20);
+        mapRef.current.setMapTypeId("satellite");
+        if (place.formatted_address) setAddress(place.formatted_address);
+        setStep(2);
+      });
+      autocompleteRef.current = ac;
+    } catch (e) {
+      console.warn("[SolarCalculator] Places Autocomplete unavailable:", e);
+    }
+  }, [step, mapStatus]);
+
+
     const g = (window as unknown as { google?: any }).google;
     if (!drawingMgrRef.current || !g) return;
     if (polygonRef.current) {
