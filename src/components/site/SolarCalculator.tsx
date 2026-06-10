@@ -52,8 +52,12 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const mapRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const polygonRef = useRef<any>(null);
+  // Manual drawing state (replaces deprecated DrawingManager)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const drawingMgrRef = useRef<any>(null);
+  const drawPolylineRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const drawListenersRef = useRef<any[]>([]);
+  const drawingActiveRef = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const placesSessionTokenRef = useRef<any>(null);
   const suppressSuggestionsRef = useRef(false);
