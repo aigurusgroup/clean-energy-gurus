@@ -52,8 +52,12 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
   const mapRef = useRef<any>(null);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const polygonRef = useRef<any>(null);
+  // Manual drawing state (replaces deprecated DrawingManager)
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const drawingMgrRef = useRef<any>(null);
+  const drawPolylineRef = useRef<any>(null);
+  // eslint-disable-next-line @typescript-eslint/no-explicit-any
+  const drawListenersRef = useRef<any[]>([]);
+  const drawingActiveRef = useRef(false);
   // eslint-disable-next-line @typescript-eslint/no-explicit-any
   const placesSessionTokenRef = useRef<any>(null);
   const suppressSuggestionsRef = useRef(false);
@@ -123,36 +127,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     });
     mapRef.current = map;
 
-    const drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: null,
-      drawingControl: false,
-      polygonOptions: {
-        fillColor: "#3b82f6",
-        fillOpacity: 0.35,
-        strokeColor: "#22d3ee",
-        strokeWeight: 2,
-        editable: true,
-        clickable: true,
-      },
-    });
-    drawingManager.setMap(map);
-    drawingMgrRef.current = drawingManager;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    google.maps.event.addListener(drawingManager, "polygoncomplete", (poly: any) => {
-      if (polygonRef.current) polygonRef.current.setMap(null);
-      polygonRef.current = poly;
-      drawingManager.setDrawingMode(null);
-      const update = () => {
-        const a = google.maps.geometry.spherical.computeArea(poly.getPath());
-        setAreaM2(a);
-      };
-      update();
-      const path = poly.getPath();
-      path.addListener("set_at", update);
-      path.addListener("insert_at", update);
-      path.addListener("remove_at", update);
-    });
+    // Note: google.maps.drawing.DrawingManager was removed in Maps JS v3.65.
+    // We implement click-to-add-vertex drawing manually below via startDrawing().
 
     // If we already have a selected place address from step 1, recenter
     if (address && googleRef.current) {
@@ -252,24 +228,96 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     return asString && asString !== "[object Object]" ? asString : "";
   };
 
+  // Cancel any in-progress click-to-draw session and clean up listeners + preview line.
+  const cancelDrawingSession = () => {
+    drawingActiveRef.current = false;
+    drawListenersRef.current.forEach((l) => {
+      try { l.remove?.(); } catch { /* noop */ }
+    });
+    drawListenersRef.current = [];
+    if (drawPolylineRef.current) {
+      drawPolylineRef.current.setMap(null);
+      drawPolylineRef.current = null;
+    }
+    if (mapRef.current) mapRef.current.setOptions({ draggableCursor: null });
+  };
+
   const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
-    if (!drawingMgrRef.current || !g) return;
+    const map = mapRef.current;
+    if (!g || !map) return;
+
+    // Clear existing polygon + any prior session
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
       setAreaM2(0);
     }
-    drawingMgrRef.current.setDrawingMode(g.maps.drawing.OverlayType.POLYGON);
+    cancelDrawingSession();
+
+    drawingActiveRef.current = true;
+    map.setOptions({ draggableCursor: "crosshair" });
+
+    const polyline = new g.maps.Polyline({
+      map,
+      path: [],
+      strokeColor: "#22d3ee",
+      strokeWeight: 2,
+      clickable: false,
+    });
+    drawPolylineRef.current = polyline;
+
+    const finish = () => {
+      if (!drawingActiveRef.current) return;
+      const path = polyline.getPath();
+      if (path.getLength() < 3) {
+        // Need at least 3 points; otherwise just cancel.
+        cancelDrawingSession();
+        return;
+      }
+      const coords = path.getArray();
+      cancelDrawingSession();
+
+      const polygon = new g.maps.Polygon({
+        map,
+        paths: coords,
+        fillColor: "#3b82f6",
+        fillOpacity: 0.35,
+        strokeColor: "#22d3ee",
+        strokeWeight: 2,
+        editable: true,
+        clickable: true,
+      });
+      polygonRef.current = polygon;
+
+      const update = () => {
+        const a = g.maps.geometry.spherical.computeArea(polygon.getPath());
+        setAreaM2(a);
+      };
+      update();
+      const pPath = polygon.getPath();
+      pPath.addListener("set_at", update);
+      pPath.addListener("insert_at", update);
+      pPath.addListener("remove_at", update);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clickL = map.addListener("click", (e: any) => {
+      if (!drawingActiveRef.current || !e.latLng) return;
+      polyline.getPath().push(e.latLng);
+    });
+    const dblL = map.addListener("dblclick", () => finish());
+
+    drawListenersRef.current = [clickL, dblL];
   };
 
   const resetDrawing = () => {
+    cancelDrawingSession();
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
     }
     setAreaM2(0);
-    drawingMgrRef.current?.setDrawingMode(null);
   };
 
   const handlePostcodeSearch = async () => {
@@ -338,7 +386,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         setAreaM2(0);
         setAddress("");
         setPostcode("");
-        drawingMgrRef.current?.setDrawingMode(null);
+        cancelDrawingSession();
         if (mapRef.current) {
           mapRef.current.setCenter({ lat: 50.854, lng: -0.554 });
           mapRef.current.setZoom(14);
