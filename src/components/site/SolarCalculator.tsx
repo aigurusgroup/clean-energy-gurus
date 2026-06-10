@@ -127,36 +127,8 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     });
     mapRef.current = map;
 
-    const drawingManager = new google.maps.drawing.DrawingManager({
-      drawingMode: null,
-      drawingControl: false,
-      polygonOptions: {
-        fillColor: "#3b82f6",
-        fillOpacity: 0.35,
-        strokeColor: "#22d3ee",
-        strokeWeight: 2,
-        editable: true,
-        clickable: true,
-      },
-    });
-    drawingManager.setMap(map);
-    drawingMgrRef.current = drawingManager;
-
-    // eslint-disable-next-line @typescript-eslint/no-explicit-any
-    google.maps.event.addListener(drawingManager, "polygoncomplete", (poly: any) => {
-      if (polygonRef.current) polygonRef.current.setMap(null);
-      polygonRef.current = poly;
-      drawingManager.setDrawingMode(null);
-      const update = () => {
-        const a = google.maps.geometry.spherical.computeArea(poly.getPath());
-        setAreaM2(a);
-      };
-      update();
-      const path = poly.getPath();
-      path.addListener("set_at", update);
-      path.addListener("insert_at", update);
-      path.addListener("remove_at", update);
-    });
+    // Note: google.maps.drawing.DrawingManager was removed in Maps JS v3.65.
+    // We implement click-to-add-vertex drawing manually below via startDrawing().
 
     // If we already have a selected place address from step 1, recenter
     if (address && googleRef.current) {
