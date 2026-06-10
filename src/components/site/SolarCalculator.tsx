@@ -386,7 +386,7 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
         setAreaM2(0);
         setAddress("");
         setPostcode("");
-        drawingMgrRef.current?.setDrawingMode(null);
+        cancelDrawingSession();
         if (mapRef.current) {
           mapRef.current.setCenter({ lat: 50.854, lng: -0.554 });
           mapRef.current.setZoom(14);
