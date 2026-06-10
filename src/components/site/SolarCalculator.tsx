@@ -228,24 +228,96 @@ export const SolarCalculator = ({ segment, selectable = false, className = "", h
     return asString && asString !== "[object Object]" ? asString : "";
   };
 
+  // Cancel any in-progress click-to-draw session and clean up listeners + preview line.
+  const cancelDrawingSession = () => {
+    drawingActiveRef.current = false;
+    drawListenersRef.current.forEach((l) => {
+      try { l.remove?.(); } catch { /* noop */ }
+    });
+    drawListenersRef.current = [];
+    if (drawPolylineRef.current) {
+      drawPolylineRef.current.setMap(null);
+      drawPolylineRef.current = null;
+    }
+    if (mapRef.current) mapRef.current.setOptions({ draggableCursor: null });
+  };
+
   const startDrawing = () => {
     const g = (window as unknown as { google?: any }).google;
-    if (!drawingMgrRef.current || !g) return;
+    const map = mapRef.current;
+    if (!g || !map) return;
+
+    // Clear existing polygon + any prior session
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
       setAreaM2(0);
     }
-    drawingMgrRef.current.setDrawingMode(g.maps.drawing.OverlayType.POLYGON);
+    cancelDrawingSession();
+
+    drawingActiveRef.current = true;
+    map.setOptions({ draggableCursor: "crosshair" });
+
+    const polyline = new g.maps.Polyline({
+      map,
+      path: [],
+      strokeColor: "#22d3ee",
+      strokeWeight: 2,
+      clickable: false,
+    });
+    drawPolylineRef.current = polyline;
+
+    const finish = () => {
+      if (!drawingActiveRef.current) return;
+      const path = polyline.getPath();
+      if (path.getLength() < 3) {
+        // Need at least 3 points; otherwise just cancel.
+        cancelDrawingSession();
+        return;
+      }
+      const coords = path.getArray();
+      cancelDrawingSession();
+
+      const polygon = new g.maps.Polygon({
+        map,
+        paths: coords,
+        fillColor: "#3b82f6",
+        fillOpacity: 0.35,
+        strokeColor: "#22d3ee",
+        strokeWeight: 2,
+        editable: true,
+        clickable: true,
+      });
+      polygonRef.current = polygon;
+
+      const update = () => {
+        const a = g.maps.geometry.spherical.computeArea(polygon.getPath());
+        setAreaM2(a);
+      };
+      update();
+      const pPath = polygon.getPath();
+      pPath.addListener("set_at", update);
+      pPath.addListener("insert_at", update);
+      pPath.addListener("remove_at", update);
+    };
+
+    // eslint-disable-next-line @typescript-eslint/no-explicit-any
+    const clickL = map.addListener("click", (e: any) => {
+      if (!drawingActiveRef.current || !e.latLng) return;
+      polyline.getPath().push(e.latLng);
+    });
+    const dblL = map.addListener("dblclick", () => finish());
+
+    drawListenersRef.current = [clickL, dblL];
   };
 
   const resetDrawing = () => {
+    cancelDrawingSession();
     if (polygonRef.current) {
       polygonRef.current.setMap(null);
       polygonRef.current = null;
     }
     setAreaM2(0);
-    drawingMgrRef.current?.setDrawingMode(null);
   };
 
   const handlePostcodeSearch = async () => {
