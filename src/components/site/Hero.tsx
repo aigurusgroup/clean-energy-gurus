@@ -55,11 +55,10 @@ export const Hero = () => (
           UK Managed Energy Platform
         </span>
         <h1 className="mt-6 text-[44px] sm:text-6xl lg:text-[76px] leading-[1.02] font-display font-semibold text-navy tracking-tight">
-          Turn your property into a <span className="text-gradient">managed energy asset</span>
+          Lower costs. Greater control. <span className="text-gradient">More energy confidence.</span>
         </h1>
         <p className="mt-7 text-lg sm:text-xl text-navy-soft max-w-3xl mx-auto leading-relaxed">
-          Solar, battery storage, EV charging and ongoing optimisation for homes,
-          businesses, farms and landlords across the UK.
+          We help UK homeowners, businesses, farms and landlords understand their property's energy position and make smarter, better-supported decisions — with long-term support built in.
         </p>
         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
           <Link to="/contact">
@@ -74,7 +73,7 @@ export const Hero = () => (
           </Link>
         </div>
         <p className="mt-6 text-sm text-muted-foreground max-w-2xl mx-auto">
-          Designed for lower energy costs, smarter export, stronger resilience and long-term site performance.
+          Solar PV, battery storage, EV charging and air source heat pumps — chosen to support the outcomes that matter to you, not sold as headline products.
         </p>
       </div>
 

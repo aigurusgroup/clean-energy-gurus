@@ -5,6 +5,7 @@ import { SimplePage } from "@/components/site/SimplePage";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { FinalCTA } from "@/components/site/FinalCTA";
+import { EnergyIQTeaser } from "@/components/site/EnergyIQTeaser";
 
 const LowCarbonHeatingSection = () => (
   <section className="py-20 lg:py-24 bg-surface">
@@ -51,7 +52,7 @@ export const OptimisationHub = () => (
       { title: "Tariff & Export Optimisation", desc: "The right tariff and export route, reviewed as the market shifts.", to: "/energy-optimisation/tariff", icon: LineChart },
       { title: "Battery Optimisation", desc: "Dispatch tuned to load, solar and wholesale prices.", to: "/energy-optimisation/battery", icon: Battery },
     ]}
-    extra={<LowCarbonHeatingSection />}
+    extra={<><LowCarbonHeatingSection /><EnergyIQTeaser /></>}
   />
 );
 

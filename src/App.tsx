@@ -15,6 +15,8 @@ import SolarCalculatorPage from "./pages/SolarCalculatorPage";
 import { EVCharging } from "./pages/ServicePages";
 import { ResidentialHub, ResidentialSolarBattery } from "./pages/residential/ResidentialPages";
 import { BusinessHub, CommercialSolar, WorkplaceEV } from "./pages/business/BusinessPages";
+import AirSourceHeatPumps from "./pages/residential/AirSourceHeatPumps";
+import HeatingEfficiency from "./pages/business/HeatingEfficiency";
 import { AgricultureHub, FarmSolar, FarmResilience } from "./pages/agriculture/AgriculturePages";
 import { OptimisationHub, OptMonitoring, OptTariff, OptBattery } from "./pages/optimisation/OptimisationPages";
 import KnowledgeCentre from "./pages/knowledge/KnowledgeCentre";
@@ -50,6 +52,7 @@ const App = () => (
           <Route path="/residential/battery-storage" element={<Navigate to="/residential/solar-battery" replace />} />
           <Route path="/residential/ev-charging" element={<EVCharging />} />
           <Route path="/residential/solar-battery" element={<ResidentialSolarBattery />} />
+          <Route path="/residential/air-source-heat-pumps" element={<AirSourceHeatPumps />} />
           <Route path="/homes" element={<Navigate to="/residential" replace />} />
           <Route path="/solar-calculator" element={<SolarCalculatorPage />} />
 
@@ -58,6 +61,7 @@ const App = () => (
           <Route path="/business/overview" element={<Navigate to="/business" replace />} />
           <Route path="/business/commercial-solar" element={<CommercialSolar />} />
           <Route path="/business/workplace-ev" element={<WorkplaceEV />} />
+          <Route path="/business/heating-efficiency" element={<HeatingEfficiency />} />
           <Route path="/business/commercial-battery" element={<Navigate to="/business/commercial-solar" replace />} />
           <Route path="/business/landlords" element={<Landlords />} />
           <Route path="/landlords" element={<Navigate to="/business/landlords" replace />} />
