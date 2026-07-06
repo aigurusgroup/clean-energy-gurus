@@ -147,6 +147,7 @@ export const ResidentialSolarBattery = () => {
         </div>
       </section>
 
+      <SolarMapCTA />
       <FinalCTA />
     </SiteLayout>
   );
