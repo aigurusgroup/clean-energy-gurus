@@ -882,7 +882,7 @@ const EnergyIQ = () => {
   const currentQ = step >= 0 && step < total ? QUESTIONS[step] : null;
   const result = useMemo(() => scoreAnswers(answers), [answers]);
   const band = categoryBand(result.total);
-  const recommendations = useMemo(() => recommend(answers), [answers]);
+  // `recommend()` retained in helpers for compatibility; result page uses richer personalised sections instead.
   const progress = step >= 0 && step < total ? Math.round(((step) / total) * 100) : 0;
 
   const canAdvance = currentQ
