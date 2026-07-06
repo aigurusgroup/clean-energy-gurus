@@ -55,15 +55,16 @@ const PartnerNetwork = () => {
         lead="A UK-wide network of MCS, OZEV and manufacturer-accredited installation partners — continually assessed against our quality standards."
         cta={false}
       />
-      <section className="-mt-14 lg:-mt-20 pb-4">
+      <section className="relative z-10 -mt-8 lg:-mt-12 pb-6">
         <div className="container-tight">
-          <Link to="/partners">
+          <Link to="/partners" className="inline-block">
             <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow">
               Become an Installer Partner <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Link>
         </div>
       </section>
+
 
 
 
