@@ -1,18 +1,14 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowUpRight, BookOpen, Sun, Battery, Plug, Film, FolderOpen, Users } from "lucide-react";
+import { ArrowUpRight, BookOpen, Film, FolderOpen } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { FinalCTA } from "@/components/site/FinalCTA";
 
 const sections = [
-  { icon: BookOpen, title: "Articles & Guides", desc: "Educational articles on clean energy, solar, batteries, EV charging, savings and optimisation.", to: "/knowledge/articles" },
-  { icon: Sun, title: "Solar Education", desc: "How solar works, sizing, payback and what UK homes and businesses should know.", to: "/knowledge/solar" },
-  { icon: Battery, title: "Battery Education", desc: "Battery sizing, dispatch modes, warranties and when storage actually pays.", to: "/knowledge/battery" },
-  { icon: Plug, title: "EV Charging Education", desc: "Home, workplace and fleet charging explained — hardware, tariffs and integration.", to: "/knowledge/ev-charging" },
-  { icon: Film, title: "Video Library", desc: "Short, honest video series that make energy decisions easier.", to: "/knowledge/videos" },
+  { icon: BookOpen, title: "Articles & Guides", desc: "Educational guides on solar, batteries, EV charging, tariffs and long-term energy performance.", to: "/knowledge/articles" },
+  { icon: Film, title: "Video Library", desc: "Short, honest video series — Energy Made Simple, Installer Partner Series and Real Projects.", to: "/knowledge/videos" },
   { icon: FolderOpen, title: "Case Studies", desc: "Real UK projects — what the customer wanted, what we recommended, what happened.", to: "/knowledge/case-studies" },
-  { icon: Users, title: "Installer Partner Hub", desc: "For installers exploring the Clean Energy Gurus partner network.", to: "/knowledge/installer-hub" },
 ];
 
 const KnowledgeCentre = () => {
@@ -35,7 +31,7 @@ const KnowledgeCentre = () => {
           <div className="max-w-2xl mb-12">
             <span className="eyebrow">Explore the Knowledge Centre</span>
             <h2 className="mt-3 text-3xl sm:text-4xl font-display font-semibold text-navy">
-              Seven ways in.
+              Three ways in.
             </h2>
           </div>
           <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
