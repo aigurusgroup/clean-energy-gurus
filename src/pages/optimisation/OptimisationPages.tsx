@@ -1,4 +1,4 @@
-import { Activity, LineChart, Battery, CheckCircle2, Wrench, Upload, BarChart3 } from "lucide-react";
+import { Activity, LineChart, Battery, CheckCircle2, Wrench, Upload, BarChart3, Thermometer, Droplets, Home, Handshake } from "lucide-react";
 import { useEffect } from "react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
@@ -6,10 +6,42 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { FinalCTA } from "@/components/site/FinalCTA";
 
+const LowCarbonHeatingSection = () => (
+  <section className="py-20 lg:py-24 bg-surface">
+    <div className="container-tight">
+      <div className="max-w-2xl mb-10">
+        <span className="eyebrow"><span className="h-1.5 w-1.5 rounded-full bg-electric" />Partner-supported</span>
+        <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">Low Carbon Heating & Efficiency</h2>
+        <p className="mt-4 text-navy-soft leading-relaxed">
+          Optimising a property isn't only about generation and storage. Heating and hot water often make up the largest share of a home's energy use — and are where the biggest efficiency gains can be found. Where suitable, we coordinate low carbon heating upgrades through our accredited partner network as part of a wider energy plan.
+        </p>
+      </div>
+      <div className="grid md:grid-cols-2 lg:grid-cols-3 gap-5">
+        {[
+          { icon: Thermometer, title: "Air Source Heat Pumps", body: "MCS-accredited partner installs, sized against your heat loss, radiators and hot water demand — never a one-size-fits-all quote." },
+          { icon: Wrench, title: "Heating efficiency", body: "Controls, zoning and flow temperature tuning to get more useful heat from every kWh." },
+          { icon: Droplets, title: "Hot water considerations", body: "Cylinder sizing, immersion diverts and integration with solar and off-peak tariffs." },
+          { icon: Home, title: "Property suitability", body: "Fabric, insulation, ventilation and electrical capacity are all assessed before we recommend any upgrade." },
+          { icon: Battery, title: "Solar, battery & tariff compatibility", body: "A heat pump can be tuned to run on cheap off-peak windows or self-consumed solar where the system supports it." },
+          { icon: Handshake, title: "Partner-supported delivery", body: "Delivered by CEG Accredited heat pump partners. Suitability, performance and any grant eligibility are subject to survey and current scheme availability." },
+        ].map(({ icon: Icon, title, body }) => (
+          <div key={title} className="card-premium p-6">
+            <div className="h-11 w-11 rounded-xl bg-accent grid place-items-center text-electric">
+              <Icon className="h-5 w-5" />
+            </div>
+            <div className="mt-4 font-semibold text-navy">{title}</div>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">{body}</p>
+          </div>
+        ))}
+      </div>
+    </div>
+  </section>
+);
+
 export const OptimisationHub = () => (
   <HubPage
     metaTitle="Energy Optimisation | Clean Energy Gurus"
-    metaDesc="Ongoing monitoring, maintenance, tariff and battery optimisation for solar, battery and EV systems."
+    metaDesc="Ongoing monitoring, maintenance, tariff and battery optimisation for solar, battery and EV systems — plus partner-supported low carbon heating."
     eyebrow="Energy Optimisation"
     heroTitle={<>The savings come from <span className="text-gradient">what happens after install</span>.</>}
     lead="Continuous monitoring, tuning and reporting — so your energy system keeps performing over its whole life."
@@ -19,6 +51,7 @@ export const OptimisationHub = () => (
       { title: "Tariff & Export Optimisation", desc: "The right tariff and export route, reviewed as the market shifts.", to: "/energy-optimisation/tariff", icon: LineChart },
       { title: "Battery Optimisation", desc: "Dispatch tuned to load, solar and wholesale prices.", to: "/energy-optimisation/battery", icon: Battery },
     ]}
+    extra={<LowCarbonHeatingSection />}
   />
 );
 
