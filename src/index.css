@@ -138,3 +138,14 @@
   100% { filter: drop-shadow(0 0 6px hsl(230 95% 60% / 0.35)); transform: rotate(-90deg) scale(1); }
 }
 .iq-ring-pulse { animation: iq-ring-pulse 1.6s ease-out 1; transform-origin: center; }
+
+@keyframes iq-spin-slow {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
+}
+@keyframes iq-spin-slow-reverse {
+  from { transform: rotate(360deg); }
+  to { transform: rotate(0deg); }
+}
+.iq-spin-slow { animation: iq-spin-slow 18s linear infinite; }
+.iq-spin-slow-reverse { animation: iq-spin-slow-reverse 26s linear infinite; }
