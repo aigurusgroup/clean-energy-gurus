@@ -72,7 +72,6 @@ const App = () => (
           <Route path="/agriculture/battery" element={<Navigate to="/agriculture/solar" replace />} />
           <Route path="/agriculture/resilience" element={<FarmResilience />} />
           <Route path="/agriculture/solutions" element={<Navigate to="/agriculture/solar" replace />} />
-          <Route path="/agriculture/battery" element={<Navigate to="/agriculture/solar" replace />} />
           <Route path="/agriculture/overview" element={<Farms />} />
           <Route path="/farms" element={<Navigate to="/agriculture" replace />} />
 
