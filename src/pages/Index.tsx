@@ -1,13 +1,7 @@
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { Hero } from "@/components/site/Hero";
 import { Segments } from "@/components/site/Segments";
-import { SolarCalculator } from "@/components/site/SolarCalculator";
 import { Services } from "@/components/site/Services";
-import { Optimisation } from "@/components/site/Optimisation";
-import { Journey } from "@/components/site/Journey";
-import { BusinessCase } from "@/components/site/BusinessCase";
-import { PlatformPreview } from "@/components/site/PlatformPreview";
-import { Process } from "@/components/site/Process";
 import { Trust } from "@/components/site/Trust";
 import { CaseStudies } from "@/components/site/CaseStudies";
 import { FinalCTA } from "@/components/site/FinalCTA";
@@ -26,13 +20,7 @@ const Index = () => {
     <SiteLayout>
       <Hero />
       <Segments />
-      <SolarCalculator segment="home" selectable className="bg-surface" />
       <Services />
-      <Optimisation />
-      <Journey />
-      <BusinessCase />
-      <PlatformPreview />
-      <Process />
       <Trust />
       <CaseStudies />
       <FinalCTA />
@@ -41,3 +29,4 @@ const Index = () => {
 };
 
 export default Index;
+

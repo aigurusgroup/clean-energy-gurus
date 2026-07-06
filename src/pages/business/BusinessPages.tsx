@@ -1,21 +1,19 @@
-import { Sun, Battery, Plug, Building2, ClipboardCheck } from "lucide-react";
+import { Sun, Plug, Building2 } from "lucide-react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
 
 export const BusinessHub = () => (
   <HubPage
     metaTitle="Business Energy | Clean Energy Gurus"
-    metaDesc="Commercial solar, EV charging, battery storage and managed energy optimisation for UK businesses."
+    metaDesc="Commercial solar, EV charging and managed energy optimisation for UK businesses and property portfolios."
     eyebrow="Business"
     heroTitle={<>Turn your site into a <span className="text-gradient">managed energy asset</span>.</>}
     lead="Reduce operating costs, protect against price shocks and unlock new revenue from your roofs, land and load."
     sectionTitle="Business solutions"
     items={[
-      { title: "Commercial Solar", desc: "Rooftop and ground-mount PV designed for site load.", to: "/business/commercial-solar", icon: Sun },
+      { title: "Commercial Solar", desc: "Rooftop, ground-mount and battery — sized to site load.", to: "/business/commercial-solar", icon: Sun },
       { title: "Workplace EV Charging", desc: "Staff, visitor and fleet charging that scales.", to: "/business/workplace-ev", icon: Plug },
-      { title: "Commercial Battery Storage", desc: "Peak-shave, resilience and market participation.", to: "/business/commercial-battery", icon: Battery },
       { title: "Landlords & Property Portfolios", desc: "Upgrade assets and support tenants across a portfolio.", to: "/business/landlords", icon: Building2 },
-      { title: "Business Energy Review", desc: "A commercial read of your site's energy position.", to: "/contact?type=business", icon: ClipboardCheck },
     ]}
   />
 );

@@ -67,9 +67,9 @@ export const Hero = () => (
               Get a Free Energy Review <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Link>
-          <Link to="/services">
+          <Link to="/solar-calculator">
             <Button size="lg" variant="outline" className="rounded-full px-7 h-12 border-navy/15 text-navy hover:bg-navy hover:text-white">
-              Explore Solutions
+              Estimate My Solar
             </Button>
           </Link>
         </div>

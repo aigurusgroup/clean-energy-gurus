@@ -1,20 +1,18 @@
-import { Sun, Battery, Plug, LayoutGrid, ClipboardCheck } from "lucide-react";
+import { LayoutGrid, Plug, ClipboardCheck } from "lucide-react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
 
 export const ResidentialHub = () => (
   <HubPage
     metaTitle="Residential Energy | Clean Energy Gurus"
-    metaDesc="Solar PV, battery storage, EV charging and ongoing optimisation for UK homes."
+    metaDesc="Solar, battery storage, EV charging and ongoing optimisation for UK homes."
     eyebrow="Residential"
     heroTitle={<>Home energy, <span className="text-gradient">designed and managed</span> for you.</>}
     lead="Solar, batteries, EV charging and long-term monitoring — one team taking care of your home energy position."
     sectionTitle="Residential solutions"
     items={[
-      { title: "Solar PV", desc: "Rooftop arrays sized to your real consumption profile.", to: "/residential/solar-pv", icon: Sun },
-      { title: "Battery Storage", desc: "Store solar and cheap-rate import; dispatch when it matters.", to: "/residential/battery-storage", icon: Battery },
+      { title: "Solar & Battery", desc: "Rooftop solar and matched storage, tuned to your tariff and load.", to: "/residential/solar-battery", icon: LayoutGrid },
       { title: "EV Charging", desc: "OZEV partner-led home chargers, solar-aware by default.", to: "/residential/ev-charging", icon: Plug },
-      { title: "Solar + Battery", desc: "The complete home energy package, tuned to your tariff.", to: "/residential/solar-battery", icon: LayoutGrid },
       { title: "Residential Energy Review", desc: "A clear read of your home's energy position — free.", to: "/contact?type=residential", icon: ClipboardCheck },
     ]}
   />
