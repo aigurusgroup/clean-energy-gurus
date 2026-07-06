@@ -101,8 +101,8 @@ export const SiteHeader = () => {
             src={logo}
             alt="Clean Energy Gurus"
             className="h-14 sm:h-16 lg:h-20 w-auto object-contain"
-            width={1165}
-            height={306}
+            width={1161}
+            height={309}
           />
         </Link>
 
