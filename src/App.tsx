@@ -56,6 +56,7 @@ const App = () => (
           <Route path="/residential/air-source-heat-pumps" element={<AirSourceHeatPumps />} />
           <Route path="/homes" element={<Navigate to="/residential" replace />} />
           <Route path="/solar-calculator" element={<SolarCalculatorPage />} />
+          <Route path="/energy-iq" element={<EnergyIQ />} />
 
           {/* Business */}
           <Route path="/business" element={<BusinessHub />} />
