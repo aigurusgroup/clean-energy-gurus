@@ -94,6 +94,7 @@ export const CommercialSolar = () => {
         </div>
       </section>
 
+      <SolarMapCTA />
       <FinalCTA />
     </SiteLayout>
   );
