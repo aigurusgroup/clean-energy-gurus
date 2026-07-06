@@ -107,6 +107,8 @@ const App = () => (
 
           {/* About / Company */}
           <Route path="/about" element={<About />} />
+          <Route path="/about/how-we-work" element={<HowWeWork />} />
+          <Route path="/about/partner-network" element={<PartnerNetwork />} />
           <Route path="/platform" element={<Platform />} />
           <Route path="/contact" element={<Contact />} />
 
