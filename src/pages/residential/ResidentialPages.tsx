@@ -1,14 +1,64 @@
-import { LayoutGrid, Plug, ClipboardCheck, CheckCircle2, Sun, BatteryCharging, Layers } from "lucide-react";
+import { LayoutGrid, Plug, ClipboardCheck, CheckCircle2, Sun, BatteryCharging, Layers, Thermometer, ArrowRight } from "lucide-react";
 import { useEffect } from "react";
+import { Link } from "react-router-dom";
+import { Button } from "@/components/ui/button";
 import { HubPage } from "@/components/site/HubPage";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { FinalCTA } from "@/components/site/FinalCTA";
 
+const HeatPumpSection = () => (
+  <section className="py-20 lg:py-24 bg-surface">
+    <div className="container-tight grid lg:grid-cols-12 gap-12 items-start">
+      <div className="lg:col-span-7">
+        <span className="eyebrow"><span className="h-1.5 w-1.5 rounded-full bg-electric" />Partner-supported</span>
+        <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">Air Source Heat Pumps</h2>
+        <p className="mt-4 text-navy-soft leading-relaxed max-w-xl">
+          Air source heat pumps can form part of a wider home energy improvement plan — alongside insulation, solar PV, battery storage and a smart tariff — where the property is suitable.
+        </p>
+        <p className="mt-3 text-navy-soft leading-relaxed max-w-xl">
+          Delivered through our accredited partner network, a heat pump is only recommended after a proper survey of your heating system, hot water use, insulation and electrical capacity. Suitability, performance and any grant eligibility are always confirmed on a case-by-case basis.
+        </p>
+        <ul className="mt-6 space-y-3">
+          {[
+            "Works well alongside solar PV, battery storage and time-of-use tariffs",
+            "Assessed against your property fabric, radiators and hot water demand",
+            "Installed through MCS-accredited heat pump partners",
+            "Subject to survey, property suitability and current scheme availability",
+          ].map((b) => (
+            <li key={b} className="flex gap-3 text-navy">
+              <CheckCircle2 className="h-5 w-5 text-electric flex-shrink-0 mt-0.5" />
+              <span className="text-[15px]">{b}</span>
+            </li>
+          ))}
+        </ul>
+        <div className="mt-8">
+          <Link to="/contact?type=residential">
+            <Button className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
+              Start Your Energy Review <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </div>
+      <div className="lg:col-span-5">
+        <div className="card-premium p-8">
+          <div className="h-12 w-12 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow">
+            <Thermometer className="h-6 w-6" />
+          </div>
+          <h3 className="mt-5 text-lg font-display font-semibold text-navy">Part of a whole-home plan</h3>
+          <p className="mt-2 text-sm text-muted-foreground leading-relaxed">
+            We look at your home as a system — generation, storage, heating and tariff — not a stack of separate products. Where a heat pump is the right fit, we coordinate the installer partner and integrate it into your ongoing energy plan.
+          </p>
+        </div>
+      </div>
+    </div>
+  </section>
+);
+
 export const ResidentialHub = () => (
   <HubPage
     metaTitle="Residential Energy | Clean Energy Gurus"
-    metaDesc="Solar, battery storage, EV charging and ongoing optimisation for UK homes."
+    metaDesc="Solar, battery storage, EV charging and ongoing optimisation for UK homes — with partner-supported air source heat pumps."
     eyebrow="Residential"
     heroTitle={<>Home energy, <span className="text-gradient">designed and managed</span> for you.</>}
     lead="Solar, batteries, EV charging and long-term monitoring — one team taking care of your home energy position."
@@ -18,6 +68,7 @@ export const ResidentialHub = () => (
       { title: "EV Charging", desc: "OZEV partner-led home chargers, solar-aware by default.", to: "/residential/ev-charging", icon: Plug },
       { title: "Residential Energy Review", desc: "A clear read of your home's energy position — free.", to: "/contact?type=residential", icon: ClipboardCheck },
     ]}
+    extra={<HeatPumpSection />}
   />
 );
 
