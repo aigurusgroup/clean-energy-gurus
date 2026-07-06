@@ -212,13 +212,13 @@ function recommend(answers: Answers) {
 
 const STORAGE_KEY = "energyIQ.submissions";
 
-const REVEAL_MS = 3600;
+const REVEAL_MS = 3800;
 
 const CHECKPOINTS = [
-  "Property profile analysed",
-  "Energy goals reviewed",
-  "Technology opportunities identified",
-  "Optimisation potential calculated",
+  "Property profile reviewed",
+  "Energy use signals assessed",
+  "Improvement opportunities mapped",
+  "Energy IQ calculated",
 ];
 
 function bandForScore(score: number) {
@@ -228,10 +228,19 @@ function bandForScore(score: number) {
   return "Early Opportunity";
 }
 
+// Positions for the four radial spoke labels (angles in degrees from top)
+const SPOKES = [
+  { angle: -45, label: "Property" },
+  { angle: 45, label: "Energy Use" },
+  { angle: 135, label: "Opportunities" },
+  { angle: 225, label: "Optimisation" },
+];
+
 const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void }) => {
   const [display, setDisplay] = useState(0);
   const [done, setDone] = useState(false);
   const [visibleCheckpoints, setVisibleCheckpoints] = useState(0);
+  const [visibleSpokes, setVisibleSpokes] = useState(0);
   const startRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
 
@@ -242,6 +251,7 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
     if (prefersReduced) {
       setDisplay(target);
       setVisibleCheckpoints(CHECKPOINTS.length);
+      setVisibleSpokes(SPOKES.length);
       setDone(true);
       return;
     }
@@ -249,7 +259,8 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
       if (startRef.current === null) startRef.current = ts;
       const elapsed = ts - startRef.current;
       const t = Math.min(1, elapsed / REVEAL_MS);
-      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
+      // easeOutQuint — long approach, gentle land
+      const eased = 1 - Math.pow(1 - t, 5);
       setDisplay(Math.round(eased * target));
       if (t < 1) {
         rafRef.current = requestAnimationFrame(step);
@@ -259,13 +270,23 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
     };
     rafRef.current = requestAnimationFrame(step);
 
-    // Stagger checkpoint reveals across the animation
-    const timers = CHECKPOINTS.map((_, i) =>
-      window.setTimeout(
-        () => setVisibleCheckpoints((n) => Math.max(n, i + 1)),
-        450 + i * ((REVEAL_MS - 700) / CHECKPOINTS.length),
-      ),
-    );
+    const timers: number[] = [];
+    CHECKPOINTS.forEach((_, i) => {
+      timers.push(
+        window.setTimeout(
+          () => setVisibleCheckpoints((n) => Math.max(n, i + 1)),
+          500 + i * ((REVEAL_MS - 800) / CHECKPOINTS.length),
+        ),
+      );
+    });
+    SPOKES.forEach((_, i) => {
+      timers.push(
+        window.setTimeout(
+          () => setVisibleSpokes((n) => Math.max(n, i + 1)),
+          350 + i * 260,
+        ),
+      );
+    });
 
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
@@ -273,153 +294,338 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
     };
   }, [target]);
 
-  const size = 240;
-  const stroke = 14;
-  const radius = (size - stroke) / 2;
-  const circumference = 2 * Math.PI * radius;
+  // Ring geometry (SVG viewBox 300x300)
+  const VB = 300;
+  const cx = VB / 2;
+  const cy = VB / 2;
+  const rOuter = 140;   // outer tick ring
+  const rDashed = 118;  // rotating dashed ring
+  const rMain = 96;     // main gradient gauge
+  const rInner = 72;    // inner faint ring
+  const strokeMain = 10;
+  const circMain = 2 * Math.PI * rMain;
   const pct = Math.min(1, display / 100);
-  const dashOffset = circumference * (1 - pct);
+  const dashOffsetMain = circMain * (1 - pct);
   const band = bandForScore(target);
+
+  // Outer tick marks (60 marks)
+  const ticks = Array.from({ length: 60 }, (_, i) => i);
 
   return (
     <div
-      className="card-premium p-6 sm:p-8 lg:p-12 text-center"
+      className="relative overflow-hidden rounded-2xl border border-white/10 shadow-2xl"
       role="status"
       aria-live="polite"
       aria-atomic="true"
+      style={{
+        background:
+          "radial-gradient(ellipse at 50% 20%, hsl(230 60% 22%) 0%, hsl(225 55% 12%) 45%, hsl(222 60% 6%) 100%)",
+      }}
     >
-      {/* Screen-reader-friendly result (always available, not animation-dependent) */}
-      <p className="sr-only">
-        Your Energy IQ is {target} out of 100. Category: {band}.
-      </p>
+      {/* Ambient background glows */}
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -top-24 left-1/2 -translate-x-1/2 h-[420px] w-[420px] rounded-full opacity-40 blur-3xl"
+        style={{ background: "radial-gradient(circle, hsl(230 95% 60% / 0.55), transparent 60%)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute -bottom-32 -left-20 h-[360px] w-[360px] rounded-full opacity-30 blur-3xl"
+        style={{ background: "radial-gradient(circle, hsl(200 100% 55% / 0.5), transparent 60%)" }}
+      />
+      <div
+        aria-hidden="true"
+        className="pointer-events-none absolute inset-0 opacity-[0.06]"
+        style={{
+          backgroundImage:
+            "linear-gradient(hsl(0 0% 100%) 1px, transparent 1px), linear-gradient(90deg, hsl(0 0% 100%) 1px, transparent 1px)",
+          backgroundSize: "44px 44px",
+          maskImage: "radial-gradient(ellipse 70% 60% at 50% 45%, black 30%, transparent 85%)",
+        }}
+      />
 
-      {!done ? (
-        <>
-          <span className="eyebrow"><Gauge className="h-3.5 w-3.5" /> Energy IQ</span>
-          <h2 className="mt-4 text-2xl lg:text-3xl font-display font-semibold text-navy">
-            Calculating your Energy IQ…
-          </h2>
-          <p className="mt-3 text-navy-soft max-w-md mx-auto">
-            We're reviewing your property profile, energy goals and improvement opportunities.
-          </p>
-        </>
-      ) : (
-        <>
-          <span className="eyebrow animate-fade-in"><CheckCircle2 className="h-3.5 w-3.5" /> Ready</span>
-          <h2 className="mt-4 text-2xl lg:text-3xl font-display font-semibold text-navy animate-fade-in">
-            Your Energy IQ is ready.
-          </h2>
-        </>
-      )}
+      <div className="relative px-5 sm:px-8 lg:px-12 py-10 sm:py-14 text-center">
+        {/* Screen-reader-friendly result (always available) */}
+        <p className="sr-only">
+          Your Energy IQ is {target} out of 100. Category: {band}.
+        </p>
 
-      <div className="mt-10 flex justify-center">
-        <div
-          className="relative"
-          style={{ width: size, height: size, maxWidth: "80vw", maxHeight: "80vw" }}
-        >
-          {/* Soft ambient glow behind ring */}
+        {!done ? (
+          <>
+            <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/60">
+              <Gauge className="h-3.5 w-3.5" /> Energy IQ · Activation
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-display font-semibold text-white">
+              Calculating your Energy IQ…
+            </h2>
+            <p className="mt-3 text-white/60 max-w-md mx-auto text-sm sm:text-base">
+              Reviewing your property profile, energy goals and improvement opportunities.
+            </p>
+          </>
+        ) : (
+          <>
+            <span className="inline-flex items-center gap-2 text-[10px] font-semibold uppercase tracking-[0.3em] text-white/70 animate-fade-in">
+              <CheckCircle2 className="h-3.5 w-3.5" /> Final Score Lock
+            </span>
+            <h2 className="mt-4 text-2xl sm:text-3xl lg:text-4xl font-display font-semibold text-white animate-fade-in">
+              Your Energy IQ is ready.
+            </h2>
+          </>
+        )}
+
+        {/* Ring assembly */}
+        <div className="relative mx-auto mt-10 w-full" style={{ maxWidth: 380 }}>
           <div
-            className={`absolute inset-4 rounded-full bg-gradient-electric opacity-20 blur-2xl transition-opacity duration-700 ${
-              done ? "opacity-40" : "opacity-15"
-            }`}
-            aria-hidden="true"
-          />
-          <svg
-            width="100%"
-            height="100%"
-            viewBox={`0 0 ${size} ${size}`}
-            className={`-rotate-90 relative ${done ? "iq-ring-pulse" : ""}`}
+            className="relative mx-auto"
+            style={{ width: "100%", aspectRatio: "1 / 1", maxWidth: 340 }}
           >
-            <defs>
-              <linearGradient id="iq-ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
-                <stop offset="0%" stopColor="hsl(260 85% 62%)" />
-                <stop offset="50%" stopColor="hsl(230 95% 60%)" />
-                <stop offset="100%" stopColor="hsl(200 100% 55%)" />
-              </linearGradient>
-            </defs>
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              strokeWidth={stroke}
-              className="stroke-border"
-              fill="none"
-            />
-            <circle
-              cx={size / 2}
-              cy={size / 2}
-              r={radius}
-              strokeWidth={stroke}
-              stroke="url(#iq-ring-gradient)"
-              strokeLinecap="round"
-              fill="none"
-              strokeDasharray={circumference}
-              strokeDashoffset={dashOffset}
+            {/* Soft under-glow */}
+            <div
+              aria-hidden="true"
+              className={`absolute inset-8 rounded-full blur-2xl transition-opacity duration-700 ${
+                done ? "opacity-80" : "opacity-50"
+              }`}
               style={{
-                transition: "stroke-dashoffset 120ms linear",
-                filter: "drop-shadow(0 0 6px hsl(230 95% 60% / 0.35))",
+                background:
+                  "radial-gradient(circle, hsl(230 95% 60% / 0.55), hsl(200 100% 55% / 0.25) 55%, transparent 75%)",
               }}
             />
-          </svg>
-          <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-5xl sm:text-6xl font-display font-semibold text-navy tabular-nums">
-              {display}
-            </div>
-            <div className="text-xs uppercase tracking-[0.18em] text-navy-soft mt-1">
-              / 100
-            </div>
-          </div>
-        </div>
-      </div>
 
-      {/* Checkpoints — visible during animation, hidden once revealed */}
-      {!done && (
-        <ul className="mt-8 grid gap-2 max-w-sm mx-auto text-sm">
-          {CHECKPOINTS.map((c, i) => {
-            const shown = i < visibleCheckpoints;
-            return (
-              <li
-                key={c}
-                className={`flex items-center gap-3 rounded-lg px-3 py-2 border transition-all duration-500 ${
-                  shown
-                    ? "opacity-100 translate-y-0 border-electric/40 bg-electric/5 text-navy"
-                    : "opacity-0 translate-y-2 border-transparent"
-                }`}
-                aria-hidden={!shown}
-              >
-                <CheckCircle2 className="h-4 w-4 text-electric flex-shrink-0" />
-                <span className="text-left">{c}</span>
-              </li>
-            );
-          })}
-        </ul>
-      )}
-
-      {done && (
-        <div className="animate-fade-in">
-          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-electric/40 bg-electric/5 px-4 py-1.5 text-sm font-semibold text-electric">
-            {band}
-          </div>
-          <p className="mt-4 text-lg text-navy">
-            Your Energy IQ: <strong className="tabular-nums">{target} / 100</strong>
-          </p>
-          <div className="mt-6 flex justify-center">
-            <Button
-              onClick={onDone}
-              className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow"
+            {/* Radial spoke lines + labels (behind main ring) */}
+            <svg
+              viewBox={`0 0 ${VB} ${VB}`}
+              className="absolute inset-0 h-full w-full"
+              aria-hidden="true"
             >
-              View my Energy IQ summary <ArrowRight className="ml-1.5 h-4 w-4" />
-            </Button>
-          </div>
-          <p className="mt-6 text-xs text-muted-foreground max-w-md mx-auto">
-            Your Energy IQ is an indicative guide only. It is not a technical design, quote or savings forecast.
-          </p>
-        </div>
-      )}
+              {SPOKES.map((s, i) => {
+                const shown = i < visibleSpokes;
+                const rad = ((s.angle - 90) * Math.PI) / 180;
+                const x1 = cx + Math.cos(rad) * (rMain + 6);
+                const y1 = cy + Math.sin(rad) * (rMain + 6);
+                const x2 = cx + Math.cos(rad) * (rOuter - 4);
+                const y2 = cy + Math.sin(rad) * (rOuter - 4);
+                return (
+                  <line
+                    key={s.label}
+                    x1={x1}
+                    y1={y1}
+                    x2={x2}
+                    y2={y2}
+                    stroke="hsl(210 80% 70% / 0.5)"
+                    strokeWidth={1}
+                    style={{
+                      opacity: shown ? 1 : 0,
+                      transition: "opacity 500ms ease-out",
+                    }}
+                  />
+                );
+              })}
+            </svg>
 
+            {/* Main SVG rings */}
+            <svg
+              viewBox={`0 0 ${VB} ${VB}`}
+              className={`absolute inset-0 h-full w-full ${done ? "iq-ring-pulse" : ""}`}
+            >
+              <defs>
+                <linearGradient id="iq-main-grad" x1="0%" y1="0%" x2="100%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(260 90% 65%)" />
+                  <stop offset="50%" stopColor="hsl(225 100% 62%)" />
+                  <stop offset="100%" stopColor="hsl(195 100% 60%)" />
+                </linearGradient>
+                <linearGradient id="iq-inner-grad" x1="0%" y1="0%" x2="0%" y2="100%">
+                  <stop offset="0%" stopColor="hsl(200 100% 60% / 0.6)" />
+                  <stop offset="100%" stopColor="hsl(260 80% 60% / 0.6)" />
+                </linearGradient>
+              </defs>
+
+              {/* Outer tick ring */}
+              <g>
+                {ticks.map((i) => {
+                  const angle = (i / ticks.length) * 360;
+                  const rad = ((angle - 90) * Math.PI) / 180;
+                  const inner = rOuter - (i % 5 === 0 ? 10 : 5);
+                  const outer = rOuter;
+                  const x1 = cx + Math.cos(rad) * inner;
+                  const y1 = cy + Math.sin(rad) * inner;
+                  const x2 = cx + Math.cos(rad) * outer;
+                  const y2 = cy + Math.sin(rad) * outer;
+                  return (
+                    <line
+                      key={i}
+                      x1={x1}
+                      y1={y1}
+                      x2={x2}
+                      y2={y2}
+                      stroke="hsl(210 40% 80%)"
+                      strokeOpacity={i % 5 === 0 ? 0.55 : 0.25}
+                      strokeWidth={1}
+                    />
+                  );
+                })}
+              </g>
+
+              {/* Rotating dashed ring */}
+              <g className={done ? "" : "iq-spin-slow"} style={{ transformOrigin: `${cx}px ${cy}px` }}>
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={rDashed}
+                  fill="none"
+                  stroke="hsl(210 90% 75% / 0.35)"
+                  strokeWidth={1}
+                  strokeDasharray="2 6"
+                />
+              </g>
+
+              {/* Counter-rotating faint ring */}
+              <g className={done ? "" : "iq-spin-slow-reverse"} style={{ transformOrigin: `${cx}px ${cy}px` }}>
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={rDashed - 8}
+                  fill="none"
+                  stroke="hsl(210 90% 75% / 0.15)"
+                  strokeWidth={1}
+                  strokeDasharray="1 4"
+                />
+              </g>
+
+              {/* Main gauge track */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={rMain}
+                fill="none"
+                stroke="hsl(220 40% 30% / 0.6)"
+                strokeWidth={strokeMain}
+              />
+
+              {/* Animated gauge fill (starts at 12 o'clock) */}
+              <g style={{ transform: `rotate(-90deg)`, transformOrigin: `${cx}px ${cy}px` }}>
+                <circle
+                  cx={cx}
+                  cy={cy}
+                  r={rMain}
+                  fill="none"
+                  stroke="url(#iq-main-grad)"
+                  strokeWidth={strokeMain}
+                  strokeLinecap="round"
+                  strokeDasharray={circMain}
+                  strokeDashoffset={dashOffsetMain}
+                  style={{
+                    transition: "stroke-dashoffset 120ms linear",
+                    filter: "drop-shadow(0 0 8px hsl(225 100% 62% / 0.6))",
+                  }}
+                />
+              </g>
+
+              {/* Inner faint ring */}
+              <circle
+                cx={cx}
+                cy={cy}
+                r={rInner}
+                fill="none"
+                stroke="url(#iq-inner-grad)"
+                strokeOpacity={0.35}
+                strokeWidth={1}
+              />
+            </svg>
+
+            {/* Spoke labels (HTML for accessibility) */}
+            {SPOKES.map((s, i) => {
+              const shown = i < visibleSpokes;
+              const rad = ((s.angle - 90) * Math.PI) / 180;
+              const labelR = (rOuter + 12) / VB; // as fraction of viewport
+              const x = 50 + Math.cos(rad) * labelR * 100;
+              const y = 50 + Math.sin(rad) * labelR * 100;
+              return (
+                <div
+                  key={s.label}
+                  className="absolute text-[9px] sm:text-[10px] font-semibold uppercase tracking-[0.2em] text-white/70 whitespace-nowrap pointer-events-none"
+                  style={{
+                    left: `${x}%`,
+                    top: `${y}%`,
+                    transform: "translate(-50%, -50%)",
+                    opacity: shown ? 1 : 0,
+                    transition: "opacity 500ms ease-out 100ms",
+                  }}
+                >
+                  {s.label}
+                </div>
+              );
+            })}
+
+            {/* Centre number */}
+            <div className="absolute inset-0 flex flex-col items-center justify-center">
+              <div className="text-5xl sm:text-6xl font-display font-semibold text-white tabular-nums leading-none">
+                {display}
+              </div>
+              <div className="mt-1 text-[10px] sm:text-xs uppercase tracking-[0.3em] text-white/60">
+                / 100
+              </div>
+              {done && (
+                <div className="mt-2 text-[9px] font-semibold uppercase tracking-[0.28em] text-white/50 animate-fade-in">
+                  Final score lock
+                </div>
+              )}
+            </div>
+          </div>
+        </div>
+
+        {/* Checkpoint list — during animation */}
+        {!done && (
+          <ul className="mt-8 grid gap-2 max-w-sm mx-auto text-sm">
+            {CHECKPOINTS.map((c, i) => {
+              const shown = i < visibleCheckpoints;
+              return (
+                <li
+                  key={c}
+                  className={`flex items-center gap-3 rounded-lg px-3 py-2 border transition-all duration-500 ${
+                    shown
+                      ? "opacity-100 translate-y-0 border-white/15 bg-white/[0.04] text-white/90"
+                      : "opacity-0 translate-y-2 border-transparent"
+                  }`}
+                  aria-hidden={!shown}
+                >
+                  <CheckCircle2 className="h-4 w-4 text-white/80 flex-shrink-0" style={{ color: "hsl(195 100% 65%)" }} />
+                  <span className="text-left">{c}</span>
+                </li>
+              );
+            })}
+          </ul>
+        )}
+
+        {/* Final state */}
+        {done && (
+          <div className="animate-fade-in">
+            <div
+              className="mt-6 inline-flex items-center gap-2 rounded-full border border-white/20 bg-white/[0.06] px-4 py-1.5 text-sm font-semibold text-white backdrop-blur-sm"
+              style={{ boxShadow: "0 0 24px hsl(225 100% 62% / 0.25)" }}
+            >
+              {band}
+            </div>
+            <p className="mt-4 text-base sm:text-lg text-white/90">
+              Your Energy IQ: <strong className="tabular-nums text-white">{target} / 100</strong>
+            </p>
+            <div className="mt-6 flex justify-center">
+              <Button
+                onClick={onDone}
+                className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow"
+              >
+                View my Energy IQ summary <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </div>
+            <p className="mt-6 text-xs text-white/50 max-w-md mx-auto">
+              Your Energy IQ is an indicative guide only. It is not a technical design, quote or savings forecast.
+            </p>
+          </div>
+        )}
+      </div>
     </div>
   );
 };
+
 
 const EnergyIQ = () => {
   const [step, setStep] = useState(-1); // -1 = intro, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
