@@ -1023,7 +1023,6 @@ const EnergyIQ = () => {
 
           {/* SCORE */}
           {step === total && revealed && (() => {
-            const story = energyIQStory(answers);
             const outcome = bandOutcome(result.total);
             const priorities = priorityAreas(answers);
             const opps = opportunities(answers);
@@ -1060,13 +1059,19 @@ const EnergyIQ = () => {
                 ))}
               </div>
 
-              {/* Your Energy IQ story — personalised narrative (replaces "What this result suggests" + "Your property profile") */}
+              {/* Your Energy IQ story */}
               <section className="mt-10">
                 <h3 className="text-lg font-display font-semibold text-navy">Your Energy IQ story</h3>
                 <div className="mt-3 space-y-3">
-                  {story.map((para, i) => (
-                    <p key={i} className="text-navy-soft leading-relaxed">{para}</p>
-                  ))}
+                  <p className="text-navy-soft leading-relaxed">
+                    From what you've told us, your property appears to have clear opportunities worth exploring. The aim now is not to look at one technology in isolation, but to understand how your property, energy use and future goals fit together.
+                  </p>
+                  <p className="text-navy-soft leading-relaxed">
+                    Your answers suggest that a practical, prioritised review would be more useful than jumping straight to a single recommendation. Depending on your property suitability, this could include areas such as on-site generation, storage, EV charging, heating efficiency, monitoring or long-term optimisation.
+                  </p>
+                  <p className="text-navy-soft leading-relaxed">
+                    A closer review with Clean Energy Gurus would help confirm what is realistic, what should be prioritised first and which improvements could form part of a sensible energy plan.
+                  </p>
                 </div>
               </section>
 
