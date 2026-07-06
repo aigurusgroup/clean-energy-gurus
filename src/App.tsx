@@ -12,6 +12,8 @@ import Homes from "./pages/Homes";
 import Services from "./pages/Services";
 import Platform from "./pages/Platform";
 import About from "./pages/About";
+import HowWeWork from "./pages/HowWeWork";
+import PartnerNetwork from "./pages/PartnerNetwork";
 import Insights from "./pages/Insights";
 import Contact from "./pages/Contact";
 import Partners from "./pages/Partners";
@@ -105,6 +107,8 @@ const App = () => (
 
           {/* About / Company */}
           <Route path="/about" element={<About />} />
+          <Route path="/about/how-we-work" element={<HowWeWork />} />
+          <Route path="/about/partner-network" element={<PartnerNetwork />} />
           <Route path="/platform" element={<Platform />} />
           <Route path="/contact" element={<Contact />} />
 
