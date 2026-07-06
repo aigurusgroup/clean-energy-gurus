@@ -99,6 +99,7 @@ export const FarmSolar = () => {
         </div>
       </section>
 
+      <SolarMapCTA />
       <FinalCTA />
     </SiteLayout>
   );
