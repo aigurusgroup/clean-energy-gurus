@@ -454,9 +454,6 @@ function nextSteps(answers: Answers): string[] {
   return steps;
 }
 
-function whatThisSuggests(): string {
-  return "From what you've told us, your property appears to have clear areas worth exploring. Your Energy IQ is not just about the score itself — it is designed to help highlight where improvements may be most relevant, where further review would be useful, and what could help you make more confident energy decisions. The next step is to look at your property, usage and goals in more detail so the right opportunities can be prioritised properly.";
-}
 
 
 
