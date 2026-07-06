@@ -71,23 +71,24 @@ const App = () => (
           <Route path="/agriculture/solar" element={<FarmSolar />} />
           <Route path="/agriculture/battery" element={<FarmBattery />} />
           <Route path="/agriculture/resilience" element={<FarmResilience />} />
-          <Route path="/agriculture/solutions" element={<AgriculturalSolutions />} />
+          <Route path="/agriculture/solutions" element={<Navigate to="/agriculture/solar" replace />} />
+          <Route path="/agriculture/battery" element={<Navigate to="/agriculture/solar" replace />} />
           <Route path="/agriculture/overview" element={<Farms />} />
           <Route path="/farms" element={<Navigate to="/agriculture" replace />} />
 
           {/* Energy Optimisation */}
           <Route path="/energy-optimisation" element={<OptimisationHub />} />
           <Route path="/energy-optimisation/monitoring" element={<OptMonitoring />} />
-          <Route path="/energy-optimisation/maintenance" element={<OptMaintenance />} />
+          <Route path="/energy-optimisation/maintenance" element={<Navigate to="/energy-optimisation/monitoring" replace />} />
           <Route path="/energy-optimisation/tariff" element={<OptTariff />} />
-          <Route path="/energy-optimisation/export" element={<OptExport />} />
+          <Route path="/energy-optimisation/export" element={<Navigate to="/energy-optimisation/tariff" replace />} />
           <Route path="/energy-optimisation/battery" element={<OptBattery />} />
-          <Route path="/energy-optimisation/reporting" element={<OptReporting />} />
+          <Route path="/energy-optimisation/reporting" element={<Navigate to="/energy-optimisation/tariff" replace />} />
 
           {/* Legacy service routes → redirects */}
           <Route path="/services" element={<Services />} />
-          <Route path="/services/solar-pv" element={<Navigate to="/residential/solar-pv" replace />} />
-          <Route path="/services/battery-storage" element={<Navigate to="/residential/battery-storage" replace />} />
+          <Route path="/services/solar-pv" element={<Navigate to="/residential/solar-battery" replace />} />
+          <Route path="/services/battery-storage" element={<Navigate to="/residential/solar-battery" replace />} />
           <Route path="/services/ev-charging" element={<Navigate to="/residential/ev-charging" replace />} />
           <Route path="/services/monitoring" element={<Navigate to="/energy-optimisation/monitoring" replace />} />
           <Route path="/services/tariff-optimisation" element={<Navigate to="/energy-optimisation/tariff" replace />} />
@@ -95,9 +96,9 @@ const App = () => (
           {/* Knowledge Centre */}
           <Route path="/knowledge" element={<KnowledgeCentre />} />
           <Route path="/knowledge/articles" element={<KnowledgeArticles />} />
-          <Route path="/knowledge/solar" element={<KnowledgeSolar />} />
-          <Route path="/knowledge/battery" element={<KnowledgeBattery />} />
-          <Route path="/knowledge/ev-charging" element={<KnowledgeEV />} />
+          <Route path="/knowledge/solar" element={<Navigate to="/knowledge/articles" replace />} />
+          <Route path="/knowledge/battery" element={<Navigate to="/knowledge/articles" replace />} />
+          <Route path="/knowledge/ev-charging" element={<Navigate to="/knowledge/articles" replace />} />
           <Route path="/knowledge/videos" element={<KnowledgeVideos />} />
           <Route path="/knowledge/case-studies" element={<KnowledgeCaseStudies />} />
           <Route path="/knowledge/installer-hub" element={<KnowledgeInstallerHub />} />
