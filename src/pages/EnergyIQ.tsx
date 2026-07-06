@@ -212,11 +212,26 @@ function recommend(answers: Answers) {
 
 const STORAGE_KEY = "energyIQ.submissions";
 
-const REVEAL_MS = 3200;
+const REVEAL_MS = 3600;
+
+const CHECKPOINTS = [
+  "Property profile analysed",
+  "Energy goals reviewed",
+  "Technology opportunities identified",
+  "Optimisation potential calculated",
+];
+
+function bandForScore(score: number) {
+  if (score >= 80) return "High Performing Property";
+  if (score >= 60) return "Strong Opportunity";
+  if (score >= 40) return "Developing Potential";
+  return "Early Opportunity";
+}
 
 const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void }) => {
   const [display, setDisplay] = useState(0);
   const [done, setDone] = useState(false);
+  const [visibleCheckpoints, setVisibleCheckpoints] = useState(0);
   const startRef = useRef<number | null>(null);
   const rafRef = useRef<number | null>(null);
 
@@ -226,6 +241,7 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
       window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
     if (prefersReduced) {
       setDisplay(target);
+      setVisibleCheckpoints(CHECKPOINTS.length);
       setDone(true);
       return;
     }
@@ -233,8 +249,7 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
       if (startRef.current === null) startRef.current = ts;
       const elapsed = ts - startRef.current;
       const t = Math.min(1, elapsed / REVEAL_MS);
-      // easeOutCubic
-      const eased = 1 - Math.pow(1 - t, 3);
+      const eased = 1 - Math.pow(1 - t, 3); // easeOutCubic
       setDisplay(Math.round(eased * target));
       if (t < 1) {
         rafRef.current = requestAnimationFrame(step);
@@ -243,29 +258,41 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
       }
     };
     rafRef.current = requestAnimationFrame(step);
+
+    // Stagger checkpoint reveals across the animation
+    const timers = CHECKPOINTS.map((_, i) =>
+      window.setTimeout(
+        () => setVisibleCheckpoints((n) => Math.max(n, i + 1)),
+        450 + i * ((REVEAL_MS - 700) / CHECKPOINTS.length),
+      ),
+    );
+
     return () => {
       if (rafRef.current) cancelAnimationFrame(rafRef.current);
+      timers.forEach((id) => clearTimeout(id));
     };
   }, [target]);
 
-  const stages = [
-    "Property suitability",
-    "Energy use profile",
-    "Technology readiness",
-    "Optimisation potential",
-  ];
-  const progress = target > 0 ? display / target : done ? 1 : 0;
-  const activeStage = Math.min(stages.length - 1, Math.floor(progress * stages.length));
-
-  const size = 220;
+  const size = 240;
   const stroke = 14;
   const radius = (size - stroke) / 2;
   const circumference = 2 * Math.PI * radius;
   const pct = Math.min(1, display / 100);
   const dashOffset = circumference * (1 - pct);
+  const band = bandForScore(target);
 
   return (
-    <div className="card-premium p-8 lg:p-12 text-center" role="status" aria-live="polite">
+    <div
+      className="card-premium p-6 sm:p-8 lg:p-12 text-center"
+      role="status"
+      aria-live="polite"
+      aria-atomic="true"
+    >
+      {/* Screen-reader-friendly result (always available, not animation-dependent) */}
+      <p className="sr-only">
+        Your Energy IQ is {target} out of 100. Category: {band}.
+      </p>
+
       {!done ? (
         <>
           <span className="eyebrow"><Gauge className="h-3.5 w-3.5" /> Energy IQ</span>
@@ -278,16 +305,38 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
         </>
       ) : (
         <>
-          <span className="eyebrow"><CheckCircle2 className="h-3.5 w-3.5" /> Ready</span>
-          <h2 className="mt-4 text-2xl lg:text-3xl font-display font-semibold text-navy">
+          <span className="eyebrow animate-fade-in"><CheckCircle2 className="h-3.5 w-3.5" /> Ready</span>
+          <h2 className="mt-4 text-2xl lg:text-3xl font-display font-semibold text-navy animate-fade-in">
             Your Energy IQ is ready.
           </h2>
         </>
       )}
 
       <div className="mt-10 flex justify-center">
-        <div className="relative" style={{ width: size, height: size }}>
-          <svg width={size} height={size} className="-rotate-90">
+        <div
+          className="relative"
+          style={{ width: size, height: size, maxWidth: "80vw", maxHeight: "80vw" }}
+        >
+          {/* Soft ambient glow behind ring */}
+          <div
+            className={`absolute inset-4 rounded-full bg-gradient-electric opacity-20 blur-2xl transition-opacity duration-700 ${
+              done ? "opacity-40" : "opacity-15"
+            }`}
+            aria-hidden="true"
+          />
+          <svg
+            width="100%"
+            height="100%"
+            viewBox={`0 0 ${size} ${size}`}
+            className={`-rotate-90 relative ${done ? "iq-ring-pulse" : ""}`}
+          >
+            <defs>
+              <linearGradient id="iq-ring-gradient" x1="0%" y1="0%" x2="100%" y2="100%">
+                <stop offset="0%" stopColor="hsl(260 85% 62%)" />
+                <stop offset="50%" stopColor="hsl(230 95% 60%)" />
+                <stop offset="100%" stopColor="hsl(200 100% 55%)" />
+              </linearGradient>
+            </defs>
             <circle
               cx={size / 2}
               cy={size / 2}
@@ -301,16 +350,19 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
               cy={size / 2}
               r={radius}
               strokeWidth={stroke}
-              stroke="hsl(var(--electric, 200 90% 50%))"
+              stroke="url(#iq-ring-gradient)"
               strokeLinecap="round"
               fill="none"
               strokeDasharray={circumference}
               strokeDashoffset={dashOffset}
-              style={{ transition: "stroke-dashoffset 120ms linear" }}
+              style={{
+                transition: "stroke-dashoffset 120ms linear",
+                filter: "drop-shadow(0 0 6px hsl(230 95% 60% / 0.35))",
+              }}
             />
           </svg>
           <div className="absolute inset-0 flex flex-col items-center justify-center">
-            <div className="text-5xl font-display font-semibold text-navy tabular-nums">
+            <div className="text-5xl sm:text-6xl font-display font-semibold text-navy tabular-nums">
               {display}
             </div>
             <div className="text-xs uppercase tracking-[0.18em] text-navy-soft mt-1">
@@ -320,40 +372,36 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
         </div>
       </div>
 
+      {/* Checkpoints — visible during animation, hidden once revealed */}
       {!done && (
-        <div className="mt-8 grid gap-2 max-w-sm mx-auto text-sm">
-          {stages.map((s, i) => {
-            const isActive = i === activeStage;
-            const isDoneStage = i < activeStage;
+        <ul className="mt-8 grid gap-2 max-w-sm mx-auto text-sm">
+          {CHECKPOINTS.map((c, i) => {
+            const shown = i < visibleCheckpoints;
             return (
-              <div
-                key={s}
-                className={`flex items-center justify-between rounded-lg px-3 py-2 border transition-all ${
-                  isActive
-                    ? "border-electric bg-electric/5 text-navy"
-                    : isDoneStage
-                    ? "border-border text-navy-soft"
-                    : "border-border/60 text-muted-foreground"
+              <li
+                key={c}
+                className={`flex items-center gap-3 rounded-lg px-3 py-2 border transition-all duration-500 ${
+                  shown
+                    ? "opacity-100 translate-y-0 border-electric/40 bg-electric/5 text-navy"
+                    : "opacity-0 translate-y-2 border-transparent"
                 }`}
+                aria-hidden={!shown}
               >
-                <span>{s}</span>
-                {isDoneStage ? (
-                  <CheckCircle2 className="h-4 w-4 text-electric" />
-                ) : isActive ? (
-                  <span className="h-2 w-2 rounded-full bg-electric animate-pulse" />
-                ) : (
-                  <span className="h-2 w-2 rounded-full bg-border" />
-                )}
-              </div>
+                <CheckCircle2 className="h-4 w-4 text-electric flex-shrink-0" />
+                <span className="text-left">{c}</span>
+              </li>
             );
           })}
-        </div>
+        </ul>
       )}
 
       {done && (
-        <>
-          <p className="mt-6 text-lg text-navy">
-            Your Energy IQ: <strong>{target} / 100</strong>
+        <div className="animate-fade-in">
+          <div className="mt-6 inline-flex items-center gap-2 rounded-full border border-electric/40 bg-electric/5 px-4 py-1.5 text-sm font-semibold text-electric">
+            {band}
+          </div>
+          <p className="mt-4 text-lg text-navy">
+            Your Energy IQ: <strong className="tabular-nums">{target} / 100</strong>
           </p>
           <div className="mt-6 flex justify-center">
             <Button
@@ -366,8 +414,9 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
           <p className="mt-6 text-xs text-muted-foreground max-w-md mx-auto">
             Your Energy IQ is an indicative guide only. It is not a technical design, quote or savings forecast.
           </p>
-        </>
+        </div>
       )}
+
     </div>
   );
 };
