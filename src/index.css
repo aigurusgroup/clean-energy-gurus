@@ -131,3 +131,10 @@
   .bg-navy { background-color: hsl(var(--navy)); }
   .border-electric { border-color: hsl(var(--electric)); }
 }
+
+@keyframes iq-ring-pulse {
+  0% { filter: drop-shadow(0 0 4px hsl(230 95% 60% / 0.3)); transform: rotate(-90deg) scale(1); }
+  50% { filter: drop-shadow(0 0 18px hsl(230 95% 60% / 0.55)); transform: rotate(-90deg) scale(1.015); }
+  100% { filter: drop-shadow(0 0 6px hsl(230 95% 60% / 0.35)); transform: rotate(-90deg) scale(1); }
+}
+.iq-ring-pulse { animation: iq-ring-pulse 1.6s ease-out 1; transform-origin: center; }
