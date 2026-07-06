@@ -452,7 +452,7 @@ function nextSteps(answers: Answers): string[] {
 
 
 
-const REVEAL_MS = 3800;
+const REVEAL_MS = 6000;
 
 const CHECKPOINTS = [
   "Property profile reviewed",
