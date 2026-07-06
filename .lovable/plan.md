@@ -1,29 +1,64 @@
-## Publish current preview to Lovable URL
+## Rebuild the home hero to match the reference
 
-Deploy the current preview build to the project's Lovable-hosted URL so all recent changes go live.
+Restructure the existing `src/components/site/Hero.tsx` into the two-column layout shown in the reference, while keeping current copy, routes, CTAs, and the four live tiles. Nothing will be published.
 
-### What will go live
-- Solar Suitability Map page wording updates
-- New legal pages: `/terms`, `/privacy`, `/complaints`, `/quality` (with Clean Energy Gurus Limited, company no. 17191107, registered office in Barnsley)
-- Footer updated with legal page links and correct company name
-- Partner Network "Become an Installer Partner" CTA linking to `/partners`
+### New layout (desktop)
 
-### Heads-up before publishing
-The legal pages still contain `[REPLACE — …]` placeholders that will appear publicly:
-- ICO registration number
-- Privacy email, general enquiries email/phone
-- Governing law (E&W / Scotland / NI)
-- Complaints email, phone, postal address, response SLAs, escalation body
-- Data retention periods
-- Quality feedback email
-- "Last reviewed" dates on each legal page
+```text
+┌─────────────────────────────────────────────────────────────┐
+│ • UK MANAGED ENERGY PLATFORM                                │
+│                                ┌─ Save Money ─┐ ┌─ Gain Control ─┐
+│ Lower costs.                   └────────┐   └────────┘
+│ Greater control.                        ▼       ▼
+│ More energy confidence.            ╭───────────────╮
+│                                    │ ENERGY IQ®    │
+│ We help UK homeowners…             │    SCORE      │
+│                                    │      74       │
+│ [ Get Your Energy IQ → ]           │    Good ✓     │
+│ [ Estimate My Solar   ]            │  better than  │
+│                                    │  74% similar  │
+│ Solar PV, battery storage…         ╰───────────────╯
+│                                ┌ Increase Value ┐ ┌ Future-Proof ┐
+│                                └────────────────┘ └──────────────┘
+├─────────────────────────────────────────────────────────────┤
+│ [LIVE 14.2kW] [BATTERY 86%] [EV 3] [TARIFF 6h window]        │
+└─────────────────────────────────────────────────────────────┘
+```
 
-Publishing now means these placeholder markers will be visible on the live legal pages until replaced.
+Mobile: single column — text and CTAs first, gauge second, live tiles last.
 
-### Steps
-1. Run a security scan and check results for any critical findings.
-2. If clear, publish to the Lovable-managed URL (`*.lovable.app`).
-3. Confirm the live URL and note that deployment takes ~1 minute to be reachable.
-4. Remind you that a custom domain can be connected afterwards from Project settings → Domains, and the Lovable slug can be renamed if desired.
+### Elements to build
 
-No code, content, or visibility settings will be changed. Visibility stays at its current setting (public by default).
+1. **Left column** — keep existing eyebrow, headline (gradient on last line), sub-copy, two CTA buttons (`/energy-iq`, `/solar-calculator`), and the sub-note with a small shield icon.
+2. **Right column — Energy IQ score gauge (decorative only)**
+   - SVG circular gauge using the existing electric→blue gradient.
+   - Center: `ENERGY IQ® SCORE`, big `74`, green `Good ✓`, sub-line "You're performing better than 74% of similar properties".
+   - No interaction, no scoring logic changes.
+3. **Four floating label cards** around the gauge (Save Money, Gain Control, Increase Value, Future-Proof) with small circular icons and thin connector lines. Icons: `PoundSterling`, `SlidersHorizontal`, `Home`, `Leaf` from `lucide-react`.
+4. **Bottom stat row** — reuse the four existing tiles (Live / Battery / EV / Tariff) but add icons (`SunMedium`, `BatteryCharging`, `Car`, `Clock`) and a large tinted value line as in the mock.
+5. **Background** — keep existing grid + arc glow, softened so the gauge stays legible.
+
+### What will NOT change
+
+- Header, footer, routes, navigation, tokens, Energy IQ questionnaire, scoring logic, other pages.
+- CTA destinations and copy stay as-is.
+- No new dependencies; all icons already in `lucide-react`.
+- Uses existing semantic tokens (`text-navy`, `bg-gradient-electric`, `card-premium`, `text-electric`). No hardcoded colours.
+
+### Files touched
+
+- `src/components/site/Hero.tsx` — full refactor of layout, add gauge SVG, floating label cards, iconised tiles.
+
+### Responsive behaviour
+
+- `lg`: two columns, gauge ~520px.
+- `md`: single column, gauge ~380px.
+- `sm`: floating labels stack tightly; connector lines hidden to prevent overlap; live tiles remain 2×2.
+
+### Out of scope (ask before doing)
+
+- Making the gauge dynamic from real Energy IQ data.
+- Adding a pylon photograph.
+- Restyling the header/logo.
+
+Nothing will be published as part of this change.
