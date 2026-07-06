@@ -5,48 +5,42 @@ const cols = [
   {
     title: "Residential",
     links: [
-      ["Solar PV", "/residential/solar-pv"],
-      ["Battery Storage", "/residential/battery-storage"],
+      ["Solar & Battery", "/residential/solar-battery"],
       ["EV Charging", "/residential/ev-charging"],
-      ["Solar + Battery", "/residential/solar-battery"],
-      ["Home Energy Review", "/contact?type=residential"],
+      ["Residential Energy Review", "/contact?type=residential"],
     ],
   },
   {
-    title: "Business & Agriculture",
+    title: "Business",
     links: [
       ["Commercial Solar", "/business/commercial-solar"],
       ["Workplace EV Charging", "/business/workplace-ev"],
-      ["Commercial Battery", "/business/commercial-battery"],
       ["Landlords & Portfolios", "/business/landlords"],
-      ["Farm Energy", "/agriculture"],
+    ],
+  },
+  {
+    title: "Agriculture",
+    links: [
+      ["Farm Solar & Battery", "/agriculture/solar"],
+      ["Farm Energy Resilience", "/agriculture/resilience"],
+      ["Farm Energy Review", "/contact?type=agriculture"],
     ],
   },
   {
     title: "Energy Optimisation",
     links: [
-      ["Monitoring", "/energy-optimisation/monitoring"],
-      ["Maintenance", "/energy-optimisation/maintenance"],
-      ["Tariff Optimisation", "/energy-optimisation/tariff"],
-      ["Export Optimisation", "/energy-optimisation/export"],
+      ["Monitoring & Maintenance", "/energy-optimisation/monitoring"],
+      ["Tariff & Export Optimisation", "/energy-optimisation/tariff"],
       ["Battery Optimisation", "/energy-optimisation/battery"],
-      ["Performance Reporting", "/energy-optimisation/reporting"],
     ],
   },
   {
-    title: "Knowledge Centre",
+    title: "Knowledge & Company",
     links: [
       ["Articles & Guides", "/knowledge/articles"],
       ["Video Library", "/knowledge/videos"],
       ["Case Studies", "/knowledge/case-studies"],
-      ["Installer Partner Hub", "/knowledge/installer-hub"],
-    ],
-  },
-  {
-    title: "Company",
-    links: [
-      ["About", "/about"],
-      ["Our Partner Network", "/about#partners"],
+      ["About Us", "/about"],
       ["Become an Installer Partner", "/partners"],
       ["Contact", "/contact"],
     ],
