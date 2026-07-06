@@ -212,6 +212,251 @@ function recommend(answers: Answers) {
 
 const STORAGE_KEY = "energyIQ.submissions";
 
+// ————— Personalised result helpers —————
+
+type Segment = "home" | "business" | "landlord" | "agri";
+
+function segmentFor(answers: Answers): Segment {
+  const u = answers.userType;
+  if (u === "business") return "business";
+  if (u === "landlord") return "landlord";
+  if (u === "agri") return "agri";
+  if (answers.propertyType === "commercial") return "business";
+  if (answers.propertyType === "agri") return "agri";
+  return "home";
+}
+
+function propertyNoun(segment: Segment) {
+  switch (segment) {
+    case "business": return "business";
+    case "landlord": return "property";
+    case "agri": return "site";
+    default: return "home";
+  }
+}
+
+function propertyProfileSummary(answers: Answers): string {
+  const seg = segmentFor(answers);
+  const space = answers.spaceSuitability;
+  const goal = answers.goal;
+  const heating = answers.heating;
+  const solar = answers.solar;
+  const battery = answers.battery;
+  const ev = answers.ev;
+  const monitoring = answers.monitoring;
+  const timeline = answers.timeline;
+  const postcode = (answers.postcode || "").trim();
+
+  const parts: string[] = [];
+
+  // Opening line by segment
+  if (seg === "business") {
+    parts.push(
+      "From what you've told us, energy cost control and long-term visibility appear to be important considerations for your business.",
+    );
+  } else if (seg === "agri") {
+    parts.push(
+      "From what you've told us, resilience, energy cost control and making better use of available roof or land space may be important priorities for your site.",
+    );
+  } else if (seg === "landlord") {
+    parts.push(
+      "From what you've told us, the property may benefit from a practical review of energy performance, tenant appeal and future infrastructure needs.",
+    );
+  } else {
+    parts.push(
+      "From what you've told us, your home may have opportunities to improve energy control and make better use of clean energy technology.",
+    );
+  }
+
+  // Space / suitability
+  if (space === "plenty" || space === "some") {
+    parts.push(
+      seg === "agri"
+        ? "It looks like there is workable roof or land space that could support on-site generation, subject to a closer review."
+        : "It looks like there may be suitable space on the property to support on-site generation, subject to a closer review.",
+    );
+  } else if (space === "limited") {
+    parts.push(
+      "Space appears more limited, so any on-site generation would need a careful feasibility review to confirm what is realistic.",
+    );
+  }
+
+  // Existing tech nuance
+  if (solar === "yes" && battery === "yes") {
+    parts.push(
+      "With solar and battery already in place, there may be an opportunity to look more closely at how the system is performing, how it is being used and whether tariffs or optimisation could add further value.",
+    );
+  } else if (solar === "yes") {
+    parts.push(
+      "With solar already installed, adding storage or better optimisation could be worth exploring to make more of what you generate.",
+    );
+  } else if (solar === "planning") {
+    parts.push(
+      "As you're already looking at solar, a closer feasibility review could help confirm sizing, layout and how it fits with other opportunities.",
+    );
+  }
+
+  // Heating
+  if (heating === "gas" || heating === "oil") {
+    parts.push(
+      "Your current heating setup may also be worth reviewing over time as part of a wider efficiency plan.",
+    );
+  }
+
+  // EV
+  if (ev === "need") {
+    parts.push(
+      seg === "business" || seg === "landlord"
+        ? "Preparing for EV charging — for staff, visitors or tenants — could be a sensible area to plan into your wider energy thinking."
+        : "Planning for EV charging alongside any other upgrades could help avoid duplicated work later on.",
+    );
+  }
+
+  // Monitoring
+  if (monitoring === "no" || monitoring === "interested") {
+    parts.push(
+      "Better visibility of how energy is being used could also help you make more confident decisions about what to prioritise next.",
+    );
+  }
+
+  // Goal-led close
+  if (goal === "cost") {
+    parts.push("Given the focus on lowering costs, a practical, prioritised plan is likely to be more valuable than any single upgrade in isolation.");
+  } else if (goal === "independence" || goal === "resilience") {
+    parts.push("Given the focus on greater independence, the right combination of generation, storage and control would be worth exploring together.");
+  } else if (goal === "sustainability") {
+    parts.push("Given the sustainability focus, sequencing improvements sensibly is likely to make the biggest long-term difference.");
+  } else if (goal === "improvement") {
+    parts.push("Given the interest in property improvement, a phased plan could support both performance and long-term value.");
+  } else if (goal === "ev") {
+    parts.push("Given EV charging is a priority, it's worth thinking about how this fits with any wider generation or storage plans.");
+  }
+
+  // Timeline & location
+  if (timeline === "now" || timeline === "soon") {
+    parts.push("As you're looking to move relatively soon, a closer conversation would help make sure the right things are prioritised in the right order.");
+  } else if (timeline === "explore") {
+    parts.push("At this early stage, the goal is simply to help you build a clearer picture so any future decisions feel more confident.");
+  }
+
+  if (postcode) {
+    parts.push(`Your ${postcode} location can also be factored in when looking at what may be most relevant locally.`);
+  }
+
+  return parts.join(" ");
+}
+
+function priorityAreas(answers: Answers): string[] {
+  const list: string[] = [];
+  const seg = segmentFor(answers);
+
+  if (answers.goal === "cost" || answers.billBand === "high" || answers.billBand === "vhigh") {
+    list.push("Lower energy costs");
+  }
+  if (answers.solar !== "yes" && answers.spaceSuitability !== "limited") {
+    list.push("On-site generation");
+  }
+  if (answers.battery !== "yes") {
+    list.push("Storage and flexibility");
+  }
+  if (answers.ev === "need" || answers.ev === "have") {
+    list.push("EV charging readiness");
+  }
+  if (answers.heating === "gas" || answers.heating === "oil" || answers.heating === "electric") {
+    list.push("Heating and efficiency");
+  }
+  if (answers.monitoring === "no" || answers.monitoring === "interested" || answers.monitoring === "basic") {
+    list.push("Monitoring and optimisation");
+  }
+  if (answers.goal === "resilience" || answers.goal === "independence") {
+    list.push("Resilience and backup");
+  }
+  if (answers.spaceSuitability === "unsure" || answers.spaceSuitability === "limited") {
+    list.push("Property suitability review");
+  }
+  if (answers.timeline === "year" || answers.timeline === "explore" || seg === "landlord" || seg === "business") {
+    list.push("Long-term energy planning");
+  }
+
+  // De-dupe and cap
+  return Array.from(new Set(list)).slice(0, 6);
+}
+
+type Opportunity = { title: string; body: string };
+
+function opportunities(answers: Answers): Opportunity[] {
+  const out: Opportunity[] = [];
+
+  if (answers.solar !== "yes") {
+    out.push({
+      title: "Solar PV",
+      body:
+        "Solar PV may be worth exploring if your property has suitable roof or land space. A technical review would help confirm what is realistic and whether it fits your wider goals.",
+    });
+  }
+  if (answers.battery !== "yes") {
+    out.push({
+      title: "Battery storage",
+      body:
+        "Battery storage could be relevant if you want to improve flexibility, make better use of solar generation or reduce reliance on peak-rate electricity. Suitability would depend on your usage profile and system design.",
+    });
+  }
+  if (answers.ev === "need" || answers.ev === "have") {
+    out.push({
+      title: "EV charging",
+      body:
+        "EV charging could form part of your wider energy plan, especially if you are preparing for home, workplace or tenant charging needs. The next step would be to review parking, electrical capacity and likely usage.",
+    });
+  }
+  if (answers.heating === "gas" || answers.heating === "oil" || answers.heating === "electric") {
+    out.push({
+      title: "Air source heat pumps",
+      body:
+        "Air source heat pumps may be worth considering as part of a wider heating and efficiency plan. Property suitability, insulation, hot water demand and system design would all need to be reviewed.",
+    });
+  }
+  if (answers.monitoring !== "active") {
+    out.push({
+      title: "Monitoring & optimisation",
+      body:
+        "Monitoring and optimisation could help you better understand how energy is being used, how systems are performing and where improvements may be possible over time.",
+    });
+  }
+  if (answers.goal === "resilience" || answers.goal === "independence") {
+    out.push({
+      title: "Energy resilience",
+      body:
+        "Energy resilience may be important if continuity, backup capability or greater independence are priorities for your property or site.",
+    });
+  }
+
+  return out.slice(0, 6);
+}
+
+function nextSteps(answers: Answers): string[] {
+  const seg = segmentFor(answers);
+  const noun = propertyNoun(seg);
+  const steps: string[] = [
+    "Review your Energy IQ summary at your own pace.",
+    `Look more closely at your ${noun}, current usage and what you'd like to achieve.`,
+    "Confirm what is technically suitable through a closer property review.",
+    "Prioritise the opportunities that are most relevant to your goals.",
+  ];
+  if (seg === "business") {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to shape a practical plan for your business.");
+  } else if (seg === "landlord") {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to see how it could support tenant appeal and long-term property performance.");
+  } else if (seg === "agri") {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to explore what could work as part of a practical farm energy plan.");
+  } else {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to talk through what may be worth prioritising for your home.");
+  }
+  return steps;
+}
+
+
+
+
 const REVEAL_MS = 3800;
 
 const CHECKPOINTS = [
@@ -637,7 +882,7 @@ const EnergyIQ = () => {
   const currentQ = step >= 0 && step < total ? QUESTIONS[step] : null;
   const result = useMemo(() => scoreAnswers(answers), [answers]);
   const band = categoryBand(result.total);
-  const recommendations = useMemo(() => recommend(answers), [answers]);
+  // `recommend()` retained in helpers for compatibility; result page uses richer personalised sections instead.
   const progress = step >= 0 && step < total ? Math.round(((step) / total) * 100) : 0;
 
   const canAdvance = currentQ
@@ -782,7 +1027,12 @@ const EnergyIQ = () => {
           )}
 
           {/* SCORE */}
-          {step === total && revealed && (
+          {step === total && revealed && (() => {
+            const profile = propertyProfileSummary(answers);
+            const priorities = priorityAreas(answers);
+            const opps = opportunities(answers);
+            const steps = nextSteps(answers);
+            return (
             <div className="card-premium p-8 lg:p-10 animate-fade-in">
               <span className="eyebrow"><Gauge className="h-3.5 w-3.5" /> Your indicative Energy IQ</span>
               <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-end gap-6">
@@ -794,10 +1044,6 @@ const EnergyIQ = () => {
                 </div>
                 <p className="text-navy-soft leading-relaxed sm:pb-2">{band.tone}</p>
               </div>
-
-              <p className="mt-6 text-sm text-navy-soft leading-relaxed">
-                Your Energy IQ score gives you an indicative view of your property's current energy position. It considers key areas such as property suitability, energy usage, existing technology, future goals and opportunities for monitoring or optimisation. Your result is not a final design, quote or savings forecast. It is a starting point to help you understand what may be worth exploring next.
-              </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {result.perCategory.map((c) => (
@@ -813,17 +1059,76 @@ const EnergyIQ = () => {
                 ))}
               </div>
 
-              <div className="mt-8">
-                <h3 className="text-lg font-display font-semibold text-navy">Recommended next steps</h3>
-                <ul className="mt-3 space-y-2">
-                  {recommendations.map((r) => (
-                    <li key={r} className="flex items-start gap-2 text-sm text-navy">
-                      <CheckCircle2 className="h-5 w-5 text-electric flex-shrink-0 mt-0.5" />
-                      <span>{r}</span>
+              {/* What this result suggests */}
+              <section className="mt-10">
+                <h3 className="text-lg font-display font-semibold text-navy">What this result suggests</h3>
+                <p className="mt-3 text-navy-soft leading-relaxed">
+                  From what you've told us, your property appears to have clear areas worth exploring. Your Energy IQ is not just about the score itself — it is designed to help highlight where improvements may be most relevant, where further review would be useful, and what could help you make more confident energy decisions.
+                </p>
+                <p className="mt-3 text-navy-soft leading-relaxed">
+                  The next step is to look at your property, usage and goals in more detail so the right opportunities can be prioritised properly.
+                </p>
+              </section>
+
+              {/* Your property profile */}
+              <section className="mt-10">
+                <h3 className="text-lg font-display font-semibold text-navy">Your property profile</h3>
+                <p className="mt-3 text-navy-soft leading-relaxed">{profile}</p>
+              </section>
+
+              {/* Your priority areas */}
+              {priorities.length > 0 && (
+                <section className="mt-10">
+                  <h3 className="text-lg font-display font-semibold text-navy">Your priority areas</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Areas that stood out from your Energy IQ and could be worth a closer look.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {priorities.map((p) => (
+                      <span
+                        key={p}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-electric/30 bg-electric/5 px-3 py-1.5 text-xs font-medium text-navy"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-electric" />
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Key opportunities to explore */}
+              {opps.length > 0 && (
+                <section className="mt-10">
+                  <h3 className="text-lg font-display font-semibold text-navy">Key opportunities to explore</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    These are areas that could be relevant based on what you've shared. None of them are recommendations — they are simply worth exploring further.
+                  </p>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    {opps.map((o) => (
+                      <article key={o.title} className="rounded-xl border border-border bg-surface/40 p-5">
+                        <h4 className="text-base font-display font-semibold text-navy">{o.title}</h4>
+                        <p className="mt-2 text-sm text-navy-soft leading-relaxed">{o.body}</p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Suggested next steps */}
+              <section className="mt-10">
+                <h3 className="text-lg font-display font-semibold text-navy">Suggested next steps</h3>
+                <ol className="mt-4 space-y-3">
+                  {steps.map((s, i) => (
+                    <li key={s} className="flex items-start gap-3 text-sm text-navy">
+                      <span className="mt-0.5 grid h-6 w-6 flex-shrink-0 place-items-center rounded-full bg-electric/10 text-electric text-xs font-semibold">
+                        {i + 1}
+                      </span>
+                      <span className="leading-relaxed">{s}</span>
                     </li>
                   ))}
-                </ul>
-              </div>
+                </ol>
+              </section>
 
               <div className="mt-8 rounded-xl bg-surface border border-border p-4 text-xs text-muted-foreground leading-relaxed">
                 Your Energy IQ score is an indicative guide based on the information provided. It is not a technical design, EPC rating, financial forecast, savings calculation or installation recommendation. Any proposal, projected saving or installation decision would require a full property review, technical assessment and confirmation of suitability.
@@ -841,7 +1146,9 @@ const EnergyIQ = () => {
                 </Button>
               </div>
             </div>
-          )}
+            );
+          })()}
+
 
           {/* LEAD CAPTURE */}
           {step === total + 1 && (
