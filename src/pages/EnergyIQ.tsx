@@ -23,7 +23,7 @@ const QUESTIONS: Question[] = [
   {
     id: "propertyType",
     category: "property",
-    label: "What type of property is this?",
+    label: "What best describes your property?",
     options: [
       { value: "detached", label: "Detached house", points: 10 },
       { value: "semi", label: "Semi-detached / terraced", points: 8 },
