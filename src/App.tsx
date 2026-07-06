@@ -12,6 +12,7 @@ import PartnerNetwork from "./pages/PartnerNetwork";
 import Contact from "./pages/Contact";
 import Partners from "./pages/Partners";
 import SolarCalculatorPage from "./pages/SolarCalculatorPage";
+import EnergyIQ from "./pages/EnergyIQ";
 import { EVCharging } from "./pages/ServicePages";
 import { ResidentialHub, ResidentialSolarBattery } from "./pages/residential/ResidentialPages";
 import { BusinessHub, CommercialSolar, WorkplaceEV } from "./pages/business/BusinessPages";
@@ -55,6 +56,7 @@ const App = () => (
           <Route path="/residential/air-source-heat-pumps" element={<AirSourceHeatPumps />} />
           <Route path="/homes" element={<Navigate to="/residential" replace />} />
           <Route path="/solar-calculator" element={<SolarCalculatorPage />} />
+          <Route path="/energy-iq" element={<EnergyIQ />} />
 
           {/* Business */}
           <Route path="/business" element={<BusinessHub />} />

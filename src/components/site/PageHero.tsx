@@ -15,9 +15,9 @@ export const PageHero = ({ eyebrow, title, lead, image, cta = true }: { eyebrow:
           <p className="mt-6 text-lg text-navy-soft leading-relaxed max-w-2xl">{lead}</p>
           {cta && (
             <div className="mt-8 flex flex-wrap gap-3">
-              <Link to="/contact">
+              <Link to="/energy-iq">
                 <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow">
-                  Get a Free Energy Review <ArrowRight className="ml-1.5 h-4 w-4" />
+                  Get Your Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </Link>
               <Link to="/services">

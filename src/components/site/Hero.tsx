@@ -61,9 +61,9 @@ export const Hero = () => (
           We help UK homeowners, businesses, farms and landlords understand their property's energy position and make smarter, better-supported decisions — with long-term support built in.
         </p>
         <div className="mt-9 flex flex-col sm:flex-row gap-3 justify-center">
-          <Link to="/contact">
+          <Link to="/energy-iq">
             <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow hover:shadow-elegant">
-              Get a Free Energy Review <ArrowRight className="ml-1.5 h-4 w-4" />
+              Get Your Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Link>
           <Link to="/solar-calculator">
