@@ -521,9 +521,14 @@ const EnergyIQ = () => {
             </div>
           )}
 
+          {/* SCORE REVEAL ANIMATION */}
+          {step === total && !revealed && (
+            <ScoreReveal target={result.total} onDone={() => setRevealed(true)} />
+          )}
+
           {/* SCORE */}
-          {step === total && (
-            <div className="card-premium p-8 lg:p-10">
+          {step === total && revealed && (
+            <div className="card-premium p-8 lg:p-10 animate-fade-in">
               <span className="eyebrow"><Gauge className="h-3.5 w-3.5" /> Your indicative Energy IQ</span>
               <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-end gap-6">
                 <div>
