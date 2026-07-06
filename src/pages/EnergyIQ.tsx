@@ -581,7 +581,7 @@ const EnergyIQ = () => {
                 >
                   Get my full summary <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
-                <Button variant="outline" className="rounded-full h-12" onClick={() => { setAnswers({}); setStep(-1); }}>
+                <Button variant="outline" className="rounded-full h-12" onClick={() => { setAnswers({}); setRevealed(false); setStep(-1); }}>
                   Start again
                 </Button>
               </div>
