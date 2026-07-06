@@ -23,7 +23,7 @@ const DraftNotice = () => (
     <AlertTriangle className="h-5 w-5 flex-shrink-0 mt-0.5" />
     <div className="text-sm leading-relaxed">
       <strong className="font-semibold">Draft — pending review.</strong>{" "}
-      This page is a working template maintained by Clean Energy Gurus Ltd. Text marked{" "}
+      This page is a working template maintained by Clean Energy Gurus Limited. Text marked{" "}
       <code className="px-1 py-0.5 rounded bg-amber-100 text-amber-900 text-[12px]">[REPLACE]</code>{" "}
       must be completed with verified company details before this page is treated as a
       finalised policy. This is not legal advice.
@@ -52,7 +52,7 @@ const LegalPage = ({ metaTitle, metaDesc, eyebrow, title, lead, lastReviewed, se
         <div className="container-tight max-w-3xl">
           <DraftNotice />
           <p className="mt-6 text-xs text-muted-foreground">
-            This page is maintained by Clean Energy Gurus Ltd to describe our current
+            This page is maintained by Clean Energy Gurus Limited to describe our current
             practices for the Clean Energy Gurus website and services. Last reviewed:{" "}
             {lastReviewed}.
           </p>
@@ -69,9 +69,9 @@ const LegalPage = ({ metaTitle, metaDesc, eyebrow, title, lead, lastReviewed, se
             ))}
           </div>
           <div className="mt-14 pt-8 border-t border-border text-xs text-muted-foreground">
-            Clean Energy Gurus Ltd. Registered in England &amp; Wales.
-            Company No. <code>[REPLACE — company number]</code>.
-            Registered office: <code>[REPLACE — registered office address]</code>.
+            Clean Energy Gurus Limited. Registered in England &amp; Wales.
+            Company No. 17191107.
+            Registered office: Old Linen Court, 83–85 Shambles Street, Barnsley, S70 2SB.
             General enquiries: <code>[REPLACE — email]</code> ·{" "}
             <code>[REPLACE — phone]</code>.
           </div>
@@ -97,10 +97,10 @@ export const Terms = () => (
         heading: "1. About us",
         body: (
           <p>
-            The Clean Energy Gurus website is operated by Clean Energy Gurus Ltd,
-            registered in England &amp; Wales (Company No. <code>[REPLACE]</code>),
-            registered office <code>[REPLACE — registered office address]</code>.
-            References to "we", "us" and "our" mean Clean Energy Gurus Ltd.
+            The Clean Energy Gurus website is operated by Clean Energy Gurus Limited,
+            registered in England &amp; Wales (Company No. 17191107),
+            registered office Old Linen Court, 83–85 Shambles Street, Barnsley, S70 2SB.
+            References to "we", "us" and "our" mean Clean Energy Gurus Limited.
           </p>
         ),
       },
@@ -164,7 +164,7 @@ export const Terms = () => (
         body: (
           <p>
             All content on this website, including text, imagery, logos and design,
-            is owned by or licensed to Clean Energy Gurus Ltd and protected by
+            is owned by or licensed to Clean Energy Gurus Limited and protected by
             applicable intellectual property laws. You may view and share content
             for personal, non-commercial use. Any other use requires our prior
             written consent.
@@ -242,9 +242,9 @@ export const Privacy = () => (
         heading: "1. Who we are",
         body: (
           <p>
-            Clean Energy Gurus Ltd is the data controller for personal data
+            Clean Energy Gurus Limited is the data controller for personal data
             collected through this website. Registered in England &amp; Wales
-            (Company No. <code>[REPLACE]</code>). ICO registration number:{" "}
+            (Company No. 17191107). ICO registration number:{" "}
             <code>[REPLACE — ICO registration number]</code>. Contact for privacy
             matters: <code>[REPLACE — privacy email]</code>.
           </p>

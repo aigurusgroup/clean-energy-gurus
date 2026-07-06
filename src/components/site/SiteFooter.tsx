@@ -92,7 +92,7 @@ export const SiteFooter = () => (
       </div>
       <div className="mt-14 pt-8 border-t border-border flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
         <p className="text-xs text-muted-foreground">
-          © {new Date().getFullYear()} Clean Energy Gurus Ltd. Registered in England & Wales.
+          © {new Date().getFullYear()} Clean Energy Gurus Limited. Registered in England & Wales.
         </p>
         <nav aria-label="Legal" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
           <Link to="/terms" className="hover:text-electric transition-colors">Terms</Link>
