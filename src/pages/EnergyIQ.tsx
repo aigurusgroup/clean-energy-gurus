@@ -265,7 +265,7 @@ const EnergyIQ = () => {
             Understand your property's <span className="text-gradient">energy position.</span>
           </h1>
           <p className="mt-6 text-lg text-navy-soft leading-relaxed">
-            Answer a few simple questions and receive an indicative Energy IQ score with recommended next steps for improving energy performance, reducing costs and gaining greater control.
+            Energy IQ helps you get a clearer view of where your property stands today — and what could improve it. Answer a few simple questions about your property, energy use and future goals. You'll receive an indicative Energy IQ score, along with practical next steps to help you reduce costs, improve efficiency and make more confident clean energy decisions.
           </p>
           {step === -1 && (
             <div className="mt-8 flex flex-wrap gap-3">
