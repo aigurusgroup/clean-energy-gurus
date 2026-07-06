@@ -212,8 +212,169 @@ function recommend(answers: Answers) {
 
 const STORAGE_KEY = "energyIQ.submissions";
 
+const REVEAL_MS = 3200;
+
+const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void }) => {
+  const [display, setDisplay] = useState(0);
+  const [done, setDone] = useState(false);
+  const startRef = useRef<number | null>(null);
+  const rafRef = useRef<number | null>(null);
+
+  useEffect(() => {
+    const prefersReduced =
+      typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (prefersReduced) {
+      setDisplay(target);
+      setDone(true);
+      return;
+    }
+    const step = (ts: number) => {
+      if (startRef.current === null) startRef.current = ts;
+      const elapsed = ts - startRef.current;
+      const t = Math.min(1, elapsed / REVEAL_MS);
+      // easeOutCubic
+      const eased = 1 - Math.pow(1 - t, 3);
+      setDisplay(Math.round(eased * target));
+      if (t < 1) {
+        rafRef.current = requestAnimationFrame(step);
+      } else {
+        setDone(true);
+      }
+    };
+    rafRef.current = requestAnimationFrame(step);
+    return () => {
+      if (rafRef.current) cancelAnimationFrame(rafRef.current);
+    };
+  }, [target]);
+
+  const stages = [
+    "Property suitability",
+    "Energy use profile",
+    "Technology readiness",
+    "Optimisation potential",
+  ];
+  const progress = target > 0 ? display / target : done ? 1 : 0;
+  const activeStage = Math.min(stages.length - 1, Math.floor(progress * stages.length));
+
+  const size = 220;
+  const stroke = 14;
+  const radius = (size - stroke) / 2;
+  const circumference = 2 * Math.PI * radius;
+  const pct = Math.min(1, display / 100);
+  const dashOffset = circumference * (1 - pct);
+
+  return (
+    <div className="card-premium p-8 lg:p-12 text-center" role="status" aria-live="polite">
+      {!done ? (
+        <>
+          <span className="eyebrow"><Gauge className="h-3.5 w-3.5" /> Energy IQ</span>
+          <h2 className="mt-4 text-2xl lg:text-3xl font-display font-semibold text-navy">
+            Calculating your Energy IQ…
+          </h2>
+          <p className="mt-3 text-navy-soft max-w-md mx-auto">
+            We're reviewing your property profile, energy goals and improvement opportunities.
+          </p>
+        </>
+      ) : (
+        <>
+          <span className="eyebrow"><CheckCircle2 className="h-3.5 w-3.5" /> Ready</span>
+          <h2 className="mt-4 text-2xl lg:text-3xl font-display font-semibold text-navy">
+            Your Energy IQ is ready.
+          </h2>
+        </>
+      )}
+
+      <div className="mt-10 flex justify-center">
+        <div className="relative" style={{ width: size, height: size }}>
+          <svg width={size} height={size} className="-rotate-90">
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              strokeWidth={stroke}
+              className="stroke-border"
+              fill="none"
+            />
+            <circle
+              cx={size / 2}
+              cy={size / 2}
+              r={radius}
+              strokeWidth={stroke}
+              stroke="hsl(var(--electric, 200 90% 50%))"
+              strokeLinecap="round"
+              fill="none"
+              strokeDasharray={circumference}
+              strokeDashoffset={dashOffset}
+              style={{ transition: "stroke-dashoffset 120ms linear" }}
+            />
+          </svg>
+          <div className="absolute inset-0 flex flex-col items-center justify-center">
+            <div className="text-5xl font-display font-semibold text-navy tabular-nums">
+              {display}
+            </div>
+            <div className="text-xs uppercase tracking-[0.18em] text-navy-soft mt-1">
+              / 100
+            </div>
+          </div>
+        </div>
+      </div>
+
+      {!done && (
+        <div className="mt-8 grid gap-2 max-w-sm mx-auto text-sm">
+          {stages.map((s, i) => {
+            const isActive = i === activeStage;
+            const isDoneStage = i < activeStage;
+            return (
+              <div
+                key={s}
+                className={`flex items-center justify-between rounded-lg px-3 py-2 border transition-all ${
+                  isActive
+                    ? "border-electric bg-electric/5 text-navy"
+                    : isDoneStage
+                    ? "border-border text-navy-soft"
+                    : "border-border/60 text-muted-foreground"
+                }`}
+              >
+                <span>{s}</span>
+                {isDoneStage ? (
+                  <CheckCircle2 className="h-4 w-4 text-electric" />
+                ) : isActive ? (
+                  <span className="h-2 w-2 rounded-full bg-electric animate-pulse" />
+                ) : (
+                  <span className="h-2 w-2 rounded-full bg-border" />
+                )}
+              </div>
+            );
+          })}
+        </div>
+      )}
+
+      {done && (
+        <>
+          <p className="mt-6 text-lg text-navy">
+            Your Energy IQ: <strong>{target} / 100</strong>
+          </p>
+          <div className="mt-6 flex justify-center">
+            <Button
+              onClick={onDone}
+              className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow"
+            >
+              View my Energy IQ summary <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+          </div>
+          <p className="mt-6 text-xs text-muted-foreground max-w-md mx-auto">
+            Your Energy IQ is an indicative guide only. It is not a technical design, quote or savings forecast.
+          </p>
+        </>
+      )}
+    </div>
+  );
+};
+
 const EnergyIQ = () => {
   const [step, setStep] = useState(-1); // -1 = intro, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
+  const [revealed, setRevealed] = useState(false);
   const [answers, setAnswers] = useState<Answers>({});
   const [lead, setLead] = useState({ name: "", email: "", phone: "", postcode: "", consent: false });
 
