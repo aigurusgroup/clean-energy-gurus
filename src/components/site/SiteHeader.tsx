@@ -220,9 +220,9 @@ export const SiteHeader = () => {
                 </NavLink>
               ),
             )}
-            <Link to="/contact" className="mt-3">
+            <Link to="/energy-iq" className="mt-3">
               <Button className="w-full bg-gradient-electric text-white border-0 rounded-full">
-                Start Your Energy Review
+                Get Your Energy IQ
               </Button>
             </Link>
           </div>
