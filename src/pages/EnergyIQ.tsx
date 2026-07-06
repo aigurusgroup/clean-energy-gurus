@@ -235,7 +235,20 @@ function propertyNoun(segment: Segment) {
   }
 }
 
-function propertyProfileSummary(answers: Answers): string {
+function bandOutcome(score: number): string {
+  if (score >= 80) {
+    return "Your Energy IQ suggests your property may already have strong clean energy foundations or good optimisation potential. The next opportunity may be less about adding everything at once and more about improving performance, monitoring, maintenance and long-term control.";
+  }
+  if (score >= 60) {
+    return "Your Energy IQ suggests your property may be well placed to benefit from a more joined-up clean energy plan. The priority now is to understand which improvements are most relevant, practical and suitable for your property.";
+  }
+  if (score >= 40) {
+    return "Your Energy IQ suggests your property may already have some useful foundations, but there could still be meaningful opportunities to improve performance, reduce reliance on the grid and make better use of clean energy technologies.";
+  }
+  return "Your Energy IQ suggests there may be several clear areas to explore. This is not a negative result — it simply means your property may be at an earlier stage in its clean energy journey, with opportunities to improve generation, efficiency, control or long-term planning.";
+}
+
+function energyIQStory(answers: Answers): string[] {
   const seg = segmentFor(answers);
   const space = answers.spaceSuitability;
   const goal = answers.goal;
@@ -247,104 +260,86 @@ function propertyProfileSummary(answers: Answers): string {
   const timeline = answers.timeline;
   const postcode = (answers.postcode || "").trim();
 
-  const parts: string[] = [];
-
-  // Opening line by segment
-  if (seg === "business") {
-    parts.push(
-      "From what you've told us, energy cost control and long-term visibility appear to be important considerations for your business.",
-    );
-  } else if (seg === "agri") {
-    parts.push(
-      "From what you've told us, resilience, energy cost control and making better use of available roof or land space may be important priorities for your site.",
-    );
-  } else if (seg === "landlord") {
-    parts.push(
+  // ————— Paragraph 1: adviser-style opening, tailored to segment + existing tech —————
+  const openers: Record<Segment, string> = {
+    home:
+      "From what you've told us, your home appears to have a practical opportunity to improve energy control and make better use of clean energy technology.",
+    business:
+      "From what you've told us, energy cost control, resilience and long-term visibility appear to be important considerations for your business.",
+    landlord:
       "From what you've told us, the property may benefit from a practical review of energy performance, tenant appeal and future infrastructure needs.",
-    );
-  } else {
-    parts.push(
-      "From what you've told us, your home may have opportunities to improve energy control and make better use of clean energy technology.",
-    );
-  }
-
-  // Space / suitability
-  if (space === "plenty" || space === "some") {
-    parts.push(
-      seg === "agri"
-        ? "It looks like there is workable roof or land space that could support on-site generation, subject to a closer review."
-        : "It looks like there may be suitable space on the property to support on-site generation, subject to a closer review.",
-    );
-  } else if (space === "limited") {
-    parts.push(
-      "Space appears more limited, so any on-site generation would need a careful feasibility review to confirm what is realistic.",
-    );
-  }
-
-  // Existing tech nuance
+    agri:
+      "From what you've told us, resilience, energy cost control and making better use of available roof or land space may be important priorities for your site.",
+  };
+  let p1 = openers[seg];
   if (solar === "yes" && battery === "yes") {
-    parts.push(
-      "With solar and battery already in place, there may be an opportunity to look more closely at how the system is performing, how it is being used and whether tariffs or optimisation could add further value.",
-    );
+    p1 += " With solar and battery already in place, the focus may shift towards how the system is performing day to day and whether tariffs or optimisation could add further value.";
   } else if (solar === "yes") {
-    parts.push(
-      "With solar already installed, adding storage or better optimisation could be worth exploring to make more of what you generate.",
-    );
+    p1 += " With solar already installed, adding storage or better optimisation could be worth exploring to make more of what you generate.";
   } else if (solar === "planning") {
-    parts.push(
-      "As you're already looking at solar, a closer feasibility review could help confirm sizing, layout and how it fits with other opportunities.",
-    );
+    p1 += " As solar is already on your radar, a closer feasibility review could help confirm sizing, layout and how it fits alongside other opportunities.";
   }
 
-  // Heating
-  if (heating === "gas" || heating === "oil") {
-    parts.push(
-      "Your current heating setup may also be worth reviewing over time as part of a wider efficiency plan.",
-    );
+  // ————— Paragraph 2: goal + space + tech mix + timeline + heating/EV/monitoring —————
+  const goalPhrase = (() => {
+    switch (goal) {
+      case "cost": return "Your focus on lowering costs";
+      case "independence": return "Your focus on greater energy independence";
+      case "resilience": return "Your focus on resilience and backup";
+      case "sustainability": return "Your focus on sustainability";
+      case "improvement": return "Your focus on improving the property";
+      case "ev": return "Your focus on EV charging";
+      default: return "The goals you've shared";
+    }
+  })();
+  const spacePhrase =
+    space === "plenty" ? "possible roof, land or parking space"
+    : space === "some" ? "some workable roof, land or parking space"
+    : space === "limited" ? "more limited available space"
+    : "space that would need a closer look";
+  const timelinePhrase =
+    timeline === "now" ? "a relatively short timeline"
+    : timeline === "soon" ? "plans to move within the next few months"
+    : timeline === "year" ? "a longer planning window"
+    : "an exploratory stage of thinking";
+
+  let p2 = `${goalPhrase}, combined with ${spacePhrase} and ${timelinePhrase}, suggests that a joined-up review would be more useful than looking at any single upgrade in isolation.`;
+
+  // Lead technology mention — respects what they already have
+  const techMentions: string[] = [];
+  if (solar !== "yes") techMentions.push("Solar PV may be worth exploring first");
+  if (battery !== "yes") techMentions.push(solar === "yes" ? "battery storage could add flexibility" : "battery storage");
+  if (heating === "gas" || heating === "oil" || heating === "electric") techMentions.push("heating efficiency");
+  if (ev === "need") techMentions.push("EV charging readiness");
+  if (monitoring === "no" || monitoring === "interested" || monitoring === "basic") techMentions.push("monitoring and optimisation");
+  if (techMentions.length > 0) {
+    const first = techMentions.shift() as string;
+    if (techMentions.length > 0) {
+      p2 += ` ${first}, with ${techMentions.join(", ")} considered as part of the wider plan.`;
+    } else {
+      p2 += ` ${first} as part of the wider plan.`;
+    }
   }
 
-  // EV
-  if (ev === "need") {
-    parts.push(
-      seg === "business" || seg === "landlord"
-        ? "Preparing for EV charging — for staff, visitors or tenants — could be a sensible area to plan into your wider energy thinking."
-        : "Planning for EV charging alongside any other upgrades could help avoid duplicated work later on.",
-    );
-  }
-
-  // Monitoring
-  if (monitoring === "no" || monitoring === "interested") {
-    parts.push(
-      "Better visibility of how energy is being used could also help you make more confident decisions about what to prioritise next.",
-    );
-  }
-
-  // Goal-led close
-  if (goal === "cost") {
-    parts.push("Given the focus on lowering costs, a practical, prioritised plan is likely to be more valuable than any single upgrade in isolation.");
-  } else if (goal === "independence" || goal === "resilience") {
-    parts.push("Given the focus on greater independence, the right combination of generation, storage and control would be worth exploring together.");
-  } else if (goal === "sustainability") {
-    parts.push("Given the sustainability focus, sequencing improvements sensibly is likely to make the biggest long-term difference.");
-  } else if (goal === "improvement") {
-    parts.push("Given the interest in property improvement, a phased plan could support both performance and long-term value.");
-  } else if (goal === "ev") {
-    parts.push("Given EV charging is a priority, it's worth thinking about how this fits with any wider generation or storage plans.");
-  }
-
-  // Timeline & location
-  if (timeline === "now" || timeline === "soon") {
-    parts.push("As you're looking to move relatively soon, a closer conversation would help make sure the right things are prioritised in the right order.");
-  } else if (timeline === "explore") {
-    parts.push("At this early stage, the goal is simply to help you build a clearer picture so any future decisions feel more confident.");
-  }
-
+  // ————— Paragraph 3: local / closing note —————
+  let p3: string;
   if (postcode) {
-    parts.push(`Your ${postcode} location can also be factored in when looking at what may be most relevant locally.`);
+    p3 = `Because your property is in the ${postcode} area, local factors such as roof suitability, planning considerations, installer availability and typical electricity usage patterns should all be reviewed before any recommendation is made.`;
+  } else {
+    p3 = "Before any recommendation is made, local factors such as property suitability, planning considerations and typical usage patterns would need to be reviewed as part of a closer conversation.";
+  }
+  if (seg === "landlord") {
+    p3 += " It would also help to think about how any changes affect tenant experience and long-term property performance.";
+  } else if (seg === "business") {
+    p3 += " It would also help to think about operational hours, on-site load profile and any wider sustainability reporting needs.";
+  } else if (seg === "agri") {
+    p3 += " It would also help to think about how any changes fit around seasonal operations and existing site infrastructure.";
   }
 
-  return parts.join(" ");
+  return [p1, p2, p3];
 }
+
+
 
 function priorityAreas(answers: Answers): string[] {
   const list: string[] = [];
