@@ -55,7 +55,7 @@ const PartnerNetwork = () => {
         lead="A UK-wide network of MCS, OZEV and manufacturer-accredited installation partners — continually assessed against our quality standards."
         cta={false}
       />
-      <section className="-mt-10 lg:-mt-14 pb-4">
+      <section className="-mt-14 lg:-mt-20 pb-4">
         <div className="container-tight">
           <Link to="/partners">
             <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow">
@@ -64,6 +64,7 @@ const PartnerNetwork = () => {
           </Link>
         </div>
       </section>
+
 
 
       {/* Accreditation */}
