@@ -82,9 +82,9 @@ const AirSourceHeatPumps = () => {
               Heat pumps aren't right for every home. Sometimes the better first step is insulation, controls or a solar and battery upgrade. Where a heat pump does make sense, suitability, performance and any grant eligibility are always confirmed on a case-by-case basis, subject to survey and current scheme availability.
             </p>
             <div className="mt-6">
-              <Link to="/contact?type=residential">
+              <Link to="/energy-iq">
                 <Button className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
-                  Start Your Energy Review <ArrowRight className="ml-1.5 h-4 w-4" />
+                  Get Your Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
               </Link>
             </div>
