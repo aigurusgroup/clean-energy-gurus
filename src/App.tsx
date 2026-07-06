@@ -15,6 +15,7 @@ import About from "./pages/About";
 import Insights from "./pages/Insights";
 import Contact from "./pages/Contact";
 import Partners from "./pages/Partners";
+import SolarCalculatorPage from "./pages/SolarCalculatorPage";
 import { SolarPV, BatteryStorage, EVCharging, Monitoring, Tariff } from "./pages/ServicePages";
 import { ResidentialHub, ResidentialSolarBattery } from "./pages/residential/ResidentialPages";
 import { BusinessHub, CommercialSolar, WorkplaceEV, CommercialBattery } from "./pages/business/BusinessPages";
@@ -49,18 +50,19 @@ const App = () => (
 
           {/* Residential */}
           <Route path="/residential" element={<ResidentialHub />} />
-          <Route path="/residential/solar-pv" element={<SolarPV />} />
-          <Route path="/residential/battery-storage" element={<BatteryStorage />} />
+          <Route path="/residential/solar-pv" element={<Navigate to="/residential/solar-battery" replace />} />
+          <Route path="/residential/battery-storage" element={<Navigate to="/residential/solar-battery" replace />} />
           <Route path="/residential/ev-charging" element={<EVCharging />} />
           <Route path="/residential/solar-battery" element={<ResidentialSolarBattery />} />
           <Route path="/homes" element={<Homes />} />
+          <Route path="/solar-calculator" element={<SolarCalculatorPage />} />
 
           {/* Business */}
           <Route path="/business" element={<BusinessHub />} />
           <Route path="/business/overview" element={<Business />} />
           <Route path="/business/commercial-solar" element={<CommercialSolar />} />
           <Route path="/business/workplace-ev" element={<WorkplaceEV />} />
-          <Route path="/business/commercial-battery" element={<CommercialBattery />} />
+          <Route path="/business/commercial-battery" element={<Navigate to="/business/commercial-solar" replace />} />
           <Route path="/business/landlords" element={<Landlords />} />
           <Route path="/landlords" element={<Landlords />} />
 
