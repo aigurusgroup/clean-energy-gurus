@@ -405,7 +405,7 @@ const EnergyIQ = () => {
               </div>
 
               <div className="mt-8 rounded-xl bg-surface border border-border p-4 text-xs text-muted-foreground leading-relaxed">
-                Your Energy IQ score is an indicative guide based on the answers provided. It is not a technical design, EPC rating, financial forecast, savings calculation or installation recommendation. A full property review and technical survey would be required before any proposal or installation decision.
+                Your Energy IQ score is an indicative guide based on the information provided. It is not a technical design, EPC rating, financial forecast, savings calculation or installation recommendation. Any proposal, projected saving or installation decision would require a full property review, technical assessment and confirmation of suitability.
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
