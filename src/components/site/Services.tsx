@@ -1,20 +1,19 @@
 import { Link } from "react-router-dom";
-import { Sun, BatteryCharging, Plug, Activity, LineChart, Flame } from "lucide-react";
+import { Home, Building2, Sprout, Activity, BookOpen } from "lucide-react";
 
 const services = [
-  { icon: Sun, title: "Solar PV", desc: "Commercial-grade rooftop and ground-mount design built for performance and longevity.", to: "/services/solar-pv" },
-  { icon: BatteryCharging, title: "Battery Storage", desc: "Store, time-shift and trade energy. Maximise self-consumption and resilience.", to: "/services/battery-storage" },
-  { icon: Plug, title: "EV Charging", desc: "OZEV partner-led AC and DC chargers for sites, fleets, homes and tenants.", to: "/services/ev-charging" },
-  { icon: Activity, title: "Monitoring & Maintenance", desc: "Continuous performance oversight, reporting and rapid intervention.", to: "/services/monitoring" },
-  { icon: LineChart, title: "Tariff & Export Optimisation", desc: "Match the right tariff, optimise export windows and unlock new revenue.", to: "/services/tariff-optimisation" },
-  { icon: Flame, title: "Heat Pumps & Efficiency", desc: "Partner-led heat pumps and energy-efficiency upgrades to complete the system.", to: "/services" },
+  { icon: Home, title: "Residential Energy Solutions", desc: "Solar, batteries, EV charging and long-term optimisation for UK homes.", to: "/residential" },
+  { icon: Building2, title: "Business Energy Solutions", desc: "Commercial solar, workplace EV and landlord portfolio upgrades.", to: "/business" },
+  { icon: Sprout, title: "Agricultural Energy Solutions", desc: "Farm solar, storage and resilience — built for working farms.", to: "/agriculture" },
+  { icon: Activity, title: "Energy Optimisation", desc: "Monitoring, maintenance, tariff and battery optimisation post-install.", to: "/energy-optimisation" },
+  { icon: BookOpen, title: "Knowledge Centre", desc: "Guides, videos and case studies on UK clean energy.", to: "/knowledge" },
 ];
 
 export const Services = () => (
   <section className="py-20 lg:py-28 bg-surface">
     <div className="container-tight">
       <div className="text-center max-w-3xl mx-auto mb-14">
-        <span className="eyebrow justify-center">Core services</span>
+        <span className="eyebrow justify-center">Explore the platform</span>
         <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy">
           A complete energy stack — installed, connected and managed.
         </h2>

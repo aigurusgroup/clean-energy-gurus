@@ -1,6 +1,10 @@
-import { Sun, Plug, Building2 } from "lucide-react";
+import { Sun, Plug, Building2, CheckCircle2, BatteryCharging, Layers } from "lucide-react";
+import { useEffect } from "react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
+import { SiteLayout } from "@/components/site/SiteLayout";
+import { PageHero } from "@/components/site/PageHero";
+import { FinalCTA } from "@/components/site/FinalCTA";
 
 export const BusinessHub = () => (
   <HubPage
@@ -18,26 +22,81 @@ export const BusinessHub = () => (
   />
 );
 
-export const CommercialSolar = () => (
-  <SimplePage
-    metaTitle="Commercial Solar PV UK | Clean Energy Gurus"
-    metaDesc="Design-led commercial solar for UK businesses — rooftop, ground-mount and carport."
-    eyebrow="Commercial Solar"
-    heroTitle={<>Commercial solar that <span className="text-gradient">earns its space</span>.</>}
-    lead="Site-load-led design, robust hardware and accredited installation — with performance monitored for the life of the asset."
-    bullets={[
-      "Consumption-led yield modelling",
-      "Rooftop, ground-mount and carport options",
-      "Tier-1 panels, inverters and monitoring",
-      "MCS and DNO coordination",
-      "PPA, lease and CapEx finance routes",
-      "Half-hourly performance reporting",
-    ]}
-    sections={[
-      { title: "Sized to your load", body: "We model actual site consumption before recommending array size — no oversized systems selling cheap." },
-    ]}
-  />
+const useMeta = (title: string, desc: string) => {
+  useEffect(() => {
+    document.title = title;
+    const meta = document.querySelector('meta[name="description"]') || (() => {
+      const m = document.createElement("meta"); m.setAttribute("name", "description"); document.head.appendChild(m); return m;
+    })();
+    meta.setAttribute("content", desc);
+  }, [title, desc]);
+};
+
+const BulletList = ({ items }: { items: string[] }) => (
+  <ul className="mt-6 space-y-3.5">
+    {items.map((b) => (
+      <li key={b} className="flex gap-3 text-navy">
+        <CheckCircle2 className="h-5 w-5 text-electric flex-shrink-0 mt-0.5" />
+        <span className="text-[15px]">{b}</span>
+      </li>
+    ))}
+  </ul>
 );
+
+export const CommercialSolar = () => {
+  useMeta(
+    "Commercial Solar & Battery UK | Clean Energy Gurus",
+    "Design-led commercial solar — rooftop, ground-mount and carport — with commercial battery storage for peak-shaving, resilience and export revenue."
+  );
+  return (
+    <SiteLayout>
+      <PageHero
+        eyebrow="Commercial Solar & Battery"
+        title={<>Commercial solar that <span className="text-gradient">earns its space</span>.</>}
+        lead="Site-load-led design, robust hardware and accredited installation — with optional battery storage to peak-shave, protect critical loads and unlock export and flexibility revenue."
+      />
+
+      <section className="py-20 lg:py-24">
+        <div className="container-tight grid lg:grid-cols-3 gap-8">
+          <div className="card-premium p-7">
+            <div className="h-11 w-11 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow"><Sun className="h-5 w-5" /></div>
+            <h3 className="mt-5 text-xl font-display font-semibold text-navy">Commercial Solar</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Consumption-led design with Tier-1 hardware and MCS partner installation.</p>
+            <BulletList items={["Consumption-led yield modelling", "Tier-1 panels, inverters and monitoring", "MCS and DNO coordination", "PPA, lease and CapEx finance routes", "Half-hourly performance reporting"]} />
+          </div>
+          <div className="card-premium p-7">
+            <div className="h-11 w-11 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow"><Layers className="h-5 w-5" /></div>
+            <h3 className="mt-5 text-xl font-display font-semibold text-navy">Rooftop & Ground-Mount</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">The right array format for your buildings, land and load profile.</p>
+            <BulletList items={["Rooftop arrays on warehouses & offices", "Ground-mount on unproductive land", "Carport solar over staff and fleet parking", "Structural surveys and roof suitability", "Grid connection and DNO liaison"]} />
+          </div>
+          <div className="card-premium p-7">
+            <div className="h-11 w-11 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow"><BatteryCharging className="h-5 w-5" /></div>
+            <h3 className="mt-5 text-xl font-display font-semibold text-navy">Commercial Battery Storage</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Batteries as commercial infrastructure — stacked revenue and resilience.</p>
+            <BulletList items={["Peak-shaving and demand-charge reduction", "Backup for critical loads", "Solar time-shifting", "Export & flexibility market participation", "Warranty-backed cycles and full monitoring"]} />
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-surface">
+        <div className="container-tight grid lg:grid-cols-2 gap-10">
+          <div className="card-premium p-7">
+            <h3 className="text-lg font-display font-semibold text-navy">Solar + battery, working together</h3>
+            <p className="mt-3 text-sm text-navy leading-relaxed">On commercial sites, solar and battery are strongest as one designed system. Solar generates during the working day, batteries capture surplus, shave peak-tariff windows and dispatch stored energy where it earns most — either on-site or exported at price peaks.</p>
+            <BulletList items={["Single integrated design and controls", "Combined DNO and metering strategy", "Coordinated dispatch across generation, storage and load", "One monitoring layer for the whole system", "One accountable partner across the lifecycle"]} />
+          </div>
+          <div className="card-premium p-7">
+            <h3 className="text-lg font-display font-semibold text-navy">Sized to your load</h3>
+            <p className="mt-3 text-sm text-navy leading-relaxed">We model actual site consumption before recommending array size or battery capacity — no oversized systems selling cheap into export markets, no undersized batteries that clip on the first sunny day.</p>
+          </div>
+        </div>
+      </section>
+
+      <FinalCTA />
+    </SiteLayout>
+  );
+};
 
 export const WorkplaceEV = () => (
   <SimplePage
@@ -55,24 +114,5 @@ export const WorkplaceEV = () => (
       "Fault monitoring and reporting",
     ]}
     sections={[{ title: "Integrated, not bolted on", body: "Chargers coordinate with solar, batteries and tariff — not standalone hardware." }]}
-  />
-);
-
-export const CommercialBattery = () => (
-  <SimplePage
-    metaTitle="Commercial Battery Storage UK | Clean Energy Gurus"
-    metaDesc="Battery storage for commercial sites — peak-shaving, resilience and export revenue."
-    eyebrow="Commercial Battery Storage"
-    heroTitle={<>Batteries as <span className="text-gradient">commercial infrastructure</span>.</>}
-    lead="Store solar, shift peaks, protect critical loads and participate in flexibility markets."
-    bullets={[
-      "Peak-shaving and demand-charge reduction",
-      "Backup for critical loads",
-      "Solar time-shifting",
-      "Export and flexibility market participation via partners",
-      "Warranty-backed cycles",
-      "Full monitoring and dispatch reporting",
-    ]}
-    sections={[{ title: "Beyond self-consumption", body: "Sized right, commercial batteries pay back through multiple stacked revenue streams." }]}
   />
 );
