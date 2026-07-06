@@ -69,7 +69,7 @@ const GroupedListPage = ({ metaTitle, metaDesc, eyebrow, heroTitle, lead, groups
       <section className="py-20">
         <div className="container-tight space-y-16">
           {groups.map((g) => (
-            <div key={g.heading}>
+            <div key={g.heading} id={g.eyebrow.toLowerCase().replace(/\s+/g, "-")} className="scroll-mt-24">
               <div className="mb-6">
                 <div className="text-[11px] font-semibold uppercase tracking-[0.18em] text-electric">{g.eyebrow}</div>
                 <h2 className="mt-2 text-2xl lg:text-3xl font-display font-semibold text-navy">{g.heading}</h2>
