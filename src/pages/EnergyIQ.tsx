@@ -1023,7 +1023,8 @@ const EnergyIQ = () => {
 
           {/* SCORE */}
           {step === total && revealed && (() => {
-            const profile = propertyProfileSummary(answers);
+            const story = energyIQStory(answers);
+            const outcome = bandOutcome(result.total);
             const priorities = priorityAreas(answers);
             const opps = opportunities(answers);
             const steps = nextSteps(answers);
@@ -1040,6 +1041,11 @@ const EnergyIQ = () => {
                 <p className="text-navy-soft leading-relaxed sm:pb-2">{band.tone}</p>
               </div>
 
+              {/* Score-band-specific outcome — appears before the story */}
+              <p className="mt-6 text-navy-soft leading-relaxed">
+                {outcome}
+              </p>
+
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {result.perCategory.map((c) => (
                   <div key={c.category} className="rounded-xl border border-border p-4">
@@ -1054,22 +1060,16 @@ const EnergyIQ = () => {
                 ))}
               </div>
 
-              {/* What this result suggests */}
+              {/* Your Energy IQ story — personalised narrative (replaces "What this result suggests" + "Your property profile") */}
               <section className="mt-10">
-                <h3 className="text-lg font-display font-semibold text-navy">What this result suggests</h3>
-                <p className="mt-3 text-navy-soft leading-relaxed">
-                  From what you've told us, your property appears to have clear areas worth exploring. Your Energy IQ is not just about the score itself — it is designed to help highlight where improvements may be most relevant, where further review would be useful, and what could help you make more confident energy decisions.
-                </p>
-                <p className="mt-3 text-navy-soft leading-relaxed">
-                  The next step is to look at your property, usage and goals in more detail so the right opportunities can be prioritised properly.
-                </p>
+                <h3 className="text-lg font-display font-semibold text-navy">Your Energy IQ story</h3>
+                <div className="mt-3 space-y-3">
+                  {story.map((para, i) => (
+                    <p key={i} className="text-navy-soft leading-relaxed">{para}</p>
+                  ))}
+                </div>
               </section>
 
-              {/* Your property profile */}
-              <section className="mt-10">
-                <h3 className="text-lg font-display font-semibold text-navy">Your property profile</h3>
-                <p className="mt-3 text-navy-soft leading-relaxed">{profile}</p>
-              </section>
 
               {/* Your priority areas */}
               {priorities.length > 0 && (
