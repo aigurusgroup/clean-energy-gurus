@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { Link } from "react-router-dom";
 import { ArrowRight, ArrowLeft, CheckCircle2, Gauge, Sparkles, ShieldCheck } from "lucide-react";
 import { SiteLayout } from "@/components/site/SiteLayout";
