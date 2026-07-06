@@ -189,10 +189,10 @@ function scoreAnswers(answers: Answers) {
 }
 
 function categoryBand(total: number) {
-  if (total >= 80) return { name: "High Performing", tone: "Your property is well set up. Focus on fine-tuning and long-term optimisation." };
-  if (total >= 60) return { name: "Strong Potential", tone: "You have a strong base. Targeted upgrades and better control could unlock more value." };
-  if (total >= 40) return { name: "Developing", tone: "Good foundations — with the right sequence of upgrades, meaningful improvement is likely." };
-  return { name: "Early Stage", tone: "You're at the start of the journey. A clear, staged plan can make the biggest difference." };
+  if (total >= 80) return { name: "High Performing Property", tone: "Your property is well set up. Focus on fine-tuning and long-term optimisation." };
+  if (total >= 60) return { name: "Strong Opportunity", tone: "You have a strong base. Targeted upgrades and better control could unlock more value." };
+  if (total >= 40) return { name: "Developing Potential", tone: "Good foundations — with the right sequence of upgrades, meaningful improvement is likely." };
+  return { name: "Early Opportunity", tone: "You're at the start of the journey. A clear, staged plan can make the biggest difference." };
 }
 
 function recommend(answers: Answers) {
@@ -265,7 +265,7 @@ const EnergyIQ = () => {
             Understand your property's <span className="text-gradient">energy position.</span>
           </h1>
           <p className="mt-6 text-lg text-navy-soft leading-relaxed">
-            Answer a few simple questions and receive an indicative Energy IQ score with recommended next steps for improving energy performance, reducing costs and gaining greater control.
+            Energy IQ helps you get a clearer view of where your property stands today — and what could improve it. Answer a few simple questions about your property, energy use and future goals. You'll receive an indicative Energy IQ score, along with practical next steps to help you reduce costs, improve efficiency and make more confident clean energy decisions.
           </p>
           {step === -1 && (
             <div className="mt-8 flex flex-wrap gap-3">
@@ -374,6 +374,10 @@ const EnergyIQ = () => {
                 <p className="text-navy-soft leading-relaxed sm:pb-2">{band.tone}</p>
               </div>
 
+              <p className="mt-6 text-sm text-navy-soft leading-relaxed">
+                Your Energy IQ score gives you an indicative view of your property's current energy position. It considers key areas such as property suitability, energy usage, existing technology, future goals and opportunities for monitoring or optimisation. Your result is not a final design, quote or savings forecast. It is a starting point to help you understand what may be worth exploring next.
+              </p>
+
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {result.perCategory.map((c) => (
                   <div key={c.category} className="rounded-xl border border-border p-4">
@@ -401,7 +405,7 @@ const EnergyIQ = () => {
               </div>
 
               <div className="mt-8 rounded-xl bg-surface border border-border p-4 text-xs text-muted-foreground leading-relaxed">
-                Your Energy IQ score is an indicative guide based on the answers provided. It is not a technical design, EPC rating, financial forecast, savings calculation or installation recommendation. A full property review and technical survey would be required before any proposal or installation decision.
+                Your Energy IQ score is an indicative guide based on the information provided. It is not a technical design, EPC rating, financial forecast, savings calculation or installation recommendation. Any proposal, projected saving or installation decision would require a full property review, technical assessment and confirmation of suitability.
               </div>
 
               <div className="mt-8 flex flex-wrap gap-3">
@@ -423,8 +427,11 @@ const EnergyIQ = () => {
             <form onSubmit={submitLead} className="card-premium p-8 lg:p-10">
               <span className="eyebrow">Almost there</span>
               <h2 className="mt-3 text-2xl lg:text-3xl font-display font-semibold text-navy">
-                Enter your details to receive your full Energy IQ summary and next steps.
+                Receive your Energy IQ summary
               </h2>
+              <p className="mt-4 text-navy-soft leading-relaxed">
+                Enter your details and we'll send you your Energy IQ summary, including your indicative score, key opportunities and suggested next steps. A member of the Clean Energy Gurus team may also contact you to discuss your property and answer any questions.
+              </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <Label htmlFor="iq-name">Name</Label>
