@@ -6,6 +6,9 @@ import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { Trust } from "@/components/site/Trust";
 import { FinalCTA } from "@/components/site/FinalCTA";
+import { Journey } from "@/components/site/Journey";
+import { Process } from "@/components/site/Process";
+import { PlatformPreview } from "@/components/site/PlatformPreview";
 
 const values = [
   { icon: ShieldCheck, title: "Independent", body: "We recommend what actually fits the property — not what a manufacturer wants us to sell." },
@@ -31,23 +34,29 @@ const About = () => {
 
       {/* Mission */}
       <section id="mission" className="py-20 lg:py-24 scroll-mt-24">
-        <div className="container-tight grid lg:grid-cols-2 gap-14">
-          <div>
-            <span className="eyebrow">Our Mission</span>
-            <h2 className="mt-3 text-3xl font-display font-semibold text-navy">Why we exist</h2>
-            <p className="mt-5 text-navy-soft text-lg leading-relaxed">
-              The energy market is changing faster than most property owners can track. Solar alone isn't enough; batteries need intelligence; EV charging needs to integrate; tariffs need to be reviewed. We bring it all together as one managed system so homes, businesses, farms and landlords aren't left navigating it alone.
-            </p>
-          </div>
-          <div id="how-we-work" className="scroll-mt-24">
-            <span className="eyebrow">How We Work</span>
-            <h2 className="mt-3 text-3xl font-display font-semibold text-navy">One team, one accountable partner</h2>
-            <p className="mt-5 text-navy-soft text-lg leading-relaxed">
-              We design and project-manage every system, partnering with accredited MCS, OZEV and DNO specialists for installation. Then we stay involved — monitoring, optimising and reporting for the life of the asset.
-            </p>
-          </div>
+        <div className="container-tight max-w-3xl">
+          <span className="eyebrow">Our Mission</span>
+          <h2 className="mt-3 text-3xl font-display font-semibold text-navy">Why we exist</h2>
+          <p className="mt-5 text-navy-soft text-lg leading-relaxed">
+            The energy market is changing faster than most property owners can track. Solar alone isn't enough; batteries need intelligence; EV charging needs to integrate; tariffs need to be reviewed. We bring it all together as one managed system so homes, businesses, farms and landlords aren't left navigating it alone.
+          </p>
         </div>
       </section>
+
+      {/* How we work — Journey + Process + Platform */}
+      <section id="how-we-work" className="scroll-mt-24 bg-surface">
+        <div className="container-tight pt-20 lg:pt-24 pb-4 max-w-3xl">
+          <span className="eyebrow">How We Work</span>
+          <h2 className="mt-3 text-3xl font-display font-semibold text-navy">One team, one accountable partner</h2>
+          <p className="mt-5 text-navy-soft text-lg leading-relaxed">
+            We design and project-manage every system, partnering with accredited MCS, OZEV and DNO specialists for installation. Then we stay involved — monitoring, optimising and reporting for the life of the asset.
+          </p>
+        </div>
+        <Journey />
+        <Process />
+        <PlatformPreview />
+      </section>
+
 
       {/* Values */}
       <section id="values" className="py-20 bg-surface scroll-mt-24">

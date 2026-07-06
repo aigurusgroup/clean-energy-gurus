@@ -1,22 +1,19 @@
-import { Activity, Wrench, LineChart, Upload, Battery, BarChart3 } from "lucide-react";
+import { Activity, LineChart, Battery, Wrench, Upload, BarChart3 } from "lucide-react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
 
 export const OptimisationHub = () => (
   <HubPage
     metaTitle="Energy Optimisation | Clean Energy Gurus"
-    metaDesc="Ongoing monitoring, maintenance, tariff and export optimisation for solar, battery and EV systems."
+    metaDesc="Ongoing monitoring, maintenance, tariff and battery optimisation for solar, battery and EV systems."
     eyebrow="Energy Optimisation"
     heroTitle={<>The savings come from <span className="text-gradient">what happens after install</span>.</>}
     lead="Continuous monitoring, tuning and reporting — so your energy system keeps performing over its whole life."
     sectionTitle="Optimisation services"
     items={[
-      { title: "Monitoring", desc: "Half-hourly performance data across every asset.", to: "/energy-optimisation/monitoring", icon: Activity },
-      { title: "Maintenance", desc: "Health checks, firmware and rapid intervention.", to: "/energy-optimisation/maintenance", icon: Wrench },
-      { title: "Tariff Optimisation", desc: "The right tariff, reviewed as the market shifts.", to: "/energy-optimisation/tariff", icon: LineChart },
-      { title: "Export Optimisation", desc: "Sell back at the right time, at the best rate.", to: "/energy-optimisation/export", icon: Upload },
+      { title: "Monitoring & Maintenance", desc: "Half-hourly data, fault detection and rapid intervention.", to: "/energy-optimisation/monitoring", icon: Activity },
+      { title: "Tariff & Export Optimisation", desc: "The right tariff and export route, reviewed as the market shifts.", to: "/energy-optimisation/tariff", icon: LineChart },
       { title: "Battery Optimisation", desc: "Dispatch tuned to load, solar and wholesale prices.", to: "/energy-optimisation/battery", icon: Battery },
-      { title: "Energy Performance Reporting", desc: "Clear quarterly reads of what your system did.", to: "/energy-optimisation/reporting", icon: BarChart3 },
     ]}
   />
 );

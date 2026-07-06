@@ -1,20 +1,18 @@
-import { Sun, Battery, ShieldCheck, LayoutGrid, ClipboardCheck } from "lucide-react";
+import { LayoutGrid, ShieldCheck, ClipboardCheck } from "lucide-react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
 
 export const AgricultureHub = () => (
   <HubPage
     metaTitle="Agricultural Energy | Clean Energy Gurus"
-    metaDesc="Solar PV, battery storage and resilience solutions for UK farms and rural businesses."
+    metaDesc="Solar, battery storage and resilience solutions for UK farms and rural businesses."
     eyebrow="Agriculture"
     heroTitle={<>Energy independence for <span className="text-gradient">working farms</span>.</>}
     lead="Use your roofs, land and high daytime load to build a resilient, low-cost, revenue-generating farm energy system."
     sectionTitle="Agricultural solutions"
     items={[
-      { title: "Farm Solar", desc: "Rooftop, ground-mount and carport arrays for farm sites.", to: "/agriculture/solar", icon: Sun },
-      { title: "Battery Storage for Farms", desc: "Capture daytime solar for night-time and peak use.", to: "/agriculture/battery", icon: Battery },
-      { title: "Energy Resilience", desc: "Keep critical loads running through grid outages.", to: "/agriculture/resilience", icon: ShieldCheck },
-      { title: "Agricultural Energy Solutions", desc: "The full stack — designed and managed as one.", to: "/agriculture/solutions", icon: LayoutGrid },
+      { title: "Farm Solar & Battery", desc: "Rooftop, ground-mount and storage — designed together.", to: "/agriculture/solar", icon: LayoutGrid },
+      { title: "Farm Energy Resilience", desc: "Keep critical loads running through grid outages.", to: "/agriculture/resilience", icon: ShieldCheck },
       { title: "Farm Energy Review", desc: "A clear read of your farm's energy position — free.", to: "/contact?type=agriculture", icon: ClipboardCheck },
     ]}
   />
