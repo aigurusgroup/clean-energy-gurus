@@ -33,9 +33,9 @@ export const FinalCTA = () => (
                 </div>
                 Step 2 — share your details and we'll call you back
               </div>
-              <Link to="/contact" className="block mt-6">
+              <Link to="/energy-iq" className="block mt-6">
                 <Button className="w-full rounded-full h-12 bg-gradient-electric text-white border-0 shadow-glow">
-                  Start my free review <ArrowRight className="h-4 w-4 ml-1.5" />
+                  Get Your Energy IQ <ArrowRight className="h-4 w-4 ml-1.5" />
                 </Button>
               </Link>
               <p className="mt-3 text-[11px] text-white/55 leading-relaxed">
