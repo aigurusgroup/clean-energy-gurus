@@ -45,6 +45,29 @@ const About = () => {
         </div>
       </section>
 
+      {/* Founder */}
+      <section id="founder" className="py-20 lg:py-24 bg-surface scroll-mt-24">
+        <div className="container-tight max-w-3xl">
+          <span className="eyebrow">A Message From Our Founder</span>
+          <h2 className="mt-3 text-3xl font-display font-semibold text-navy">Why Clean Energy Gurus exists</h2>
+          <div className="mt-6 space-y-5 text-navy-soft text-lg leading-relaxed">
+            <p>
+              Hi, I'm Chris, founder of Clean Energy Gurus. I started this business because clean energy — solar, batteries, EV charging, heat pumps and everything around them — can genuinely feel confusing for property owners. There's a lot of noise, a lot of sales pressure and not always a lot of straight answers.
+            </p>
+            <p>
+              Most people I speak to don't want to become an expert in inverters or tariffs. They want to know: is this right for my property, what will it actually do for me, and who can I trust to look after it properly?
+            </p>
+            <p>
+              Clean Energy Gurus exists to answer those questions honestly. We work with a network of trusted installation partners and specialists, so the right people carry out the work — and we stay involved to help you get long-term value from your system, not just an installation invoice.
+            </p>
+            <p>
+              Our long-term mission is simple: help property owners across the UK make confident, well-informed energy decisions — and make the whole process feel a lot less daunting.
+            </p>
+            <p className="text-navy font-medium">— Chris, Founder</p>
+          </div>
+        </div>
+      </section>
+
       {/* Values */}
       <section id="values" className="py-20 bg-surface scroll-mt-24">
         <div className="container-tight">
