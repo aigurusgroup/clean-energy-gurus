@@ -1064,7 +1064,7 @@ const EnergyIQ = () => {
                 <h3 className="text-lg font-display font-semibold text-navy">Your Energy IQ story</h3>
                 <div className="mt-3 space-y-3">
                   <p className="text-navy-soft leading-relaxed">
-                    From what you've told us, your property appears to have clear opportunities worth exploring. The aim now is not to look at one technology in isolation, but to understand how your property, energy use and future goals fit together.
+                    From what you’ve told us, your property appears to have clear opportunities worth exploring. The aim now is not to look at one technology in isolation, but to understand how your property, energy use and future goals fit together.
                   </p>
                   <p className="text-navy-soft leading-relaxed">
                     Your answers suggest that a practical, prioritised review would be more useful than jumping straight to a single recommendation. Depending on your property suitability, this could include areas such as on-site generation, storage, EV charging, heating efficiency, monitoring or long-term optimisation.
