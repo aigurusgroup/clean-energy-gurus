@@ -63,8 +63,8 @@ const nav: NavItem[] = [
     to: "/about",
     children: [
       { label: "About Us", to: "/about", desc: "Who we are and what we do." },
-      { label: "How We Work", to: "/about#how-we-work", desc: "The managed energy platform model." },
-      { label: "Partner Network", to: "/about#partners", desc: "Our accredited installer network." },
+      { label: "How We Work", to: "/about/how-we-work", desc: "The managed energy platform model." },
+      { label: "Partner Network", to: "/about/partner-network", desc: "Our accredited installer network." },
     ],
   },
 ];

@@ -12,6 +12,8 @@ import Homes from "./pages/Homes";
 import Services from "./pages/Services";
 import Platform from "./pages/Platform";
 import About from "./pages/About";
+import HowWeWork from "./pages/HowWeWork";
+import PartnerNetwork from "./pages/PartnerNetwork";
 import Insights from "./pages/Insights";
 import Contact from "./pages/Contact";
 import Partners from "./pages/Partners";
