@@ -56,13 +56,13 @@ const nav: NavItem[] = [
       { label: "Articles & Guides", to: "/knowledge/articles", desc: "Educational guides on solar, battery and EV." },
       { label: "Video Library", to: "/knowledge/videos", desc: "Short, honest video series." },
       { label: "Case Studies", to: "/knowledge/case-studies", desc: "Real UK projects and outcomes." },
+      { label: "Installer Hub", to: "/knowledge/installer-hub", desc: "Resources for CEG accredited installers." },
     ],
   },
   {
     label: "About",
     to: "/about",
     children: [
-      { label: "About Us", to: "/about", desc: "Who we are and what we do." },
       { label: "How We Work", to: "/about/how-we-work", desc: "The managed energy platform model." },
       { label: "Partner Network", to: "/about/partner-network", desc: "Our accredited installer network." },
     ],
@@ -157,7 +157,7 @@ export const SiteHeader = () => {
           )}
         </nav>
 
-        <div className="hidden md:flex items-center gap-3 ml-auto">
+        <div className="hidden md:flex items-center gap-3 ml-auto xl:ml-0">
           <Link to="/contact">
             <Button className="bg-gradient-electric text-white border-0 shadow-glow hover:opacity-95 hover:shadow-elegant rounded-full px-5">
               Start Your Energy Review
@@ -166,7 +166,7 @@ export const SiteHeader = () => {
         </div>
 
         <button
-          className="xl:hidden md:hidden p-2 text-navy"
+          className="xl:hidden p-2 text-navy ml-auto"
           onClick={() => setOpen(!open)}
           aria-label="Menu"
         >

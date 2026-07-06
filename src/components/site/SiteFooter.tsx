@@ -12,15 +12,21 @@ const cols = [
     ],
   },
   {
-    title: "Business & Agriculture",
+    title: "Business",
     links: [
       ["Business Overview", "/business"],
       ["Commercial Solar & Battery", "/business/commercial-solar"],
       ["Workplace EV Charging", "/business/workplace-ev"],
       ["Landlords & Portfolios", "/business/landlords"],
+    ],
+  },
+  {
+    title: "Agriculture",
+    links: [
       ["Agriculture Overview", "/agriculture"],
       ["Farm Solar & Battery", "/agriculture/solar"],
       ["Farm Energy Resilience", "/agriculture/resilience"],
+      ["Farm Energy Review", "/contact?type=agriculture"],
     ],
   },
   {
@@ -57,7 +63,7 @@ const cols = [
 export const SiteFooter = () => (
   <footer className="border-t border-border bg-surface mt-24">
     <div className="container-tight py-16">
-      <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
+      <div className="grid gap-10 md:grid-cols-2 lg:grid-cols-7">
         <div className="lg:col-span-1">
           <Link to="/" className="flex items-center" aria-label="Clean Energy Gurus home">
             <img src={logo} alt="Clean Energy Gurus" className="h-16 w-auto object-contain" width={1165} height={306} />
