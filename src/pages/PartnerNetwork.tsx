@@ -53,7 +53,18 @@ const PartnerNetwork = () => {
         eyebrow="Partner Network"
         title={<>Working with <span className="text-gradient">trusted installers</span>.</>}
         lead="A UK-wide network of MCS, OZEV and manufacturer-accredited installation partners — continually assessed against our quality standards."
+        cta={false}
       />
+      <section className="-mt-10 lg:-mt-14 pb-4">
+        <div className="container-tight">
+          <Link to="/partners">
+            <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow">
+              Become an Installer Partner <ArrowRight className="ml-1.5 h-4 w-4" />
+            </Button>
+          </Link>
+        </div>
+      </section>
+
 
       {/* Accreditation */}
       <section className="py-20 lg:py-24">
