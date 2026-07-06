@@ -1023,7 +1023,6 @@ const EnergyIQ = () => {
 
           {/* SCORE */}
           {step === total && revealed && (() => {
-            const story = energyIQStory(answers);
             const outcome = bandOutcome(result.total);
             const priorities = priorityAreas(answers);
             const opps = opportunities(answers);
