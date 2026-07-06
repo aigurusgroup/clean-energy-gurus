@@ -1030,7 +1030,12 @@ const EnergyIQ = () => {
           )}
 
           {/* SCORE */}
-          {step === total && revealed && (
+          {step === total && revealed && (() => {
+            const profile = propertyProfileSummary(answers);
+            const priorities = priorityAreas(answers);
+            const opps = opportunities(answers);
+            const steps = nextSteps(answers);
+            return (
             <div className="card-premium p-8 lg:p-10 animate-fade-in">
               <span className="eyebrow"><Gauge className="h-3.5 w-3.5" /> Your indicative Energy IQ</span>
               <div className="mt-6 flex flex-col sm:flex-row items-start sm:items-end gap-6">
@@ -1042,10 +1047,6 @@ const EnergyIQ = () => {
                 </div>
                 <p className="text-navy-soft leading-relaxed sm:pb-2">{band.tone}</p>
               </div>
-
-              <p className="mt-6 text-sm text-navy-soft leading-relaxed">
-                Your Energy IQ score gives you an indicative view of your property's current energy position. It considers key areas such as property suitability, energy usage, existing technology, future goals and opportunities for monitoring or optimisation. Your result is not a final design, quote or savings forecast. It is a starting point to help you understand what may be worth exploring next.
-              </p>
 
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {result.perCategory.map((c) => (
@@ -1061,17 +1062,76 @@ const EnergyIQ = () => {
                 ))}
               </div>
 
-              <div className="mt-8">
-                <h3 className="text-lg font-display font-semibold text-navy">Recommended next steps</h3>
-                <ul className="mt-3 space-y-2">
-                  {recommendations.map((r) => (
-                    <li key={r} className="flex items-start gap-2 text-sm text-navy">
-                      <CheckCircle2 className="h-5 w-5 text-electric flex-shrink-0 mt-0.5" />
-                      <span>{r}</span>
+              {/* What this result suggests */}
+              <section className="mt-10">
+                <h3 className="text-lg font-display font-semibold text-navy">What this result suggests</h3>
+                <p className="mt-3 text-navy-soft leading-relaxed">
+                  From what you've told us, your property appears to have clear areas worth exploring. Your Energy IQ is not just about the score itself — it is designed to help highlight where improvements may be most relevant, where further review would be useful, and what could help you make more confident energy decisions.
+                </p>
+                <p className="mt-3 text-navy-soft leading-relaxed">
+                  The next step is to look at your property, usage and goals in more detail so the right opportunities can be prioritised properly.
+                </p>
+              </section>
+
+              {/* Your property profile */}
+              <section className="mt-10">
+                <h3 className="text-lg font-display font-semibold text-navy">Your property profile</h3>
+                <p className="mt-3 text-navy-soft leading-relaxed">{profile}</p>
+              </section>
+
+              {/* Your priority areas */}
+              {priorities.length > 0 && (
+                <section className="mt-10">
+                  <h3 className="text-lg font-display font-semibold text-navy">Your priority areas</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    Areas that stood out from your Energy IQ and could be worth a closer look.
+                  </p>
+                  <div className="mt-4 flex flex-wrap gap-2">
+                    {priorities.map((p) => (
+                      <span
+                        key={p}
+                        className="inline-flex items-center gap-1.5 rounded-full border border-electric/30 bg-electric/5 px-3 py-1.5 text-xs font-medium text-navy"
+                      >
+                        <span className="h-1.5 w-1.5 rounded-full bg-electric" />
+                        {p}
+                      </span>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Key opportunities to explore */}
+              {opps.length > 0 && (
+                <section className="mt-10">
+                  <h3 className="text-lg font-display font-semibold text-navy">Key opportunities to explore</h3>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    These are areas that could be relevant based on what you've shared. None of them are recommendations — they are simply worth exploring further.
+                  </p>
+                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
+                    {opps.map((o) => (
+                      <article key={o.title} className="rounded-xl border border-border bg-surface/40 p-5">
+                        <h4 className="text-base font-display font-semibold text-navy">{o.title}</h4>
+                        <p className="mt-2 text-sm text-navy-soft leading-relaxed">{o.body}</p>
+                      </article>
+                    ))}
+                  </div>
+                </section>
+              )}
+
+              {/* Suggested next steps */}
+              <section className="mt-10">
+                <h3 className="text-lg font-display font-semibold text-navy">Suggested next steps</h3>
+                <ol className="mt-4 space-y-3">
+                  {steps.map((s, i) => (
+                    <li key={s} className="flex items-start gap-3 text-sm text-navy">
+                      <span className="mt-0.5 grid h-6 w-6 flex-shrink-0 place-items-center rounded-full bg-electric/10 text-electric text-xs font-semibold">
+                        {i + 1}
+                      </span>
+                      <span className="leading-relaxed">{s}</span>
                     </li>
                   ))}
-                </ul>
-              </div>
+                </ol>
+              </section>
 
               <div className="mt-8 rounded-xl bg-surface border border-border p-4 text-xs text-muted-foreground leading-relaxed">
                 Your Energy IQ score is an indicative guide based on the information provided. It is not a technical design, EPC rating, financial forecast, savings calculation or installation recommendation. Any proposal, projected saving or installation decision would require a full property review, technical assessment and confirmation of suitability.
@@ -1089,7 +1149,9 @@ const EnergyIQ = () => {
                 </Button>
               </div>
             </div>
-          )}
+            );
+          })()}
+
 
           {/* LEAD CAPTURE */}
           {step === total + 1 && (
