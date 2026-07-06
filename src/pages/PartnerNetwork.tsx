@@ -107,6 +107,9 @@ const PartnerNetwork = () => {
             <p className="mt-3 text-navy-soft leading-relaxed">
               Partner installs cover homes, landlords, farms and commercial sites — all surveyed, designed and customer-approved before they reach you.
             </p>
+            <p className="mt-3 text-navy-soft leading-relaxed">
+              Through our trusted partner network, Clean Energy Gurus can also support wider clean energy and efficiency upgrades such as air source heat pumps, HVAC and other specialist technologies.
+            </p>
           </div>
           <div className="grid grid-cols-2 gap-4">
             {partnerServices.map(({ icon: Icon, label }) => (
