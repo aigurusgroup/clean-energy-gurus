@@ -69,7 +69,7 @@ const About = () => {
       </section>
 
       {/* Values */}
-      <section id="values" className="py-20 bg-surface scroll-mt-24">
+      <section id="values" className="py-20 scroll-mt-24">
         <div className="container-tight">
           <div className="max-w-2xl mb-12">
             <span className="eyebrow">Our Values</span>
