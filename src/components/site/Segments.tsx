@@ -19,11 +19,11 @@ export const Segments = () => (
         <div>
           <span className="eyebrow">Built for your property</span>
           <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-navy max-w-2xl">
-            One platform. Four advisory pathways.
+            Built for your property.
           </h2>
         </div>
         <p className="text-navy-soft max-w-md">
-          Choose your context — we'll tailor the energy model, finance pathway and ongoing optimisation strategy to fit.
+          Whether you own a home, run a business, farm the land or manage a portfolio, we tailor the energy model, finance pathway and ongoing optimisation to fit. Landlords and property portfolios sit within our Business offering.
         </p>
       </div>
       <div className="grid sm:grid-cols-2 lg:grid-cols-4 gap-5">
@@ -32,7 +32,7 @@ export const Segments = () => (
             <div className="aspect-[4/3] overflow-hidden bg-muted relative">
               <img src={img} alt={title} loading="lazy" className="w-full h-full object-cover transition-transform duration-700 group-hover:scale-105" />
               <div className="absolute top-3 left-3 px-2.5 py-1 rounded-full bg-background/90 backdrop-blur text-[10px] font-semibold uppercase tracking-[0.16em] text-navy">
-                Pathway 0{i + 1}
+                {title === "Landlords & Property Portfolios" ? "Part of Business" : `Pathway 0${i + 1}`}
               </div>
             </div>
             <div className="p-6 flex-1 flex flex-col">

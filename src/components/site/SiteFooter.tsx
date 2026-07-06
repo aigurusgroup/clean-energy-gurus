@@ -12,15 +12,21 @@ const cols = [
     ],
   },
   {
-    title: "Business & Agriculture",
+    title: "Business",
     links: [
       ["Business Overview", "/business"],
       ["Commercial Solar & Battery", "/business/commercial-solar"],
       ["Workplace EV Charging", "/business/workplace-ev"],
       ["Landlords & Portfolios", "/business/landlords"],
+    ],
+  },
+  {
+    title: "Agriculture",
+    links: [
       ["Agriculture Overview", "/agriculture"],
       ["Farm Solar & Battery", "/agriculture/solar"],
       ["Farm Energy Resilience", "/agriculture/resilience"],
+      ["Farm Energy Review", "/contact?type=agriculture"],
     ],
   },
   {
