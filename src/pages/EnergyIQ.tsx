@@ -374,6 +374,10 @@ const EnergyIQ = () => {
                 <p className="text-navy-soft leading-relaxed sm:pb-2">{band.tone}</p>
               </div>
 
+              <p className="mt-6 text-sm text-navy-soft leading-relaxed">
+                Your Energy IQ score gives you an indicative view of your property's current energy position. It considers key areas such as property suitability, energy usage, existing technology, future goals and opportunities for monitoring or optimisation. Your result is not a final design, quote or savings forecast. It is a starting point to help you understand what may be worth exploring next.
+              </p>
+
               <div className="mt-8 grid gap-3 sm:grid-cols-2">
                 {result.perCategory.map((c) => (
                   <div key={c.category} className="rounded-xl border border-border p-4">
