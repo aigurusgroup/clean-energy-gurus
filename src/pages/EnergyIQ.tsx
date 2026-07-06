@@ -212,6 +212,254 @@ function recommend(answers: Answers) {
 
 const STORAGE_KEY = "energyIQ.submissions";
 
+// ————— Personalised result helpers —————
+
+type Segment = "home" | "business" | "landlord" | "agri";
+
+function segmentFor(answers: Answers): Segment {
+  const u = answers.userType;
+  if (u === "business") return "business";
+  if (u === "landlord") return "landlord";
+  if (u === "agri") return "agri";
+  if (answers.propertyType === "commercial") return "business";
+  if (answers.propertyType === "agri") return "agri";
+  return "home";
+}
+
+function propertyNoun(segment: Segment) {
+  switch (segment) {
+    case "business": return "business";
+    case "landlord": return "property";
+    case "agri": return "site";
+    default: return "home";
+  }
+}
+
+function propertyProfileSummary(answers: Answers): string {
+  const seg = segmentFor(answers);
+  const space = answers.spaceSuitability;
+  const goal = answers.goal;
+  const heating = answers.heating;
+  const solar = answers.solar;
+  const battery = answers.battery;
+  const ev = answers.ev;
+  const monitoring = answers.monitoring;
+  const timeline = answers.timeline;
+  const postcode = (answers.postcode || "").trim();
+
+  const parts: string[] = [];
+
+  // Opening line by segment
+  if (seg === "business") {
+    parts.push(
+      "From what you've told us, energy cost control and long-term visibility appear to be important considerations for your business.",
+    );
+  } else if (seg === "agri") {
+    parts.push(
+      "From what you've told us, resilience, energy cost control and making better use of available roof or land space may be important priorities for your site.",
+    );
+  } else if (seg === "landlord") {
+    parts.push(
+      "From what you've told us, the property may benefit from a practical review of energy performance, tenant appeal and future infrastructure needs.",
+    );
+  } else {
+    parts.push(
+      "From what you've told us, your home may have opportunities to improve energy control and make better use of clean energy technology.",
+    );
+  }
+
+  // Space / suitability
+  if (space === "plenty" || space === "some") {
+    parts.push(
+      seg === "agri"
+        ? "It looks like there is workable roof or land space that could support on-site generation, subject to a closer review."
+        : "It looks like there may be suitable space on the property to support on-site generation, subject to a closer review.",
+    );
+  } else if (space === "limited") {
+    parts.push(
+      "Space appears more limited, so any on-site generation would need a careful feasibility review to confirm what is realistic.",
+    );
+  }
+
+  // Existing tech nuance
+  if (solar === "yes" && battery === "yes") {
+    parts.push(
+      "With solar and battery already in place, there may be an opportunity to look more closely at how the system is performing, how it is being used and whether tariffs or optimisation could add further value.",
+    );
+  } else if (solar === "yes") {
+    parts.push(
+      "With solar already installed, adding storage or better optimisation could be worth exploring to make more of what you generate.",
+    );
+  } else if (solar === "planning") {
+    parts.push(
+      "As you're already looking at solar, a closer feasibility review could help confirm sizing, layout and how it fits with other opportunities.",
+    );
+  }
+
+  // Heating
+  if (heating === "gas" || heating === "oil") {
+    parts.push(
+      "Your current heating setup may also be worth reviewing over time as part of a wider efficiency plan.",
+    );
+  }
+
+  // EV
+  if (ev === "need") {
+    parts.push(
+      seg === "business" || seg === "landlord"
+        ? "Preparing for EV charging — for staff, visitors or tenants — could be a sensible area to plan into your wider energy thinking."
+        : "Planning for EV charging alongside any other upgrades could help avoid duplicated work later on.",
+    );
+  }
+
+  // Monitoring
+  if (monitoring === "no" || monitoring === "interested") {
+    parts.push(
+      "Better visibility of how energy is being used could also help you make more confident decisions about what to prioritise next.",
+    );
+  }
+
+  // Goal-led close
+  if (goal === "cost") {
+    parts.push("Given the focus on lowering costs, a practical, prioritised plan is likely to be more valuable than any single upgrade in isolation.");
+  } else if (goal === "independence" || goal === "resilience") {
+    parts.push("Given the focus on greater independence, the right combination of generation, storage and control would be worth exploring together.");
+  } else if (goal === "sustainability") {
+    parts.push("Given the sustainability focus, sequencing improvements sensibly is likely to make the biggest long-term difference.");
+  } else if (goal === "improvement") {
+    parts.push("Given the interest in property improvement, a phased plan could support both performance and long-term value.");
+  } else if (goal === "ev") {
+    parts.push("Given EV charging is a priority, it's worth thinking about how this fits with any wider generation or storage plans.");
+  }
+
+  // Timeline & location
+  if (timeline === "now" || timeline === "soon") {
+    parts.push("As you're looking to move relatively soon, a closer conversation would help make sure the right things are prioritised in the right order.");
+  } else if (timeline === "explore") {
+    parts.push("At this early stage, the goal is simply to help you build a clearer picture so any future decisions feel more confident.");
+  }
+
+  if (postcode) {
+    parts.push(`Your ${postcode} location can also be factored in when looking at what may be most relevant locally.`);
+  }
+
+  return parts.join(" ");
+}
+
+function priorityAreas(answers: Answers): string[] {
+  const list: string[] = [];
+  const seg = segmentFor(answers);
+
+  if (answers.goal === "cost" || answers.billBand === "high" || answers.billBand === "vhigh") {
+    list.push("Lower energy costs");
+  }
+  if (answers.solar !== "yes" && answers.spaceSuitability !== "limited") {
+    list.push("On-site generation");
+  }
+  if (answers.battery !== "yes") {
+    list.push("Storage and flexibility");
+  }
+  if (answers.ev === "need" || answers.ev === "have") {
+    list.push("EV charging readiness");
+  }
+  if (answers.heating === "gas" || answers.heating === "oil" || answers.heating === "electric") {
+    list.push("Heating and efficiency");
+  }
+  if (answers.monitoring === "no" || answers.monitoring === "interested" || answers.monitoring === "basic") {
+    list.push("Monitoring and optimisation");
+  }
+  if (answers.goal === "resilience" || answers.goal === "independence") {
+    list.push("Resilience and backup");
+  }
+  if (answers.spaceSuitability === "unsure" || answers.spaceSuitability === "limited") {
+    list.push("Property suitability review");
+  }
+  if (answers.timeline === "year" || answers.timeline === "explore" || seg === "landlord" || seg === "business") {
+    list.push("Long-term energy planning");
+  }
+
+  // De-dupe and cap
+  return Array.from(new Set(list)).slice(0, 6);
+}
+
+type Opportunity = { title: string; body: string };
+
+function opportunities(answers: Answers): Opportunity[] {
+  const out: Opportunity[] = [];
+
+  if (answers.solar !== "yes") {
+    out.push({
+      title: "Solar PV",
+      body:
+        "Solar PV may be worth exploring if your property has suitable roof or land space. A technical review would help confirm what is realistic and whether it fits your wider goals.",
+    });
+  }
+  if (answers.battery !== "yes") {
+    out.push({
+      title: "Battery storage",
+      body:
+        "Battery storage could be relevant if you want to improve flexibility, make better use of solar generation or reduce reliance on peak-rate electricity. Suitability would depend on your usage profile and system design.",
+    });
+  }
+  if (answers.ev === "need" || answers.ev === "have") {
+    out.push({
+      title: "EV charging",
+      body:
+        "EV charging could form part of your wider energy plan, especially if you are preparing for home, workplace or tenant charging needs. The next step would be to review parking, electrical capacity and likely usage.",
+    });
+  }
+  if (answers.heating === "gas" || answers.heating === "oil" || answers.heating === "electric") {
+    out.push({
+      title: "Air source heat pumps",
+      body:
+        "Air source heat pumps may be worth considering as part of a wider heating and efficiency plan. Property suitability, insulation, hot water demand and system design would all need to be reviewed.",
+    });
+  }
+  if (answers.monitoring !== "active") {
+    out.push({
+      title: "Monitoring & optimisation",
+      body:
+        "Monitoring and optimisation could help you better understand how energy is being used, how systems are performing and where improvements may be possible over time.",
+    });
+  }
+  if (answers.goal === "resilience" || answers.goal === "independence") {
+    out.push({
+      title: "Energy resilience",
+      body:
+        "Energy resilience may be important if continuity, backup capability or greater independence are priorities for your property or site.",
+    });
+  }
+
+  return out.slice(0, 6);
+}
+
+function nextSteps(answers: Answers): string[] {
+  const seg = segmentFor(answers);
+  const noun = propertyNoun(seg);
+  const steps: string[] = [
+    "Review your Energy IQ summary at your own pace.",
+    `Look more closely at your ${noun}, current usage and what you'd like to achieve.`,
+    "Confirm what is technically suitable through a closer property review.",
+    "Prioritise the opportunities that are most relevant to your goals.",
+  ];
+  if (seg === "business") {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to shape a practical plan for your business.");
+  } else if (seg === "landlord") {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to see how it could support tenant appeal and long-term property performance.");
+  } else if (seg === "agri") {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to explore what could work as part of a practical farm energy plan.");
+  } else {
+    steps.push("Discuss your Energy IQ with Clean Energy Gurus to talk through what may be worth prioritising for your home.");
+  }
+  return steps;
+}
+
+function whatThisSuggests(): string {
+  return "From what you've told us, your property appears to have clear areas worth exploring. Your Energy IQ is not just about the score itself — it is designed to help highlight where improvements may be most relevant, where further review would be useful, and what could help you make more confident energy decisions. The next step is to look at your property, usage and goals in more detail so the right opportunities can be prioritised properly.";
+}
+
+
+
 const REVEAL_MS = 3800;
 
 const CHECKPOINTS = [
