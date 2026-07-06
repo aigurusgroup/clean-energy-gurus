@@ -56,17 +56,17 @@ const App = () => (
           <Route path="/residential/battery-storage" element={<Navigate to="/residential/solar-battery" replace />} />
           <Route path="/residential/ev-charging" element={<EVCharging />} />
           <Route path="/residential/solar-battery" element={<ResidentialSolarBattery />} />
-          <Route path="/homes" element={<Homes />} />
+          <Route path="/homes" element={<Navigate to="/residential" replace />} />
           <Route path="/solar-calculator" element={<SolarCalculatorPage />} />
 
           {/* Business */}
           <Route path="/business" element={<BusinessHub />} />
-          <Route path="/business/overview" element={<Business />} />
+          <Route path="/business/overview" element={<Navigate to="/business" replace />} />
           <Route path="/business/commercial-solar" element={<CommercialSolar />} />
           <Route path="/business/workplace-ev" element={<WorkplaceEV />} />
           <Route path="/business/commercial-battery" element={<Navigate to="/business/commercial-solar" replace />} />
           <Route path="/business/landlords" element={<Landlords />} />
-          <Route path="/landlords" element={<Landlords />} />
+          <Route path="/landlords" element={<Navigate to="/business/landlords" replace />} />
 
           {/* Agriculture */}
           <Route path="/agriculture" element={<AgricultureHub />} />
@@ -74,7 +74,7 @@ const App = () => (
           <Route path="/agriculture/battery" element={<Navigate to="/agriculture/solar" replace />} />
           <Route path="/agriculture/resilience" element={<FarmResilience />} />
           <Route path="/agriculture/solutions" element={<Navigate to="/agriculture/solar" replace />} />
-          <Route path="/agriculture/overview" element={<Farms />} />
+          <Route path="/agriculture/overview" element={<Navigate to="/agriculture" replace />} />
           <Route path="/farms" element={<Navigate to="/agriculture" replace />} />
 
           {/* Energy Optimisation */}
@@ -87,7 +87,7 @@ const App = () => (
           <Route path="/energy-optimisation/reporting" element={<Navigate to="/energy-optimisation/tariff" replace />} />
 
           {/* Legacy service routes → redirects */}
-          <Route path="/services" element={<Services />} />
+          <Route path="/services" element={<Navigate to="/" replace />} />
           <Route path="/services/solar-pv" element={<Navigate to="/residential/solar-battery" replace />} />
           <Route path="/services/battery-storage" element={<Navigate to="/residential/solar-battery" replace />} />
           <Route path="/services/ev-charging" element={<Navigate to="/residential/ev-charging" replace />} />
@@ -109,7 +109,7 @@ const App = () => (
           <Route path="/about" element={<About />} />
           <Route path="/about/how-we-work" element={<HowWeWork />} />
           <Route path="/about/partner-network" element={<PartnerNetwork />} />
-          <Route path="/platform" element={<Platform />} />
+          <Route path="/platform" element={<Navigate to="/about/how-we-work" replace />} />
           <Route path="/contact" element={<Contact />} />
 
           {/* Partner application (kept, not in main nav) */}

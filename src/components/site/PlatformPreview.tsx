@@ -30,9 +30,9 @@ export const PlatformPreview = () => (
           </p>
         </div>
         <div className="lg:col-span-5 lg:text-right">
-          <Link to="/platform" className="inline-block">
+          <Link to="/about/how-we-work" className="inline-block">
             <Button className="bg-white text-navy hover:bg-white/90 rounded-full px-6">
-              Explore the platform <ArrowRight className="ml-1.5 h-4 w-4" />
+              Learn more <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Link>
         </div>

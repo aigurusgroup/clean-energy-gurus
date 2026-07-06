@@ -5,42 +5,49 @@ const cols = [
   {
     title: "Residential",
     links: [
+      ["Residential Overview", "/residential"],
       ["Solar & Battery", "/residential/solar-battery"],
       ["EV Charging", "/residential/ev-charging"],
       ["Residential Energy Review", "/contact?type=residential"],
     ],
   },
   {
-    title: "Business",
+    title: "Business & Agriculture",
     links: [
-      ["Commercial Solar", "/business/commercial-solar"],
+      ["Business Overview", "/business"],
+      ["Commercial Solar & Battery", "/business/commercial-solar"],
       ["Workplace EV Charging", "/business/workplace-ev"],
       ["Landlords & Portfolios", "/business/landlords"],
-    ],
-  },
-  {
-    title: "Agriculture",
-    links: [
+      ["Agriculture Overview", "/agriculture"],
       ["Farm Solar & Battery", "/agriculture/solar"],
       ["Farm Energy Resilience", "/agriculture/resilience"],
-      ["Farm Energy Review", "/contact?type=agriculture"],
     ],
   },
   {
     title: "Energy Optimisation",
     links: [
+      ["Optimisation Overview", "/energy-optimisation"],
       ["Monitoring & Maintenance", "/energy-optimisation/monitoring"],
       ["Tariff & Export Optimisation", "/energy-optimisation/tariff"],
       ["Battery Optimisation", "/energy-optimisation/battery"],
     ],
   },
   {
-    title: "Knowledge & Company",
+    title: "Knowledge Centre",
     links: [
+      ["Knowledge Centre", "/knowledge"],
       ["Articles & Guides", "/knowledge/articles"],
       ["Video Library", "/knowledge/videos"],
       ["Case Studies", "/knowledge/case-studies"],
+      ["Installer Hub", "/knowledge/installer-hub"],
+    ],
+  },
+  {
+    title: "Company",
+    links: [
       ["About Us", "/about"],
+      ["How We Work", "/about/how-we-work"],
+      ["Partner Network", "/about/partner-network"],
       ["Become an Installer Partner", "/partners"],
       ["Contact", "/contact"],
     ],
@@ -81,11 +88,8 @@ export const SiteFooter = () => (
         <p className="text-xs text-muted-foreground">
           © {new Date().getFullYear()} Clean Energy Gurus Ltd. Registered in England & Wales.
         </p>
-        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
-          <Link to="#" className="hover:text-electric">Terms</Link>
-          <Link to="#" className="hover:text-electric">Privacy</Link>
-          <Link to="#" className="hover:text-electric">Complaints</Link>
-          <Link to="#" className="hover:text-electric">Quality Policy</Link>
+        <div className="text-xs text-muted-foreground">
+          Terms, Privacy, Complaints and Quality Policy pages coming soon.
         </div>
       </div>
     </div>

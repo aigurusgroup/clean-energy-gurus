@@ -7,9 +7,9 @@ import segHome from "@/assets/segment-home.jpg";
 
 const segments = [
   { icon: Home, title: "Residential", line: "Solar, batteries, EV charging and long-term optimisation for UK homes.", to: "/residential", img: segHome },
-  { icon: Building2, title: "Business", line: "Reduce operating costs and improve site resilience.", to: "/business", img: segBusiness },
+  { icon: Building2, title: "Business", line: "Reduce operating costs and improve site resilience across your business.", to: "/business", img: segBusiness },
   { icon: Sprout, title: "Agriculture", line: "Use roofs, land and high daytime load to build energy independence.", to: "/agriculture", img: segFarm },
-  { icon: Key, title: "Landlords", line: "Upgrade assets, support tenants and future-proof portfolios.", to: "/business/landlords", img: segLandlord },
+  { icon: Key, title: "Landlords & Property Portfolios", line: "Part of our Business offering — upgrade assets, support tenants and future-proof portfolios.", to: "/business/landlords", img: segLandlord },
 ];
 
 export const Segments = () => (

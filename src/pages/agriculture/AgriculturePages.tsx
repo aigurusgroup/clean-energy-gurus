@@ -1,6 +1,10 @@
-import { LayoutGrid, ShieldCheck, ClipboardCheck } from "lucide-react";
+import { LayoutGrid, ShieldCheck, ClipboardCheck, CheckCircle2, Sun, BatteryCharging, Layers } from "lucide-react";
+import { useEffect } from "react";
 import { HubPage } from "@/components/site/HubPage";
 import { SimplePage } from "@/components/site/SimplePage";
+import { SiteLayout } from "@/components/site/SiteLayout";
+import { PageHero } from "@/components/site/PageHero";
+import { FinalCTA } from "@/components/site/FinalCTA";
 
 export const AgricultureHub = () => (
   <HubPage
@@ -18,43 +22,86 @@ export const AgricultureHub = () => (
   />
 );
 
-export const FarmSolar = () => (
-  <SimplePage
-    metaTitle="Farm Solar UK | Clean Energy Gurus"
-    metaDesc="Farm-grade solar PV for UK agricultural sites — rooftop, ground-mount and carport."
-    eyebrow="Farm Solar"
-    heroTitle={<>Farm solar built for <span className="text-gradient">real daytime load</span>.</>}
-    lead="Barn roofs, unproductive land and machinery sheds turned into long-term energy assets."
-    bullets={[
-      "Rooftop, ground-mount and carport options",
-      "Farm consumption profile modelling",
-      "Grant and finance route support",
-      "MCS partner installation",
-      "DNO coordination",
-      "Long-term monitoring",
-    ]}
-    sections={[{ title: "Designed for farm load", body: "Farms use energy when solar is generating — the payback fundamentals are strong." }]}
-  />
+const useMeta = (title: string, desc: string) => {
+  useEffect(() => {
+    document.title = title;
+    const meta = document.querySelector('meta[name="description"]') || (() => {
+      const m = document.createElement("meta"); m.setAttribute("name", "description"); document.head.appendChild(m); return m;
+    })();
+    meta.setAttribute("content", desc);
+  }, [title, desc]);
+};
+
+const BulletList = ({ items }: { items: string[] }) => (
+  <ul className="mt-6 space-y-3.5">
+    {items.map((b) => (
+      <li key={b} className="flex gap-3 text-navy">
+        <CheckCircle2 className="h-5 w-5 text-electric flex-shrink-0 mt-0.5" />
+        <span className="text-[15px]">{b}</span>
+      </li>
+    ))}
+  </ul>
 );
 
-export const FarmBattery = () => (
-  <SimplePage
-    metaTitle="Farm Battery Storage | Clean Energy Gurus"
-    metaDesc="Battery storage for farms — daytime capture, night-time use, resilience and export revenue."
-    eyebrow="Battery Storage for Farms"
-    heroTitle={<>Store the day. <span className="text-gradient">Power the night.</span></>}
-    lead="Batteries turn a solar-heavy midday into steady, controllable, revenue-generating farm energy."
-    bullets={[
-      "Daytime solar capture",
-      "Night-time and peak dispatch",
-      "Backup for critical farm loads",
-      "Tariff and export optimisation",
-      "Warranty-backed cycles",
-      "Remote monitoring",
-    ]}
-    sections={[{ title: "Not just self-use", body: "Batteries unlock export windows and flexibility revenue on top of savings." }]}
-  />
-);
+export const FarmSolar = () => {
+  useMeta(
+    "Farm Solar & Battery UK | Clean Energy Gurus",
+    "Farm-grade solar PV and battery storage for UK agricultural sites — rooftop, ground-mount, resilience and practical daily use cases."
+  );
+  return (
+    <SiteLayout>
+      <PageHero
+        eyebrow="Farm Solar & Battery"
+        title={<>Farm solar and storage built for <span className="text-gradient">real daytime load</span>.</>}
+        lead="Barn roofs, unproductive land and machinery sheds turned into long-term energy assets — with battery storage to power the night, protect critical systems and unlock export revenue."
+      />
+
+      <section className="py-20 lg:py-24">
+        <div className="container-tight grid lg:grid-cols-3 gap-8">
+          <div className="card-premium p-7">
+            <div className="h-11 w-11 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow"><Sun className="h-5 w-5" /></div>
+            <h3 className="mt-5 text-xl font-display font-semibold text-navy">Farm Solar</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Rooftop, ground-mount and carport solar designed around the actual farm load profile.</p>
+            <BulletList items={["Rooftop, ground-mount and carport options", "Farm consumption profile modelling", "Grant and finance route support", "MCS partner installation", "DNO coordination and long-term monitoring"]} />
+          </div>
+          <div className="card-premium p-7">
+            <div className="h-11 w-11 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow"><BatteryCharging className="h-5 w-5" /></div>
+            <h3 className="mt-5 text-xl font-display font-semibold text-navy">Battery Storage for Farms</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Store the day, power the night — steady, controllable farm energy.</p>
+            <BulletList items={["Daytime solar capture", "Night-time and peak dispatch", "Backup for critical farm loads", "Tariff and export optimisation", "Warranty-backed cycles and remote monitoring"]} />
+          </div>
+          <div className="card-premium p-7">
+            <div className="h-11 w-11 rounded-xl bg-gradient-electric grid place-items-center text-white shadow-glow"><Layers className="h-5 w-5" /></div>
+            <h3 className="mt-5 text-xl font-display font-semibold text-navy">Solar + Battery Together</h3>
+            <p className="mt-2 text-sm text-muted-foreground leading-relaxed">Designed as one integrated farm energy system — one team, one platform.</p>
+            <BulletList items={["Single integrated design and controls", "Combined DNO and metering strategy", "One monitoring dashboard for the whole site", "Coordinated grant and finance package", "One accountable partner across the lifecycle"]} />
+          </div>
+        </div>
+      </section>
+
+      <section className="py-16 bg-surface">
+        <div className="container-tight grid lg:grid-cols-2 gap-10">
+          <div className="card-premium p-7">
+            <h3 className="text-lg font-display font-semibold text-navy">Farm energy resilience</h3>
+            <p className="mt-3 text-sm text-navy leading-relaxed">Grid outages can stop a working farm in its tracks. Integrated solar and storage keeps the critical stuff running.</p>
+            <BulletList items={["Critical load audit (milking, ventilation, refrigeration, pumping)", "Backup-capable inverters and batteries", "Automatic islanding where suitable", "Generator and hybrid integration", "Test-and-verify commissioning"]} />
+          </div>
+          <div className="card-premium p-7">
+            <h3 className="text-lg font-display font-semibold text-navy">Practical agricultural use cases</h3>
+            <div className="mt-4 space-y-3 text-sm text-navy leading-relaxed">
+              <p><strong>Dairy</strong> — power milking parlours, cooling and refrigeration from solar; batteries keep operations running through outages.</p>
+              <p><strong>Poultry & livestock</strong> — protect ventilation and heating; reduce grid dependency during peak demand.</p>
+              <p><strong>Arable</strong> — offset grain drying and irrigation loads; export surplus at peak tariff windows.</p>
+              <p><strong>Diversified estates</strong> — pair solar with EV charging for farm shops, glamping and holiday lets.</p>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <FinalCTA />
+    </SiteLayout>
+  );
+};
 
 export const FarmResilience = () => (
   <SimplePage
@@ -72,24 +119,5 @@ export const FarmResilience = () => (
       "Test-and-verify commissioning",
     ]}
     sections={[{ title: "Beyond a backup box", body: "Resilience is a system design — batteries, inverters, loads and controls working together." }]}
-  />
-);
-
-export const AgriculturalSolutions = () => (
-  <SimplePage
-    metaTitle="Agricultural Energy Solutions | Clean Energy Gurus"
-    metaDesc="A complete managed energy stack for UK farms — solar, storage, EV, monitoring and optimisation."
-    eyebrow="Agricultural Energy Solutions"
-    heroTitle={<>The complete <span className="text-gradient">farm energy stack</span>.</>}
-    lead="One team designing, installing and managing every layer of your farm's energy system."
-    bullets={[
-      "Solar, battery, EV and monitoring integrated",
-      "Grant and finance route guidance",
-      "Accredited partner installation",
-      "Ongoing tariff and export review",
-      "Half-hourly performance reporting",
-      "Single point of accountability",
-    ]}
-    sections={[{ title: "One system, one team", body: "You get one designer, one installer network and one performance partner — not five." }]}
   />
 );
