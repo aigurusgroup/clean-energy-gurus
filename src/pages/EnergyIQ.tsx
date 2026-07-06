@@ -523,7 +523,7 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
       timers.push(
         window.setTimeout(
           () => setVisibleSpokes((n) => Math.max(n, i + 1)),
-          350 + i * 260,
+          400 + i * 420,
         ),
       );
     });
