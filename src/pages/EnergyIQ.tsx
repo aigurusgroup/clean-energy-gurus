@@ -427,8 +427,11 @@ const EnergyIQ = () => {
             <form onSubmit={submitLead} className="card-premium p-8 lg:p-10">
               <span className="eyebrow">Almost there</span>
               <h2 className="mt-3 text-2xl lg:text-3xl font-display font-semibold text-navy">
-                Enter your details to receive your full Energy IQ summary and next steps.
+                Receive your Energy IQ summary
               </h2>
+              <p className="mt-4 text-navy-soft leading-relaxed">
+                Enter your details and we'll send you your Energy IQ summary, including your indicative score, key opportunities and suggested next steps. A member of the Clean Energy Gurus team may also contact you to discuss your property and answer any questions.
+              </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
                 <div className="sm:col-span-2">
                   <Label htmlFor="iq-name">Name</Label>
