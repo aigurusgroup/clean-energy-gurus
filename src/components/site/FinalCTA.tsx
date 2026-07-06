@@ -10,13 +10,12 @@ export const FinalCTA = () => (
         <div className="absolute -top-32 -right-32 h-[400px] w-[400px] bg-gradient-electric opacity-30 blur-3xl rounded-full" />
         <div className="relative grid lg:grid-cols-2 gap-10 items-center">
           <div>
-            <span className="eyebrow">Start here</span>
+            <span className="eyebrow">Energy IQ Assessment</span>
             <h2 className="mt-3 text-3xl sm:text-4xl lg:text-5xl font-display font-semibold text-white">
-              Start with a Free Energy Review.
+              Discover your property's Energy IQ.
             </h2>
             <p className="mt-5 text-white/75 text-lg leading-relaxed max-w-md">
-              Find your property on the map, sketch your roof and book a
-              callback in under a minute — no obligation.
+              Answer a few simple questions and receive an indicative view of your property's energy position, key opportunities and suggested next steps.
             </p>
           </div>
           <div className="lg:justify-self-end w-full max-w-md">
@@ -25,13 +24,13 @@ export const FinalCTA = () => (
                 <div className="h-9 w-9 rounded-full bg-electric/15 grid place-items-center text-electric">
                   <MapPin className="h-4 w-4" />
                 </div>
-                Step 1 — find your property on satellite
+                Step 1 — Tell us about your property
               </div>
               <div className="mt-3 flex items-center gap-3 text-sm text-white/80">
                 <div className="h-9 w-9 rounded-full bg-electric/15 grid place-items-center text-electric">
                   <CalendarCheck className="h-4 w-4" />
                 </div>
-                Step 2 — share your details and we'll call you back
+                Step 2 — Receive your indicative Energy IQ summary
               </div>
               <Link to="/energy-iq" className="block mt-6">
                 <Button className="w-full rounded-full h-12 bg-gradient-electric text-white border-0 shadow-glow">
@@ -39,7 +38,7 @@ export const FinalCTA = () => (
                 </Button>
               </Link>
               <p className="mt-3 text-[11px] text-white/55 leading-relaxed">
-                We respond within one UK business day.
+                Indicative assessment. No obligation.
               </p>
             </div>
           </div>
