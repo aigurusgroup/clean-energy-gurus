@@ -49,21 +49,26 @@ const About = () => {
       <section id="founder" className="py-20 lg:py-24 bg-surface scroll-mt-24">
         <div className="container-tight max-w-3xl">
           <span className="eyebrow">A Message From Our Founder</span>
-          <h2 className="mt-3 text-3xl font-display font-semibold text-navy">Why Clean Energy Gurus exists</h2>
+          <h2 className="mt-3 text-3xl font-display font-semibold text-navy">Clear, practical, commercially sensible clean energy</h2>
           <div className="mt-6 space-y-5 text-navy-soft text-lg leading-relaxed">
+            <p>Hi, I'm Chris Robinson, founder of Clean Energy Gurus.</p>
             <p>
-              Hi, I'm Chris, founder of Clean Energy Gurus. I started this business because clean energy — solar, batteries, EV charging, heat pumps and everything around them — can genuinely feel confusing for property owners. There's a lot of noise, a lot of sales pressure and not always a lot of straight answers.
+              Clean energy should feel clear, practical and commercially sensible — but for many property owners, it often feels the opposite. Solar panels, battery storage, EV charging, heat pumps, tariffs and energy performance all have an important role to play, but the advice around them can be confusing, overly technical or driven by sales pressure rather than what is genuinely right for the property.
             </p>
             <p>
-              Most people I speak to don't want to become an expert in inverters or tariffs. They want to know: is this right for my property, what will it actually do for me, and who can I trust to look after it properly?
+              Most people I speak to do not want to become experts in inverters, export rates or heating systems. They simply want clear answers to important questions: is this suitable for my property, what difference could it make, what should I prioritise, and who can I trust to deliver it properly?
+            </p>
+            <p>Clean Energy Gurus exists to answer those questions honestly.</p>
+            <p>
+              We work with a network of trusted installation partners and industry specialists, ensuring the right people are involved at the right stage. Our role is to help customers understand their options, make informed decisions and get long-term value from their energy improvements — not just complete an installation and walk away.
             </p>
             <p>
-              Clean Energy Gurus exists to answer those questions honestly. We work with a network of trusted installation partners and specialists, so the right people carry out the work — and we stay involved to help you get long-term value from your system, not just an installation invoice.
+              Our mission is simple: to help property owners across the UK make confident, well-informed energy decisions and make the journey towards cleaner, smarter energy feel clearer, more practical and far less daunting.
             </p>
-            <p>
-              Our long-term mission is simple: help property owners across the UK make confident, well-informed energy decisions — and make the whole process feel a lot less daunting.
-            </p>
-            <p className="text-navy font-medium">— Chris, Founder</p>
+            <div className="pt-3 border-t border-border/60 mt-2">
+              <p className="mt-4 text-navy font-display font-semibold">Chris Robinson</p>
+              <p className="text-sm text-muted-foreground">Founder, Clean Energy Gurus</p>
+            </div>
           </div>
         </div>
       </section>
