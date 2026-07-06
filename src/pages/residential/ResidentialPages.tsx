@@ -33,9 +33,9 @@ const HeatPumpSection = () => (
           ))}
         </ul>
         <div className="mt-8">
-          <Link to="/contact?type=residential">
+          <Link to="/energy-iq">
             <Button className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
-              Start Your Energy Review <ArrowRight className="ml-1.5 h-4 w-4" />
+              Get Your Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
             </Button>
           </Link>
         </div>
