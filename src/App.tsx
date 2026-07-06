@@ -15,6 +15,8 @@ import SolarCalculatorPage from "./pages/SolarCalculatorPage";
 import { EVCharging } from "./pages/ServicePages";
 import { ResidentialHub, ResidentialSolarBattery } from "./pages/residential/ResidentialPages";
 import { BusinessHub, CommercialSolar, WorkplaceEV } from "./pages/business/BusinessPages";
+import AirSourceHeatPumps from "./pages/residential/AirSourceHeatPumps";
+import HeatingEfficiency from "./pages/business/HeatingEfficiency";
 import { AgricultureHub, FarmSolar, FarmResilience } from "./pages/agriculture/AgriculturePages";
 import { OptimisationHub, OptMonitoring, OptTariff, OptBattery } from "./pages/optimisation/OptimisationPages";
 import KnowledgeCentre from "./pages/knowledge/KnowledgeCentre";

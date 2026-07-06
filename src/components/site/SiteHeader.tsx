@@ -19,6 +19,7 @@ const nav: NavItem[] = [
     children: [
       { label: "Solar & Battery", to: "/residential/solar-battery", desc: "The complete home solar and storage package." },
       { label: "EV Charging", to: "/residential/ev-charging", desc: "Smart, solar-aware home charging." },
+      { label: "Air Source Heat Pumps", to: "/residential/air-source-heat-pumps", desc: "Low carbon heating as part of a whole-home plan." },
       { label: "Residential Energy Review", to: "/contact?type=residential", desc: "Start your free home energy review." },
     ],
   },
@@ -28,6 +29,7 @@ const nav: NavItem[] = [
     children: [
       { label: "Commercial Solar", to: "/business/commercial-solar", desc: "Rooftop, ground-mount and commercial battery." },
       { label: "Workplace EV Charging", to: "/business/workplace-ev", desc: "Fleet and staff charging that scales." },
+      { label: "Heating & Efficiency", to: "/business/heating-efficiency", desc: "Heat pumps and efficiency in a joined-up energy plan." },
       { label: "Landlords & Property Portfolios", to: "/business/landlords", desc: "Upgrade assets, protect tenants." },
     ],
   },
@@ -54,6 +56,7 @@ const nav: NavItem[] = [
     to: "/knowledge",
     children: [
       { label: "Articles & Guides", to: "/knowledge/articles", desc: "Educational guides on solar, battery and EV." },
+      { label: "Heat Pump Guides", to: "/knowledge/articles#heat-pumps", desc: "Plain-English guides to air source heat pumps." },
       { label: "Video Library", to: "/knowledge/videos", desc: "Short, honest video series." },
       { label: "Case Studies", to: "/knowledge/case-studies", desc: "Real UK projects and outcomes." },
       { label: "Installer Hub", to: "/knowledge/installer-hub", desc: "Resources for CEG accredited installers." },
