@@ -23,6 +23,7 @@ import { OptimisationHub, OptMonitoring, OptTariff, OptBattery } from "./pages/o
 import KnowledgeCentre from "./pages/knowledge/KnowledgeCentre";
 import { KnowledgeArticles } from "./pages/knowledge/KnowledgeEducation";
 import { KnowledgeVideos, KnowledgeCaseStudies, KnowledgeInstallerHub } from "./pages/knowledge/KnowledgeMedia";
+import { Terms, Privacy, Complaints, Quality } from "./pages/legal/LegalPages";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
