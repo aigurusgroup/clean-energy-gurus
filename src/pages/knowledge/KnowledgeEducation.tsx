@@ -149,6 +149,17 @@ export const KnowledgeArticles = () => (
           { tag: "Service", title: "Choosing a managed energy partner vs. an installer", summary: "What changes when you buy a system as a managed service." },
         ],
       },
+      {
+        eyebrow: "Heat Pumps",
+        heading: "Heat Pump Guides",
+        items: [
+          { tag: "Basics", title: "What Is an Air Source Heat Pump?", summary: "How the technology works and where it fits in a UK home." },
+          { tag: "UK Homes", title: "Do Heat Pumps Work in UK Homes?", summary: "Performance in a UK climate and typical property types." },
+          { tag: "Integration", title: "Heat Pumps and Solar Panels", summary: "How a heat pump can be paired with solar PV, battery storage and smart tariffs." },
+          { tag: "Planning", title: "What to Consider Before Installing a Heat Pump", summary: "Radiators, hot water, electrical capacity and controls." },
+          { tag: "Suitability", title: "Heat Pumps, Insulation and Property Suitability", summary: "Why fabric-first matters and how suitability is assessed on survey." },
+        ],
+      },
     ]}
   />
 );
