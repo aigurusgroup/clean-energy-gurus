@@ -6,6 +6,7 @@ import { HubPage } from "@/components/site/HubPage";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { FinalCTA } from "@/components/site/FinalCTA";
+import { SolarMapCTA } from "@/components/site/SolarMapCTA";
 
 const HeatPumpSection = () => (
   <section className="py-20 lg:py-24 bg-surface">
@@ -146,6 +147,7 @@ export const ResidentialSolarBattery = () => {
         </div>
       </section>
 
+      <SolarMapCTA />
       <FinalCTA />
     </SiteLayout>
   );

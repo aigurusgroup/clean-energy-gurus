@@ -5,6 +5,7 @@ import { SimplePage } from "@/components/site/SimplePage";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import { PageHero } from "@/components/site/PageHero";
 import { FinalCTA } from "@/components/site/FinalCTA";
+import { SolarMapCTA } from "@/components/site/SolarMapCTA";
 
 export const AgricultureHub = () => (
   <HubPage
@@ -98,6 +99,7 @@ export const FarmSolar = () => {
         </div>
       </section>
 
+      <SolarMapCTA />
       <FinalCTA />
     </SiteLayout>
   );

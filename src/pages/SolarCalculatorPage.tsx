@@ -6,17 +6,17 @@ import { FinalCTA } from "@/components/site/FinalCTA";
 
 const SolarCalculatorPage = () => {
   useEffect(() => {
-    document.title = "Solar Calculator | Clean Energy Gurus";
+    document.title = "Solar Suitability Map | Clean Energy Gurus";
     const m = document.querySelector('meta[name="description"]') as HTMLMetaElement;
-    if (m) m.content = "Estimate solar output, savings and payback for your UK home, business or farm — free, instant, no obligation.";
+    if (m) m.content = "Use our interactive Solar Suitability Map to locate your property, review potential roof or land space and start a solar assessment with Clean Energy Gurus.";
   }, []);
 
   return (
     <SiteLayout>
       <PageHero
-        eyebrow="Solar Calculator"
-        title={<>Estimate your solar in <span className="text-gradient">60 seconds</span>.</>}
-        lead="Draw your roof, pick a segment, and get an honest read on generation, savings and payback — before you commit to anything."
+        eyebrow="Solar Suitability Map"
+        title={<>Map your property for <span className="text-gradient">solar</span>.</>}
+        lead="Use our interactive solar mapping tool to locate your property, review potential roof or land space and start a solar assessment with Clean Energy Gurus. This is a solar-specific tool — for a broader property energy assessment covering solar, battery, EV, heat pumps and optimisation, use Energy IQ."
       />
       <SolarCalculator segment="home" selectable />
       <FinalCTA />
