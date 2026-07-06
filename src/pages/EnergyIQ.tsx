@@ -189,10 +189,10 @@ function scoreAnswers(answers: Answers) {
 }
 
 function categoryBand(total: number) {
-  if (total >= 80) return { name: "High Performing", tone: "Your property is well set up. Focus on fine-tuning and long-term optimisation." };
-  if (total >= 60) return { name: "Strong Potential", tone: "You have a strong base. Targeted upgrades and better control could unlock more value." };
-  if (total >= 40) return { name: "Developing", tone: "Good foundations — with the right sequence of upgrades, meaningful improvement is likely." };
-  return { name: "Early Stage", tone: "You're at the start of the journey. A clear, staged plan can make the biggest difference." };
+  if (total >= 80) return { name: "High Performing Property", tone: "Your property is well set up. Focus on fine-tuning and long-term optimisation." };
+  if (total >= 60) return { name: "Strong Opportunity", tone: "You have a strong base. Targeted upgrades and better control could unlock more value." };
+  if (total >= 40) return { name: "Developing Potential", tone: "Good foundations — with the right sequence of upgrades, meaningful improvement is likely." };
+  return { name: "Early Opportunity", tone: "You're at the start of the journey. A clear, staged plan can make the biggest difference." };
 }
 
 function recommend(answers: Answers) {
