@@ -23,6 +23,7 @@ import { OptimisationHub, OptMonitoring, OptTariff, OptBattery } from "./pages/o
 import KnowledgeCentre from "./pages/knowledge/KnowledgeCentre";
 import { KnowledgeArticles } from "./pages/knowledge/KnowledgeEducation";
 import { KnowledgeVideos, KnowledgeCaseStudies, KnowledgeInstallerHub } from "./pages/knowledge/KnowledgeMedia";
+import { Terms, Privacy, Complaints, Quality } from "./pages/legal/LegalPages";
 import { useEffect } from "react";
 import { useLocation } from "react-router-dom";
 
@@ -114,6 +115,12 @@ const App = () => (
 
           {/* Partner application (kept, not in main nav) */}
           <Route path="/partners" element={<Partners />} />
+
+          {/* Legal */}
+          <Route path="/terms" element={<Terms />} />
+          <Route path="/privacy" element={<Privacy />} />
+          <Route path="/complaints" element={<Complaints />} />
+          <Route path="/quality" element={<Quality />} />
 
           <Route path="*" element={<NotFound />} />
         </Routes>

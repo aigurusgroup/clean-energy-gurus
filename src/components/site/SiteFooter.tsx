@@ -94,9 +94,15 @@ export const SiteFooter = () => (
         <p className="text-xs text-muted-foreground">
           © {new Date().getFullYear()} Clean Energy Gurus Ltd. Registered in England & Wales.
         </p>
-        <div className="text-xs text-muted-foreground">
-          Terms, Privacy, Complaints and Quality Policy pages coming soon.
-        </div>
+        <nav aria-label="Legal" className="flex flex-wrap items-center gap-x-4 gap-y-2 text-xs text-muted-foreground">
+          <Link to="/terms" className="hover:text-electric transition-colors">Terms</Link>
+          <span aria-hidden="true" className="opacity-40">·</span>
+          <Link to="/privacy" className="hover:text-electric transition-colors">Privacy</Link>
+          <span aria-hidden="true" className="opacity-40">·</span>
+          <Link to="/complaints" className="hover:text-electric transition-colors">Complaints</Link>
+          <span aria-hidden="true" className="opacity-40">·</span>
+          <Link to="/quality" className="hover:text-electric transition-colors">Quality</Link>
+        </nav>
       </div>
     </div>
   </footer>
