@@ -161,9 +161,9 @@ export const SiteHeader = () => {
         </nav>
 
         <div className="hidden md:flex items-center gap-3 ml-auto xl:ml-0">
-          <Link to="/contact">
+          <Link to="/energy-iq">
             <Button className="bg-gradient-electric text-white border-0 shadow-glow hover:opacity-95 hover:shadow-elegant rounded-full px-5">
-              Start Your Energy Review
+              Get Your Energy IQ
             </Button>
           </Link>
         </div>
