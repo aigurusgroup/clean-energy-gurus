@@ -6,10 +6,10 @@ import segLandlord from "@/assets/segment-landlord.jpg";
 import segHome from "@/assets/segment-home.jpg";
 
 const segments = [
-  { icon: Building2, title: "Businesses", line: "Reduce operating costs and improve site resilience.", to: "/business", img: segBusiness },
-  { icon: Sprout, title: "Farms", line: "Use roofs, land and high daytime load to build energy independence.", to: "/farms", img: segFarm },
-  { icon: Key, title: "Landlords", line: "Upgrade assets, support tenants and future-proof portfolios.", to: "/landlords", img: segLandlord },
-  { icon: Home, title: "Homes", line: "Optimise solar, batteries, EV charging and export performance.", to: "/homes", img: segHome },
+  { icon: Home, title: "Residential", line: "Solar, batteries, EV charging and long-term optimisation for UK homes.", to: "/residential", img: segHome },
+  { icon: Building2, title: "Business", line: "Reduce operating costs and improve site resilience.", to: "/business", img: segBusiness },
+  { icon: Sprout, title: "Agriculture", line: "Use roofs, land and high daytime load to build energy independence.", to: "/agriculture", img: segFarm },
+  { icon: Key, title: "Landlords", line: "Upgrade assets, support tenants and future-proof portfolios.", to: "/business/landlords", img: segLandlord },
 ];
 
 export const Segments = () => (

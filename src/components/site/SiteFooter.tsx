@@ -3,42 +3,52 @@ import logo from "@/assets/logo.png";
 
 const cols = [
   {
-    title: "Solutions",
+    title: "Residential",
     links: [
-      ["Business Energy", "/business"],
-      ["Farm Energy", "/farms"],
-      ["Landlord Upgrade", "/landlords"],
-      ["Home Energy", "/homes"],
+      ["Solar PV", "/residential/solar-pv"],
+      ["Battery Storage", "/residential/battery-storage"],
+      ["EV Charging", "/residential/ev-charging"],
+      ["Solar + Battery", "/residential/solar-battery"],
+      ["Home Energy Review", "/contact?type=residential"],
     ],
   },
   {
-    title: "Services",
+    title: "Business & Agriculture",
     links: [
-      ["Solar PV", "/services/solar-pv"],
-      ["Battery Storage", "/services/battery-storage"],
-      ["EV Charging", "/services/ev-charging"],
-      ["Monitoring & Maintenance", "/services/monitoring"],
-      ["Tariff & Export", "/services/tariff-optimisation"],
+      ["Commercial Solar", "/business/commercial-solar"],
+      ["Workplace EV Charging", "/business/workplace-ev"],
+      ["Commercial Battery", "/business/commercial-battery"],
+      ["Landlords & Portfolios", "/business/landlords"],
+      ["Farm Energy", "/agriculture"],
+    ],
+  },
+  {
+    title: "Energy Optimisation",
+    links: [
+      ["Monitoring", "/energy-optimisation/monitoring"],
+      ["Maintenance", "/energy-optimisation/maintenance"],
+      ["Tariff Optimisation", "/energy-optimisation/tariff"],
+      ["Export Optimisation", "/energy-optimisation/export"],
+      ["Battery Optimisation", "/energy-optimisation/battery"],
+      ["Performance Reporting", "/energy-optimisation/reporting"],
+    ],
+  },
+  {
+    title: "Knowledge Centre",
+    links: [
+      ["Articles & Guides", "/knowledge/articles"],
+      ["Video Library", "/knowledge/videos"],
+      ["Case Studies", "/knowledge/case-studies"],
+      ["Installer Partner Hub", "/knowledge/installer-hub"],
     ],
   },
   {
     title: "Company",
     links: [
-      ["Platform", "/platform"],
       ["About", "/about"],
-      ["Insights", "/insights"],
+      ["Our Partner Network", "/about#partners"],
+      ["Become an Installer Partner", "/partners"],
       ["Contact", "/contact"],
-    ],
-  },
-  {
-    title: "Compliance",
-    links: [
-      ["Terms", "#"],
-      ["Privacy", "#"],
-      ["Complaints", "#"],
-      ["Finance Information", "#"],
-      ["Quality Policy", "#"],
-      ["Environmental Policy", "#"],
     ],
   },
 ];
@@ -47,13 +57,12 @@ export const SiteFooter = () => (
   <footer className="border-t border-border bg-surface mt-24">
     <div className="container-tight py-16">
       <div className="grid gap-12 md:grid-cols-2 lg:grid-cols-6">
-        <div className="lg:col-span-2">
+        <div className="lg:col-span-1">
           <Link to="/" className="flex items-center" aria-label="Clean Energy Gurus home">
             <img src={logo} alt="Clean Energy Gurus" className="h-16 w-auto object-contain" width={1165} height={306} />
           </Link>
-          <p className="mt-5 text-sm text-muted-foreground max-w-sm leading-relaxed">
-            We help homes, businesses, farms and landlords across the UK reduce energy
-            costs and turn their property into a managed energy asset.
+          <p className="mt-5 text-sm text-muted-foreground leading-relaxed">
+            A UK managed energy platform for homes, businesses, farms and landlords.
           </p>
           <p className="mt-5 text-xs text-muted-foreground">
             Installations delivered through accredited MCS, OZEV and DNO partners.
@@ -65,7 +74,9 @@ export const SiteFooter = () => (
             <ul className="space-y-2.5">
               {c.links.map(([label, href]) => (
                 <li key={label}>
-                  <Link to={href} className="text-sm text-muted-foreground hover:text-electric transition-colors">{label}</Link>
+                  <Link to={href} className="text-sm text-muted-foreground hover:text-electric transition-colors">
+                    {label}
+                  </Link>
                 </li>
               ))}
             </ul>
@@ -73,8 +84,15 @@ export const SiteFooter = () => (
         ))}
       </div>
       <div className="mt-14 pt-8 border-t border-border flex flex-col md:flex-row items-start md:items-center justify-between gap-4">
-        <p className="text-xs text-muted-foreground">© {new Date().getFullYear()} Clean Energy Gurus Ltd. Registered in England & Wales.</p>
-        <p className="text-xs text-muted-foreground">Authorised installation routes via accredited partners.</p>
+        <p className="text-xs text-muted-foreground">
+          © {new Date().getFullYear()} Clean Energy Gurus Ltd. Registered in England & Wales.
+        </p>
+        <div className="flex flex-wrap gap-4 text-xs text-muted-foreground">
+          <Link to="#" className="hover:text-electric">Terms</Link>
+          <Link to="#" className="hover:text-electric">Privacy</Link>
+          <Link to="#" className="hover:text-electric">Complaints</Link>
+          <Link to="#" className="hover:text-electric">Quality Policy</Link>
+        </div>
       </div>
     </div>
   </footer>
