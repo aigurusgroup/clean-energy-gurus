@@ -1,64 +1,31 @@
-## Rebuild the home hero to match the reference
+## Animate the Energy IQ score gauge on home page load
 
-Restructure the existing `src/components/site/Hero.tsx` into the two-column layout shown in the reference, while keeping current copy, routes, CTAs, and the four live tiles. Nothing will be published.
+Add an intro animation to the decorative Energy IQ score gauge in `src/components/site/Hero.tsx` so it comes alive when a visitor lands on the home page. Purely presentational — no changes to scoring logic, routes, or copy.
 
-### New layout (desktop)
+### What will animate
 
-```text
-┌─────────────────────────────────────────────────────────────┐
-│ • UK MANAGED ENERGY PLATFORM                                │
-│                                ┌─ Save Money ─┐ ┌─ Gain Control ─┐
-│ Lower costs.                   └────────┐   └────────┘
-│ Greater control.                        ▼       ▼
-│ More energy confidence.            ╭───────────────╮
-│                                    │ ENERGY IQ®    │
-│ We help UK homeowners…             │    SCORE      │
-│                                    │      74       │
-│ [ Get Your Energy IQ → ]           │    Good ✓     │
-│ [ Estimate My Solar   ]            │  better than  │
-│                                    │  74% similar  │
-│ Solar PV, battery storage…         ╰───────────────╯
-│                                ┌ Increase Value ┐ ┌ Future-Proof ┐
-│                                └────────────────┘ └──────────────┘
-├─────────────────────────────────────────────────────────────┤
-│ [LIVE 14.2kW] [BATTERY 86%] [EV 3] [TARIFF 6h window]        │
-└─────────────────────────────────────────────────────────────┘
-```
+1. **Gauge ring sweep** — the coloured progress arc draws from 0 up to 74 over ~1.6s using an ease-out curve (animating `stroke-dashoffset`).
+2. **Number count-up** — the big `74` counts from 0 → 74 in sync with the ring, using `requestAnimationFrame` (no dependencies).
+3. **Tick marks** — fade/scale in with a subtle stagger just after the ring starts.
+4. **"Good ✓" pill + subtitle** — fade+rise in once the count-up finishes (existing `animate-fade-in` style, delayed).
+5. **Floating label cards** — staggered fade-in-up (top-left → top-right → bottom-left → bottom-right) after the gauge lands.
+6. **Soft glow pulse** — one-shot pulse on the gauge's drop-shadow at the end for a "settled" feel.
 
-Mobile: single column — text and CTAs first, gauge second, live tiles last.
+### Behaviour details
 
-### Elements to build
-
-1. **Left column** — keep existing eyebrow, headline (gradient on last line), sub-copy, two CTA buttons (`/energy-iq`, `/solar-calculator`), and the sub-note with a small shield icon.
-2. **Right column — Energy IQ score gauge (decorative only)**
-   - SVG circular gauge using the existing electric→blue gradient.
-   - Center: `ENERGY IQ® SCORE`, big `74`, green `Good ✓`, sub-line "You're performing better than 74% of similar properties".
-   - No interaction, no scoring logic changes.
-3. **Four floating label cards** around the gauge (Save Money, Gain Control, Increase Value, Future-Proof) with small circular icons and thin connector lines. Icons: `PoundSterling`, `SlidersHorizontal`, `Home`, `Leaf` from `lucide-react`.
-4. **Bottom stat row** — reuse the four existing tiles (Live / Battery / EV / Tariff) but add icons (`SunMedium`, `BatteryCharging`, `Car`, `Clock`) and a large tinted value line as in the mock.
-5. **Background** — keep existing grid + arc glow, softened so the gauge stays legible.
-
-### What will NOT change
-
-- Header, footer, routes, navigation, tokens, Energy IQ questionnaire, scoring logic, other pages.
-- CTA destinations and copy stay as-is.
-- No new dependencies; all icons already in `lucide-react`.
-- Uses existing semantic tokens (`text-navy`, `bg-gradient-electric`, `card-premium`, `text-electric`). No hardcoded colours.
+- Runs **once on mount** (page load / route enter), not on every re-render.
+- Respects `prefers-reduced-motion`: if reduced motion is set, skip the sweep/count-up and render the final state immediately.
+- No scroll trigger needed — the gauge is above the fold.
+- No new dependencies; uses `useEffect` + `requestAnimationFrame` + existing Tailwind keyframes (`fade-in`, `fade-in-up`) plus the existing `iq-ring-pulse` keyframe already defined in `src/index.css`.
 
 ### Files touched
 
-- `src/components/site/Hero.tsx` — full refactor of layout, add gauge SVG, floating label cards, iconised tiles.
+- `src/components/site/Hero.tsx` — turn `ScoreGauge` into a small stateful component with the animated ring offset and count-up; add staggered animation delays to floating labels.
 
-### Responsive behaviour
+### Out of scope
 
-- `lg`: two columns, gauge ~520px.
-- `md`: single column, gauge ~380px.
-- `sm`: floating labels stack tightly; connector lines hidden to prevent overlap; live tiles remain 2×2.
+- Animating the bottom live stat tiles (Solar / Battery / EV / Tariff).
+- Re-triggering the animation on scroll or hover.
+- Hooking the gauge to real Energy IQ data.
 
-### Out of scope (ask before doing)
-
-- Making the gauge dynamic from real Energy IQ data.
-- Adding a pylon photograph.
-- Restyling the header/logo.
-
-Nothing will be published as part of this change.
+Nothing will be published.

@@ -1,4 +1,5 @@
 import { Link } from "react-router-dom";
+import { useEffect, useState } from "react";
 import {
   ArrowRight,
   ShieldCheck,
@@ -15,16 +16,54 @@ import {
 import { Button } from "@/components/ui/button";
 import heroBg from "@/assets/hero-bg.png";
 
-// Decorative Energy IQ score gauge
+const TARGET_SCORE = 74;
+const DURATION = 1600;
+const easeOut = (t: number) => 1 - Math.pow(1 - t, 3);
+
 const ScoreGauge = () => {
   const size = 340;
   const r = 150;
   const c = 2 * Math.PI * r;
-  const score = 74;
-  const pct = score / 100;
+  const targetPct = TARGET_SCORE / 100;
+
+  const [progress, setProgress] = useState(0); // 0..1
+  const [displayScore, setDisplayScore] = useState(0);
+  const [settled, setSettled] = useState(false);
+
+  useEffect(() => {
+    const reduce = typeof window !== "undefined" &&
+      window.matchMedia?.("(prefers-reduced-motion: reduce)").matches;
+    if (reduce) {
+      setProgress(1);
+      setDisplayScore(TARGET_SCORE);
+      setSettled(true);
+      return;
+    }
+    let raf = 0;
+    const start = performance.now();
+    const tick = (now: number) => {
+      const t = Math.min(1, (now - start) / DURATION);
+      const eased = easeOut(t);
+      setProgress(eased);
+      setDisplayScore(Math.round(eased * TARGET_SCORE));
+      if (t < 1) {
+        raf = requestAnimationFrame(tick);
+      } else {
+        setSettled(true);
+      }
+    };
+    raf = requestAnimationFrame(tick);
+    return () => cancelAnimationFrame(raf);
+  }, []);
+
+  const dashProgress = c * targetPct * progress;
+
   return (
     <div className="relative aspect-square w-full max-w-[420px] mx-auto">
-      <svg viewBox="0 0 340 340" className="w-full h-full -rotate-90">
+      <svg
+        viewBox="0 0 340 340"
+        className={`w-full h-full -rotate-90 ${settled ? "iq-ring-pulse" : ""}`}
+      >
         <defs>
           <linearGradient id="gauge-grad" x1="0" y1="0" x2="1" y2="1">
             <stop offset="0%" stopColor="hsl(260 85% 62%)" />
@@ -50,8 +89,8 @@ const ScoreGauge = () => {
           strokeWidth="14"
           fill="none"
           strokeLinecap="round"
-          strokeDasharray={`${c * pct} ${c}`}
-          className="drop-shadow-[0_0_12px_hsl(var(--electric)/0.35)]"
+          strokeDasharray={`${dashProgress} ${c}`}
+          className="drop-shadow-[0_0_12px_hsl(var(--electric)/0.35)] transition-[stroke-dasharray]"
         />
         {/* tick marks (upper right arc, decorative) */}
         {Array.from({ length: 22 }).map((_, i) => {
@@ -70,6 +109,10 @@ const ScoreGauge = () => {
               stroke="hsl(var(--electric) / 0.5)"
               strokeWidth="1.5"
               strokeLinecap="round"
+              style={{
+                opacity: 0,
+                animation: `fade-in 0.4s ease-out ${400 + i * 30}ms forwards`,
+              }}
             />
           );
         })}
@@ -79,16 +122,30 @@ const ScoreGauge = () => {
         <div className="text-[10px] font-semibold uppercase tracking-[0.22em] text-navy-soft">
           Energy IQ<sup>®</sup> Score
         </div>
-        <div className="mt-1 text-[84px] leading-none font-display font-semibold text-gradient">
-          {score}
+        <div className="mt-1 text-[84px] leading-none font-display font-semibold text-gradient tabular-nums">
+          {displayScore}
         </div>
-        <div className="mt-2 flex items-center gap-1.5 text-emerald-600 font-medium">
+        <div
+          className="mt-2 flex items-center gap-1.5 text-emerald-600 font-medium"
+          style={{
+            opacity: settled ? 1 : 0,
+            transform: settled ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.5s ease-out, transform 0.5s ease-out",
+          }}
+        >
           <span>Good</span>
           <span className="inline-flex h-4 w-4 items-center justify-center rounded-full bg-emerald-100">
             <Check className="h-3 w-3" strokeWidth={3} />
           </span>
         </div>
-        <div className="mt-3 px-6 text-xs text-navy-soft leading-snug max-w-[220px]">
+        <div
+          className="mt-3 px-6 text-xs text-navy-soft leading-snug max-w-[220px]"
+          style={{
+            opacity: settled ? 1 : 0,
+            transform: settled ? "translateY(0)" : "translateY(6px)",
+            transition: "opacity 0.6s ease-out 0.1s, transform 0.6s ease-out 0.1s",
+          }}
+        >
           You're performing better than 74% of similar properties
         </div>
       </div>
@@ -101,11 +158,16 @@ type FloatLabelProps = {
   title: string;
   body: string;
   position: string;
+  delayMs?: number;
 };
 
-const FloatLabel = ({ icon, title, body, position }: FloatLabelProps) => (
+const FloatLabel = ({ icon, title, body, position, delayMs = 0 }: FloatLabelProps) => (
   <div
-    className={`hidden md:flex absolute ${position} items-start gap-2.5 rounded-2xl border border-navy/10 bg-card/90 backdrop-blur-sm px-3.5 py-2.5 shadow-[0_8px_24px_-12px_hsl(var(--navy)/0.25)] w-[168px] animate-fade-in`}
+    className={`hidden md:flex absolute ${position} items-start gap-2.5 rounded-2xl border border-navy/10 bg-card/90 backdrop-blur-sm px-3.5 py-2.5 shadow-[0_8px_24px_-12px_hsl(var(--navy)/0.25)] w-[168px]`}
+    style={{
+      opacity: 0,
+      animation: `fade-in-up 0.7s ease-out ${delayMs}ms forwards`,
+    }}
   >
     <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-electric/10 text-electric">
       {icon}
@@ -223,24 +285,28 @@ export const Hero = () => (
               icon={<PoundSterling className="h-4 w-4" />}
               title="Save Money"
               body="Lower bills year-round"
+              delayMs={1400}
             />
             <FloatLabel
               position="top-0 -right-2 md:-right-4"
               icon={<SlidersHorizontal className="h-4 w-4" />}
               title="Gain Control"
               body="Manage your energy with ease"
+              delayMs={1550}
             />
             <FloatLabel
               position="bottom-0 -left-2 md:-left-4"
               icon={<Home className="h-4 w-4" />}
               title="Increase Value"
               body="Boost property value & appeal"
+              delayMs={1700}
             />
             <FloatLabel
               position="bottom-0 -right-2 md:-right-4"
               icon={<Leaf className="h-4 w-4" />}
               title="Future-Proof"
               body="Sustainable energy for the long term"
+              delayMs={1850}
             />
           </div>
         </div>
