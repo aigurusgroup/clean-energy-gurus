@@ -285,24 +285,28 @@ export const Hero = () => (
               icon={<PoundSterling className="h-4 w-4" />}
               title="Save Money"
               body="Lower bills year-round"
+              delayMs={1400}
             />
             <FloatLabel
               position="top-0 -right-2 md:-right-4"
               icon={<SlidersHorizontal className="h-4 w-4" />}
               title="Gain Control"
               body="Manage your energy with ease"
+              delayMs={1550}
             />
             <FloatLabel
               position="bottom-0 -left-2 md:-left-4"
               icon={<Home className="h-4 w-4" />}
               title="Increase Value"
               body="Boost property value & appeal"
+              delayMs={1700}
             />
             <FloatLabel
               position="bottom-0 -right-2 md:-right-4"
               icon={<Leaf className="h-4 w-4" />}
               title="Future-Proof"
               body="Sustainable energy for the long term"
+              delayMs={1850}
             />
           </div>
         </div>
