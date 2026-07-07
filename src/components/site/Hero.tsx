@@ -158,11 +158,16 @@ type FloatLabelProps = {
   title: string;
   body: string;
   position: string;
+  delayMs?: number;
 };
 
-const FloatLabel = ({ icon, title, body, position }: FloatLabelProps) => (
+const FloatLabel = ({ icon, title, body, position, delayMs = 0 }: FloatLabelProps) => (
   <div
-    className={`hidden md:flex absolute ${position} items-start gap-2.5 rounded-2xl border border-navy/10 bg-card/90 backdrop-blur-sm px-3.5 py-2.5 shadow-[0_8px_24px_-12px_hsl(var(--navy)/0.25)] w-[168px] animate-fade-in`}
+    className={`hidden md:flex absolute ${position} items-start gap-2.5 rounded-2xl border border-navy/10 bg-card/90 backdrop-blur-sm px-3.5 py-2.5 shadow-[0_8px_24px_-12px_hsl(var(--navy)/0.25)] w-[168px]`}
+    style={{
+      opacity: 0,
+      animation: `fade-in-up 0.7s ease-out ${delayMs}ms forwards`,
+    }}
   >
     <span className="mt-0.5 inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full bg-electric/10 text-electric">
       {icon}
