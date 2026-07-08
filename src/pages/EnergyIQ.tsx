@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
+import { PropertyIntake } from "@/components/site/PropertyIntake";
+import { PropertyIntelligencePanel } from "@/components/site/PropertyIntelligencePanel";
+import type { PropertyIntelligence } from "@/lib/propertyIntelligence";
 
 type Option = { value: string; label: string; points?: number };
 type Question = {
