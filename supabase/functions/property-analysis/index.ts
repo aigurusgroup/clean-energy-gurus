@@ -246,14 +246,20 @@ Deno.serve(async (req) => {
 
     const { res, body: rawBody, debug } = searchResult;
     const lastDebug = debug[debug.length - 1];
+    const contentType = res.headers.get("content-type") ?? "";
+    const looksHtml =
+      contentType.includes("html") || rawBody.trim().toLowerCase().startsWith("<!doctype");
 
-    if (res.status === 401 || res.status === 403) {
+    if (res.status === 401 || res.status === 403 || looksHtml) {
       return json({
         status: "error",
-        errorCode: "auth_rejected",
+        errorCode: looksHtml ? "auth_html_response" : "auth_rejected",
         httpStatus: res.status,
         debug,
-        devMessage: `EPC API rejected credentials (HTTP ${res.status}). Check EPC_API_BEARER_TOKEN format — it should be base64(email:api-key).`,
+        devMessage:
+          `EPC API did not accept credentials — got ${looksHtml ? "an HTML page" : `HTTP ${res.status}`} instead of JSON. ` +
+          `The EPC_API_BEARER_TOKEN must be base64(email:api-key). ` +
+          `Generate it in your terminal with: echo -n "your-email@example.com:your-api-key" | base64`,
       });
     }
     if (res.status === 404 || res.status === 204) {
@@ -268,6 +274,7 @@ Deno.serve(async (req) => {
         devMessage: `EPC API returned HTTP ${res.status}. Body: ${lastDebug?.bodyPreview ?? ""}`,
       });
     }
+
 
     let payload: { rows?: Record<string, unknown>[] } = {};
     try {
