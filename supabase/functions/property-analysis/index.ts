@@ -1,17 +1,22 @@
 // property-analysis edge function
 //
-// Single secure backend endpoint used by the Energy IQ front-end to look up
-// property information from the GOV.UK Energy Performance of Buildings API.
+// Secure backend for the Energy IQ property intake.
+// Front-end MUST call ONLY this function — GOV.UK EPC API is never called
+// from the browser. The bearer token comes from EPC_API_BEARER_TOKEN and
+// never leaves the server.
 //
-// The front-end MUST call ONLY this function — it never talks to the EPC API
-// directly. The EPC bearer token is read from the EPC_API_BEARER_TOKEN
-// secret and never leaves the server.
+// Two actions:
 //
-// Contract (kept intentionally compatible with src/lib/propertyIntelligence.ts):
+//   POST { action: "search", postcode }
+//     -> { status: "ok", addresses: [{ label, lmkKey, postcode }] }
+//     -> { status: "empty", searchedPostcode }
 //
-//   POST { postcode: string, selectedAddress?: string, uprn?: string }
-//   ->  { status: "found", data: PropertyIntelligence }
-//   ->  { status: "not_found", searchedAddress: string }
+//   POST { action: "certificate", lmkKey, fallbackAddress? }
+//     -> { status: "found", data: PropertyIntelligence }
+//     -> { status: "not_found", searchedAddress }
+//
+// Legacy shape (still supported for older callers):
+//   POST { postcode, selectedAddress? }  -> { status: "found"|"not_found", ... }
 
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
@@ -58,164 +63,43 @@ const cleanText = (v: unknown, fallback = "Unknown"): string => {
   return s.length ? s : fallback;
 };
 
-/** Pick the best matching EPC row for a given selected address, if any. */
-function pickBestMatch(
-  rows: Record<string, unknown>[],
-  selectedAddress?: string,
-  uprn?: string,
-): Record<string, unknown> | null {
-  if (!rows.length) return null;
-  if (uprn) {
-    const byUprn = rows.find((r) => String(r["uprn"] ?? "") === uprn);
-    if (byUprn) return byUprn;
-  }
-  if (selectedAddress) {
-    const needle = selectedAddress.toLowerCase().replace(/\s+/g, " ").trim();
-    const byAddr = rows.find((r) => {
-      const a1 = String(r["address1"] ?? "").toLowerCase();
-      const full = [r["address1"], r["address2"], r["address3"], r["posttown"]]
-        .filter(Boolean)
-        .join(" ")
-        .toLowerCase();
-      return a1.includes(needle) || full.includes(needle);
-    });
-    if (byAddr) return byAddr;
-  }
-  // Default: newest lodgement first if present, else first row.
-  return [...rows].sort((a, b) => {
-    const da = String(a["lodgement-date"] ?? "");
-    const db = String(b["lodgement-date"] ?? "");
-    return db.localeCompare(da);
-  })[0] ?? rows[0];
-}
+const rowLabel = (r: Record<string, unknown>): string => {
+  const parts = [r["address1"], r["address2"], r["address3"], r["posttown"], r["postcode"]]
+    .map((x) => cleanText(x, ""))
+    .filter((s) => s.length);
+  return parts.join(", ");
+};
 
 async function fetchEpc(url: string, token: string) {
-  const res = await fetch(url, {
+  return await fetch(url, {
     headers: {
-      // GOV.UK EPC accepts Basic auth OR a Bearer token — we use Bearer per spec.
       Authorization: `Bearer ${token}`,
       Accept: "application/json",
     },
   });
+}
+
+async function searchByPostcode(postcode: string, token: string) {
+  const params = new URLSearchParams();
+  params.set("postcode", postcode);
+  params.set("size", "100");
+  const url = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
+  console.log("[property-analysis] search url:", url);
+  const res = await fetchEpc(url, token);
+  console.log("[property-analysis] search status:", res.status);
   return res;
 }
 
-Deno.serve(async (req) => {
-  if (req.method === "OPTIONS") {
-    return new Response("ok", { headers: corsHeaders });
-  }
-
-  if (req.method !== "POST") {
-    return json({ error: "Method not allowed" }, 405);
-  }
-
-  const token = Deno.env.get("EPC_API_BEARER_TOKEN");
-  console.log("[property-analysis] invoked. token configured:", Boolean(token));
-  if (!token) {
-    console.error("[property-analysis] EPC_API_BEARER_TOKEN is not configured");
-    return json({
-      status: "not_found",
-      searchedAddress: "",
-      devMessage: "EPC API token not configured. Using mock data.",
-    });
-  }
-
-  let body: { postcode?: string; selectedAddress?: string; uprn?: string };
-  try {
-    body = await req.json();
-  } catch {
-    return json({ error: "Invalid JSON body" }, 400);
-  }
-
-  const postcode = String(body.postcode ?? "").trim().toUpperCase();
-  const selectedAddress = body.selectedAddress?.toString().trim();
-  const uprn = body.uprn?.toString().trim();
-
-  console.log("[property-analysis] postcode received:", postcode || "(none)");
-  console.log("[property-analysis] address received:", selectedAddress || "(none)");
-  console.log("[property-analysis] uprn received:", uprn || "(none)");
-
-  if (!postcode && !selectedAddress && !uprn) {
-    return json({ error: "postcode, selectedAddress or uprn is required" }, 400);
-  }
-
-  // 1. Search domestic EPC certificates.
-  const params = new URLSearchParams();
-  if (postcode) params.set("postcode", postcode);
-  if (uprn) params.set("uprn", uprn);
-  params.set("size", "50");
-
-  const searchUrl = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
-  console.log("[property-analysis] EPC API request attempted:", searchUrl);
-  let searchRes: Response;
-  try {
-    searchRes = await fetchEpc(searchUrl, token);
-  } catch (err) {
-    console.error("[property-analysis] EPC search fetch failed", err);
-    return json({ error: "Failed to reach EPC service" }, 502);
-  }
-  console.log("[property-analysis] EPC API response status:", searchRes.status);
-
-
-  if (searchRes.status === 401 || searchRes.status === 403) {
-    console.error("EPC auth failed", searchRes.status);
-    return json({ error: "EPC credentials rejected" }, 500);
-  }
-
-  // 404 or 204 => no certificate on file for this query.
-  if (searchRes.status === 404 || searchRes.status === 204) {
-    return json({ status: "not_found", searchedAddress: selectedAddress ?? postcode });
-  }
-
-  if (!searchRes.ok) {
-    const text = await searchRes.text();
-    console.error(`EPC search failed [${searchRes.status}]: ${text}`);
-    return json({ error: "EPC search failed", status: searchRes.status }, 502);
-  }
-
-  let searchPayload: { rows?: Record<string, unknown>[] } = {};
-  try {
-    searchPayload = await searchRes.json();
-  } catch {
-    // Some responses come back as empty body on no-match.
-    return json({ status: "not_found", searchedAddress: selectedAddress ?? postcode });
-  }
-
-  const rows = Array.isArray(searchPayload.rows) ? searchPayload.rows : [];
-  const match = pickBestMatch(rows, selectedAddress, uprn);
-  if (!match) {
-    return json({ status: "not_found", searchedAddress: selectedAddress ?? postcode });
-  }
-
-  // 2. Best-effort fetch of recommendations for this certificate.
-  let recommendations: string[] = [];
-  const lmk = match["lmk-key"];
-  if (lmk) {
-    try {
-      const recRes = await fetchEpc(
-        `${EPC_DOMESTIC_RECOMMENDATIONS}/${encodeURIComponent(String(lmk))}`,
-        token,
-      );
-      if (recRes.ok) {
-        const recPayload = (await recRes.json()) as {
-          rows?: Record<string, unknown>[];
-        };
-        recommendations = (recPayload.rows ?? [])
-          .map((r) => cleanText(r["improvement-descr-text"] ?? r["improvement-summary-text"], ""))
-          .filter((s) => s.length)
-          .slice(0, 6);
-      }
-    } catch (err) {
-      console.warn("EPC recommendations fetch failed (non-fatal)", err);
-    }
-  }
-
-  // 3. Shape into the front-end contract.
-  const data: PropertyIntelligence = {
+function toIntelligence(
+  match: Record<string, unknown>,
+  recs: string[],
+  postcodeFallback: string,
+): PropertyIntelligence {
+  return {
     address: {
       line1: cleanText(match["address1"] ?? match["address"], "Address on file"),
       town: cleanText(match["posttown"], ""),
-      postcode: cleanText(match["postcode"], postcode),
+      postcode: cleanText(match["postcode"], postcodeFallback),
     },
     currentRating: normaliseRating(match["current-energy-rating"]),
     currentScore: toInt(match["current-energy-efficiency"]),
@@ -228,10 +112,168 @@ Deno.serve(async (req) => {
       match["mainheat-description"] ?? match["main-heating-description"] ?? match["mainheat-desc"],
       "Unknown",
     ),
-    recommendedImprovements: recommendations,
+    recommendedImprovements: recs,
   };
+}
 
-  console.log("[property-analysis] returning live data for postcode", postcode);
-  return json({ status: "found", data });
+async function fetchRecommendations(lmkKey: string, token: string): Promise<string[]> {
+  try {
+    const recRes = await fetchEpc(
+      `${EPC_DOMESTIC_RECOMMENDATIONS}/${encodeURIComponent(lmkKey)}`,
+      token,
+    );
+    if (!recRes.ok) return [];
+    const recPayload = (await recRes.json()) as { rows?: Record<string, unknown>[] };
+    return (recPayload.rows ?? [])
+      .map((r) => cleanText(r["improvement-descr-text"] ?? r["improvement-summary-text"], ""))
+      .filter((s) => s.length)
+      .slice(0, 6);
+  } catch (err) {
+    console.warn("[property-analysis] recommendations failed (non-fatal)", err);
+    return [];
+  }
+}
+
+Deno.serve(async (req) => {
+  if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
+  if (req.method !== "POST") return json({ error: "Method not allowed" }, 405);
+
+  const token = Deno.env.get("EPC_API_BEARER_TOKEN");
+  console.log("[property-analysis] invoked. token configured:", Boolean(token));
+  if (!token) {
+    return json({
+      status: "error",
+      errorCode: "no_token",
+      devMessage: "EPC API token not configured. Using mock data.",
+    });
+  }
+
+  let body: {
+    action?: "search" | "certificate";
+    postcode?: string;
+    selectedAddress?: string;
+    lmkKey?: string;
+    fallbackAddress?: string;
+  };
+  try {
+    body = await req.json();
+  } catch {
+    return json({ error: "Invalid JSON body" }, 400);
+  }
+
+  const action = body.action ?? (body.lmkKey ? "certificate" : "search");
+  console.log("[property-analysis] action:", action);
+
+  // ---------- SEARCH ----------
+  if (action === "search") {
+    const postcode = String(body.postcode ?? "").trim().toUpperCase();
+    console.log("[property-analysis] postcode:", postcode);
+    if (!postcode) return json({ error: "postcode required" }, 400);
+
+    let res: Response;
+    try {
+      res = await searchByPostcode(postcode, token);
+    } catch (err) {
+      console.error("[property-analysis] search fetch failed", err);
+      return json({ status: "error", errorCode: "fetch_failed" }, 502);
+    }
+
+    if (res.status === 401 || res.status === 403) {
+      return json({ status: "error", errorCode: "auth_rejected" }, 500);
+    }
+    if (res.status === 404 || res.status === 204) {
+      return json({ status: "empty", searchedPostcode: postcode });
+    }
+    if (!res.ok) {
+      return json({ status: "error", errorCode: "search_failed", httpStatus: res.status }, 502);
+    }
+
+    let payload: { rows?: Record<string, unknown>[] } = {};
+    try {
+      payload = await res.json();
+    } catch {
+      return json({ status: "empty", searchedPostcode: postcode });
+    }
+
+    const rows = Array.isArray(payload.rows) ? payload.rows : [];
+    console.log("[property-analysis] search rows:", rows.length);
+
+    // De-dupe on address label, prefer newest lodgement date per address.
+    const bestByLabel = new Map<string, Record<string, unknown>>();
+    for (const r of rows) {
+      const label = rowLabel(r);
+      if (!label) continue;
+      const current = bestByLabel.get(label);
+      if (!current) {
+        bestByLabel.set(label, r);
+      } else {
+        const da = String(current["lodgement-date"] ?? "");
+        const db = String(r["lodgement-date"] ?? "");
+        if (db.localeCompare(da) > 0) bestByLabel.set(label, r);
+      }
+    }
+
+    const addresses = Array.from(bestByLabel.entries())
+      .map(([label, r]) => ({
+        label,
+        lmkKey: cleanText(r["lmk-key"], ""),
+        postcode: cleanText(r["postcode"], postcode),
+      }))
+      .filter((a) => a.lmkKey.length > 0)
+      .sort((a, b) => a.label.localeCompare(b.label));
+
+    if (!addresses.length) {
+      return json({ status: "empty", searchedPostcode: postcode });
+    }
+    return json({ status: "ok", addresses });
+  }
+
+  // ---------- CERTIFICATE ----------
+  if (action === "certificate") {
+    const lmkKey = String(body.lmkKey ?? "").trim();
+    const fallbackAddress = String(body.fallbackAddress ?? "").trim();
+    console.log("[property-analysis] lmkKey:", lmkKey ? "(present)" : "(missing)");
+    if (!lmkKey) return json({ error: "lmkKey required" }, 400);
+
+    // The EPC API doesn't expose a single-certificate GET, so we search by
+    // postcode extracted from fallbackAddress and pick the matching lmk-key.
+    const postcode = (fallbackAddress.match(
+      /\b([A-PR-UWYZ][A-HK-Y]?[0-9][0-9A-HJKPS-UW]?\s*[0-9][ABD-HJLNP-UW-Z]{2})\b/i,
+    )?.[1] ?? "").toUpperCase();
+
+    if (!postcode) {
+      return json({ status: "not_found", searchedAddress: fallbackAddress });
+    }
+
+    let res: Response;
+    try {
+      res = await searchByPostcode(postcode, token);
+    } catch (err) {
+      console.error("[property-analysis] cert search fetch failed", err);
+      return json({ status: "error", errorCode: "fetch_failed" }, 502);
+    }
+    if (!res.ok) {
+      return json({ status: "not_found", searchedAddress: fallbackAddress });
+    }
+
+    let payload: { rows?: Record<string, unknown>[] } = {};
+    try {
+      payload = await res.json();
+    } catch {
+      return json({ status: "not_found", searchedAddress: fallbackAddress });
+    }
+
+    const rows = Array.isArray(payload.rows) ? payload.rows : [];
+    const match = rows.find((r) => String(r["lmk-key"] ?? "") === lmkKey);
+    if (!match) {
+      return json({ status: "not_found", searchedAddress: fallbackAddress });
+    }
+
+    const recommendations = await fetchRecommendations(lmkKey, token);
+    const data = toIntelligence(match, recommendations, postcode);
+    console.log("[property-analysis] returning live EPC certificate");
+    return json({ status: "found", data });
+  }
+
+  return json({ error: "Unknown action" }, 400);
 });
-
