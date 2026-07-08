@@ -225,29 +225,48 @@ Deno.serve(async (req) => {
     console.log("[property-analysis] postcode:", postcode);
     if (!postcode) return json({ error: "postcode required" }, 400);
 
-    let res: Response;
+    let searchResult;
     try {
-      res = await searchByPostcode(postcode, token);
+      searchResult = await searchByPostcode(postcode, token);
     } catch (err) {
       console.error("[property-analysis] search fetch failed", err);
-      return json({ status: "error", errorCode: "fetch_failed" }, 502);
+      return json({
+        status: "error",
+        errorCode: "fetch_failed",
+        devMessage: `EPC API fetch failed: ${String(err)}`,
+      }, 200);
     }
 
+    const { res, body: rawBody, debug } = searchResult;
+    const lastDebug = debug[debug.length - 1];
+
     if (res.status === 401 || res.status === 403) {
-      return json({ status: "error", errorCode: "auth_rejected" }, 500);
+      return json({
+        status: "error",
+        errorCode: "auth_rejected",
+        httpStatus: res.status,
+        debug,
+        devMessage: `EPC API rejected credentials (HTTP ${res.status}). Check EPC_API_BEARER_TOKEN format — it should be base64(email:api-key).`,
+      });
     }
     if (res.status === 404 || res.status === 204) {
-      return json({ status: "empty", searchedPostcode: postcode });
+      return json({ status: "empty", searchedPostcode: postcode, debug });
     }
     if (!res.ok) {
-      return json({ status: "error", errorCode: "search_failed", httpStatus: res.status }, 502);
+      return json({
+        status: "error",
+        errorCode: "search_failed",
+        httpStatus: res.status,
+        debug,
+        devMessage: `EPC API returned HTTP ${res.status}. Body: ${lastDebug?.bodyPreview ?? ""}`,
+      });
     }
 
     let payload: { rows?: Record<string, unknown>[] } = {};
     try {
-      payload = await res.json();
+      payload = JSON.parse(rawBody);
     } catch {
-      return json({ status: "empty", searchedPostcode: postcode });
+      return json({ status: "empty", searchedPostcode: postcode, debug });
     }
 
     const rows = Array.isArray(payload.rows) ? payload.rows : [];
@@ -278,10 +297,16 @@ Deno.serve(async (req) => {
       .sort((a, b) => a.label.localeCompare(b.label));
 
     if (!addresses.length) {
-      return json({ status: "empty", searchedPostcode: postcode });
+      return json({
+        status: "empty",
+        searchedPostcode: postcode,
+        debug,
+        devMessage: `EPC API returned HTTP 200 with 0 rows for postcode ${postcode}.`,
+      });
     }
-    return json({ status: "ok", addresses });
+    return json({ status: "ok", addresses, debug });
   }
+
 
   // ---------- CERTIFICATE ----------
   if (action === "certificate") {
