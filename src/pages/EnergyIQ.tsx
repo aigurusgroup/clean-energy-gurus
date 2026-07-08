@@ -1105,6 +1105,9 @@ const EnergyIQ = () => {
                 </section>
               )}
 
+              {/* Property Intelligence — additive, only shown when property data is present */}
+              {property && <PropertyIntelligencePanel property={property} />}
+
               {/* Key opportunities to explore */}
               {opps.length > 0 && (
                 <section className="mt-10">
