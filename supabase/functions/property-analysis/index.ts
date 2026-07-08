@@ -157,47 +157,76 @@ function toIntelligence(
   cert: Record<string, unknown> | null,
   postcodeFallback: string,
 ): PropertyIntelligence {
-  // certificate detail (snake_case) if present, else search row (camelCase)
+  // Try cert first (both camelCase and snake_case), then fall back to search row.
   const c = cert ?? {};
-  const line1 = pick(c, ["address_line_1", "address"], "") ||
-    pick(match, ["addressLine1", "address"], "Address on file");
-  const town = pick(c, ["post_town"], "") || pick(match, ["postTown"], "");
-  const postcode = pick(c, ["postcode"], "") || pick(match, ["postcode"], postcodeFallback);
-  const currentBand = pick(c, ["current_energy_efficiency_band", "current_energy_rating"], "") ||
-    pick(match, ["currentEnergyEfficiencyBand", "currentEnergyRating"], "");
-  const potentialBand = pick(c, ["potential_energy_efficiency_band", "potential_energy_rating"], "") ||
-    pick(match, ["potentialEnergyEfficiencyBand", "potentialEnergyRating"], "");
-  const currentScore = pick(c, ["current_energy_efficiency"], "") ||
+  const line1 =
+    pick(c, ["addressLine1", "address_line_1", "address1", "address"], "") ||
+    pick(match, ["addressLine1", "address1", "address"], "Address on file");
+  const town =
+    pick(c, ["postTown", "post_town", "town"], "") ||
+    pick(match, ["postTown", "town"], "");
+  const postcode =
+    pick(c, ["postcode"], "") || pick(match, ["postcode"], postcodeFallback);
+
+  const currentBand =
+    pick(c, ["currentEnergyRating", "currentEnergyEfficiencyBand", "current_energy_rating", "current_energy_efficiency_band"], "") ||
+    pick(match, ["currentEnergyRating", "currentEnergyEfficiencyBand"], "");
+  const potentialBand =
+    pick(c, ["potentialEnergyRating", "potentialEnergyEfficiencyBand", "potential_energy_rating", "potential_energy_efficiency_band"], "") ||
+    pick(match, ["potentialEnergyRating", "potentialEnergyEfficiencyBand"], "");
+  const currentScore =
+    pick(c, ["currentEnergyEfficiency", "current_energy_efficiency"], "") ||
     pick(match, ["currentEnergyEfficiency"], "");
-  const potentialScore = pick(c, ["potential_energy_efficiency"], "") ||
+  const potentialScore =
+    pick(c, ["potentialEnergyEfficiency", "potential_energy_efficiency"], "") ||
     pick(match, ["potentialEnergyEfficiency"], "");
-  const propertyType = pick(c, ["property_type"], "") || pick(match, ["propertyType"], "Unknown");
-  const builtForm = pick(c, ["built_form"], "") || pick(match, ["builtForm"], "Unknown");
-  const floorArea = pick(c, ["total_floor_area"], "") || pick(match, ["totalFloorArea"], "");
-  const mainHeating = pick(
-    c,
-    ["mainheat_description", "main_heating_description", "mainheat_desc"],
-    "",
-  ) || pick(match, ["mainheatDescription", "mainHeatingDescription"], "Unknown");
+
+  const propertyType =
+    pick(c, ["propertyType", "property_type"], "") ||
+    pick(match, ["propertyType"], "");
+  const builtForm =
+    pick(c, ["builtForm", "built_form"], "") ||
+    pick(match, ["builtForm"], "");
+  const floorArea =
+    pick(c, ["totalFloorArea", "total_floor_area"], "") ||
+    pick(match, ["totalFloorArea"], "");
+  const mainHeating =
+    pick(c, [
+      "mainheatDescription", "mainHeatingDescription",
+      "mainheat_description", "main_heating_description",
+      "mainheatDesc", "mainheat_desc",
+    ], "") ||
+    pick(match, ["mainheatDescription", "mainHeatingDescription"], "");
 
   const recRaw = (cert && Array.isArray((cert as Record<string, unknown>)["recommendations"]))
     ? (cert as Record<string, unknown>)["recommendations"] as Record<string, unknown>[]
     : [];
   const recs = recRaw
-    .map((r) => pick(r, ["improvement_descr_text", "improvement_summary_text", "improvement"], ""))
+    .map((r) => pick(r, [
+      "improvementDescrText", "improvementSummaryText", "improvement",
+      "improvement_descr_text", "improvement_summary_text",
+    ], ""))
     .filter((s) => s.length)
     .slice(0, 6);
 
+  const cScoreN = Number(currentScore);
+  const pScoreN = Number(potentialScore);
+  const fArea = Number(floorArea);
+
   return {
-    address: { line1, town, postcode: postcode.toUpperCase().replace(/\s+/g, " ") },
+    address: {
+      line1: line1 || "Address on file",
+      town,
+      postcode: postcode.toUpperCase().replace(/\s+/g, " "),
+    },
     currentRating: normaliseRating(currentBand),
-    currentScore: toInt(currentScore),
+    currentScore: Number.isFinite(cScoreN) && cScoreN > 0 ? Math.round(cScoreN) : 0,
     potentialRating: normaliseRating(potentialBand),
-    potentialScore: toInt(potentialScore),
-    propertyType: cleanText(propertyType, "Unknown"),
-    builtForm: cleanText(builtForm, "Unknown"),
-    floorAreaSqm: toInt(floorArea),
-    mainHeating: cleanText(mainHeating, "Unknown"),
+    potentialScore: Number.isFinite(pScoreN) && pScoreN > 0 ? Math.round(pScoreN) : 0,
+    propertyType: cleanText(propertyType, "Not available"),
+    builtForm: cleanText(builtForm, "Not available"),
+    floorAreaSqm: Number.isFinite(fArea) && fArea > 0 ? Math.round(fArea) : 0,
+    mainHeating: cleanText(mainHeating, "Not available"),
     recommendedImprovements: recs,
   };
 }
