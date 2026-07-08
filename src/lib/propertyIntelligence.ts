@@ -95,19 +95,30 @@ export async function searchAddresses(postcode: string): Promise<AddressSearchRe
       return {
         status: "fallback",
         addresses: mockAddressesForPostcode(pc),
-        devMessage: DEV_MESSAGE,
+        devMessage: `${DEV_MESSAGE} (invoke error: ${error.message ?? "unknown"})`,
         source: "mock",
       };
     }
     console.debug("[propertyIntelligence] search response", data);
+    if ((data as any)?.debug) {
+      console.info("[propertyIntelligence] EPC API debug", (data as any).debug);
+    }
 
     if (data?.status === "ok" && Array.isArray(data.addresses)) {
       return { status: "ok", addresses: data.addresses as AddressCandidate[], source: "live" };
     }
     if (data?.status === "empty") {
+      // If server included a devMessage (e.g. "0 rows"), surface it via fallback
+      if ((data as any).devMessage) {
+        return {
+          status: "fallback",
+          addresses: mockAddressesForPostcode(pc),
+          devMessage: (data as any).devMessage,
+          source: "mock",
+        };
+      }
       return { status: "empty", searchedPostcode: pc, source: "live" };
     }
-    // error/no_token → fall back to mocks with dev message
     return {
       status: "fallback",
       addresses: mockAddressesForPostcode(pc),
@@ -119,11 +130,12 @@ export async function searchAddresses(postcode: string): Promise<AddressSearchRe
     return {
       status: "fallback",
       addresses: mockAddressesForPostcode(pc),
-      devMessage: DEV_MESSAGE,
+      devMessage: `${DEV_MESSAGE} (threw: ${String(err)})`,
       source: "mock",
     };
   }
 }
+
 
 export async function fetchPropertyByAddress(
   candidate: AddressCandidate,
