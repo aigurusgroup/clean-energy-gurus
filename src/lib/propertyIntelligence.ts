@@ -1,10 +1,13 @@
 // Property Intelligence service.
 //
-// DEV-ONLY MOCK: returns hard-coded property data with a short delay so the
-// intake UX can be built and tested end-to-end. The real implementation will
-// replace `lookupProperty` with a secure backend call (EPC-backed data
-// service). The PropertyIntelligence shape and the async contract must NOT
-// change — the front-end consumes only this module.
+// Calls the `property-analysis` edge function, which securely proxies the
+// GOV.UK Energy Performance of Buildings API using the server-side
+// EPC_API_BEARER_TOKEN secret. The bearer token is NEVER present in
+// front-end code or network traffic from the browser.
+//
+// Contract is unchanged from the previous mock so no UI code needs to change.
+
+import { supabase } from "@/integrations/supabase/client";
 
 export type EpcRating = "A" | "B" | "C" | "D" | "E" | "F" | "G";
 
@@ -25,39 +28,23 @@ export type PropertyIntelligence = {
   recommendedImprovements: string[];
 };
 
-// Mock dataset. When a real service is wired in, this file is the only place
-// that changes — the return type stays identical.
-const MOCK_PROPERTY: PropertyIntelligence = {
-  address: {
-    line1: "1 Example Road",
-    town: "Arundel",
-    postcode: "BN18 9AA",
-  },
-  currentRating: "C",
-  currentScore: 71,
-  potentialRating: "B",
-  potentialScore: 82,
-  propertyType: "Detached House",
-  builtForm: "Detached",
-  floorAreaSqm: 148,
-  mainHeating: "Gas Boiler",
-  recommendedImprovements: [
-    "Solar PV",
-    "Battery Storage",
-    "Loft Insulation",
-    "Smart Tariff Review",
-  ],
-};
-
 export type LookupResult =
   | { status: "found"; data: PropertyIntelligence }
   | { status: "not_found"; searchedAddress: string };
 
+// UK postcode matcher — used to pull a postcode out of a free-text address
+// when the user has typed a full address rather than just a postcode.
+const UK_POSTCODE =
+  /\b([A-PR-UWYZ][A-HK-Y]?[0-9][0-9A-HJKPS-UW]?\s*[0-9][ABD-HJLNP-UW-Z]{2})\b/i;
+
+function extractPostcode(input: string): string | null {
+  const m = input.match(UK_POSTCODE);
+  return m ? m[1].toUpperCase().replace(/\s+/g, " ").trim() : null;
+}
+
 /**
- * Look up premium property intelligence for a given address / postcode.
- *
- * The current implementation returns mock data after a short delay.
- * A future backend implementation must preserve this async contract.
+ * Look up property intelligence for a given address / postcode by calling
+ * the `property-analysis` edge function.
  */
 export async function lookupProperty(
   address: string,
@@ -67,25 +54,39 @@ export async function lookupProperty(
   if (delay > 0) {
     await new Promise((r) => setTimeout(r, delay));
   }
+
   const cleaned = address.trim();
   if (!cleaned) {
     return { status: "not_found", searchedAddress: address };
   }
-  // Dev toggle: any address containing "nodata" simulates a miss so the
-  // "Property Information Limited" state can be exercised.
-  if (/nodata/i.test(cleaned)) {
+
+  const postcode = extractPostcode(cleaned);
+  if (!postcode) {
+    // No recognisable UK postcode — the EPC API is postcode-indexed so we
+    // can't meaningfully look this up. Fall through to the manual flow.
     return { status: "not_found", searchedAddress: cleaned };
   }
-  return {
-    status: "found",
-    data: {
-      ...MOCK_PROPERTY,
-      address: {
-        ...MOCK_PROPERTY.address,
-        // Reflect whatever the user typed as the "line 1" so the confirmation
-        // feels tied to their input, while keeping the mocked town/postcode.
-        line1: cleaned.split(",")[0]?.trim() || MOCK_PROPERTY.address.line1,
+
+  try {
+    const { data, error } = await supabase.functions.invoke("property-analysis", {
+      body: {
+        postcode,
+        selectedAddress: cleaned,
       },
-    },
-  };
+    });
+
+    if (error) {
+      console.error("property-analysis invoke failed", error);
+      return { status: "not_found", searchedAddress: cleaned };
+    }
+
+    if (data && data.status === "found" && data.data) {
+      return { status: "found", data: data.data as PropertyIntelligence };
+    }
+
+    return { status: "not_found", searchedAddress: cleaned };
+  } catch (err) {
+    console.error("property-analysis call threw", err);
+    return { status: "not_found", searchedAddress: cleaned };
+  }
 }
