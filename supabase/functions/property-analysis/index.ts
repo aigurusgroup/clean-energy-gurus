@@ -110,9 +110,14 @@ Deno.serve(async (req) => {
   }
 
   const token = Deno.env.get("EPC_API_BEARER_TOKEN");
+  console.log("[property-analysis] invoked. token configured:", Boolean(token));
   if (!token) {
-    console.error("EPC_API_BEARER_TOKEN is not configured");
-    return json({ error: "Server misconfigured: missing EPC credentials" }, 500);
+    console.error("[property-analysis] EPC_API_BEARER_TOKEN is not configured");
+    return json({
+      status: "not_found",
+      searchedAddress: "",
+      devMessage: "EPC API token not configured. Using mock data.",
+    });
   }
 
   let body: { postcode?: string; selectedAddress?: string; uprn?: string };
@@ -126,6 +131,10 @@ Deno.serve(async (req) => {
   const selectedAddress = body.selectedAddress?.toString().trim();
   const uprn = body.uprn?.toString().trim();
 
+  console.log("[property-analysis] postcode received:", postcode || "(none)");
+  console.log("[property-analysis] address received:", selectedAddress || "(none)");
+  console.log("[property-analysis] uprn received:", uprn || "(none)");
+
   if (!postcode && !selectedAddress && !uprn) {
     return json({ error: "postcode, selectedAddress or uprn is required" }, 400);
   }
@@ -137,13 +146,16 @@ Deno.serve(async (req) => {
   params.set("size", "50");
 
   const searchUrl = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
+  console.log("[property-analysis] EPC API request attempted:", searchUrl);
   let searchRes: Response;
   try {
     searchRes = await fetchEpc(searchUrl, token);
   } catch (err) {
-    console.error("EPC search fetch failed", err);
+    console.error("[property-analysis] EPC search fetch failed", err);
     return json({ error: "Failed to reach EPC service" }, 502);
   }
+  console.log("[property-analysis] EPC API response status:", searchRes.status);
+
 
   if (searchRes.status === 401 || searchRes.status === 403) {
     console.error("EPC auth failed", searchRes.status);
@@ -219,5 +231,7 @@ Deno.serve(async (req) => {
     recommendedImprovements: recommendations,
   };
 
+  console.log("[property-analysis] returning live data for postcode", postcode);
   return json({ status: "found", data });
 });
+

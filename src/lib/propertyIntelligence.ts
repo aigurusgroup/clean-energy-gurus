@@ -68,6 +68,10 @@ export async function lookupProperty(
   }
 
   try {
+    console.debug("[propertyIntelligence] calling property-analysis edge function", {
+      postcode,
+      selectedAddress: cleaned,
+    });
     const { data, error } = await supabase.functions.invoke("property-analysis", {
       body: {
         postcode,
@@ -76,17 +80,26 @@ export async function lookupProperty(
     });
 
     if (error) {
-      console.error("property-analysis invoke failed", error);
+      console.error("[propertyIntelligence] invoke failed — falling back to mock/manual flow", error);
       return { status: "not_found", searchedAddress: cleaned };
     }
 
+    console.debug("[propertyIntelligence] edge response:", data);
+
+    if (data && (data as any).devMessage) {
+      console.warn(`[propertyIntelligence] ${(data as any).devMessage}`);
+    }
+
     if (data && data.status === "found" && data.data) {
+      console.info("[propertyIntelligence] LIVE data returned from EPC API");
       return { status: "found", data: data.data as PropertyIntelligence };
     }
 
+    console.info("[propertyIntelligence] No EPC found — continuing with manual questionnaire");
     return { status: "not_found", searchedAddress: cleaned };
   } catch (err) {
-    console.error("property-analysis call threw", err);
+    console.error("[propertyIntelligence] call threw", err);
     return { status: "not_found", searchedAddress: cleaned };
   }
 }
+
