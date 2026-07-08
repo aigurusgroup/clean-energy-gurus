@@ -939,6 +939,17 @@ const EnergyIQ = () => {
 
       <section className="py-14 lg:py-20">
         <div className="container-tight max-w-3xl">
+          {/* PROPERTY INTAKE — additive layer before the existing questionnaire */}
+          {step === -1 && (
+            <PropertyIntake
+              onComplete={(prop, _addr) => {
+                setProperty(prop);
+                setStep(0);
+              }}
+              onSkip={() => setStep(0)}
+            />
+          )}
+
           {/* QUESTIONNAIRE */}
           {currentQ && (
             <div className="card-premium p-8 lg:p-10">
