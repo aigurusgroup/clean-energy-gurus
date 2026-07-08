@@ -184,6 +184,13 @@ const labelFromEnum = (raw: string, map: Record<string, string>): string => {
 const extractHeating = (v: unknown): string => {
   if (v == null) return "";
   if (typeof v === "string") return v.trim();
+  if (Array.isArray(v)) {
+    for (const item of v) {
+      const s = extractHeating(item);
+      if (s) return s;
+    }
+    return "";
+  }
   if (typeof v === "object") {
     const o = v as Record<string, unknown>;
     for (const k of [
@@ -193,10 +200,6 @@ const extractHeating = (v: unknown): string => {
     ]) {
       const s = o[k];
       if (typeof s === "string" && s.trim().length) return s.trim();
-    }
-    // Last-resort: return the first string value in the object.
-    for (const val of Object.values(o)) {
-      if (typeof val === "string" && val.trim().length) return val.trim();
     }
   }
   return "";
