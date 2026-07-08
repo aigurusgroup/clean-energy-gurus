@@ -4,8 +4,6 @@
 // GOV.UK Energy Performance of Buildings API using the server-side
 // EPC_API_BEARER_TOKEN secret. The bearer token is NEVER present in
 // front-end code or network traffic from the browser.
-//
-// Contract is unchanged from the previous mock so no UI code needs to change.
 
 import { supabase } from "@/integrations/supabase/client";
 
@@ -28,78 +26,156 @@ export type PropertyIntelligence = {
   recommendedImprovements: string[];
 };
 
+export type AddressCandidate = {
+  label: string;
+  lmkKey: string;
+  postcode: string;
+};
+
+export type AddressSearchResult =
+  | { status: "ok"; addresses: AddressCandidate[]; source: "live" }
+  | { status: "empty"; searchedPostcode: string; source: "live" }
+  | {
+      status: "fallback";
+      addresses: AddressCandidate[];
+      devMessage: string;
+      source: "mock";
+    };
+
 export type LookupResult =
-  | { status: "found"; data: PropertyIntelligence }
+  | { status: "found"; data: PropertyIntelligence; source: "live" | "mock" }
   | { status: "not_found"; searchedAddress: string };
 
-// UK postcode matcher — used to pull a postcode out of a free-text address
-// when the user has typed a full address rather than just a postcode.
-const UK_POSTCODE =
-  /\b([A-PR-UWYZ][A-HK-Y]?[0-9][0-9A-HJKPS-UW]?\s*[0-9][ABD-HJLNP-UW-Z]{2})\b/i;
+// -------- Mock fallbacks (DEV ONLY) --------
 
-function extractPostcode(input: string): string | null {
-  const m = input.match(UK_POSTCODE);
-  return m ? m[1].toUpperCase().replace(/\s+/g, " ").trim() : null;
+const DEV_MESSAGE = "Live EPC API unavailable — using test data.";
+
+export function mockAddressesForPostcode(postcode: string): AddressCandidate[] {
+  const town = postcode.startsWith("BN18") ? "Arundel" : "Your Town";
+  return [
+    { label: `1 Example Road, ${town}, ${postcode}`, lmkKey: "MOCK-1", postcode },
+    { label: `2 Example Road, ${town}, ${postcode}`, lmkKey: "MOCK-2", postcode },
+    { label: `3 Example Road, ${town}, ${postcode}`, lmkKey: "MOCK-3", postcode },
+  ];
 }
 
-/**
- * Look up property intelligence for a given address / postcode by calling
- * the `property-analysis` edge function.
- */
-export async function lookupProperty(
-  address: string,
-  opts: { minDelayMs?: number } = {},
-): Promise<LookupResult> {
-  const delay = opts.minDelayMs ?? 0;
-  if (delay > 0) {
-    await new Promise((r) => setTimeout(r, delay));
-  }
+export function mockPropertyFor(address: string, postcode: string): PropertyIntelligence {
+  const line1 = address.split(",")[0]?.trim() || "1 Example Road";
+  const town = address.split(",")[1]?.trim() || "Arundel";
+  return {
+    address: { line1, town, postcode },
+    currentRating: "C",
+    currentScore: 71,
+    potentialRating: "B",
+    potentialScore: 82,
+    propertyType: "Detached House",
+    builtForm: "Detached",
+    floorAreaSqm: 148,
+    mainHeating: "Gas Boiler",
+    recommendedImprovements: [
+      "Solar PV",
+      "Battery Storage",
+      "Loft Insulation",
+      "Smart Tariff Review",
+    ],
+  };
+}
 
-  const cleaned = address.trim();
-  if (!cleaned) {
-    return { status: "not_found", searchedAddress: address };
-  }
+// -------- Live calls --------
 
-  const postcode = extractPostcode(cleaned);
-  if (!postcode) {
-    // No recognisable UK postcode — the EPC API is postcode-indexed so we
-    // can't meaningfully look this up. Fall through to the manual flow.
-    return { status: "not_found", searchedAddress: cleaned };
+export async function searchAddresses(postcode: string): Promise<AddressSearchResult> {
+  const pc = postcode.trim().toUpperCase();
+  try {
+    console.debug("[propertyIntelligence] searchAddresses", pc);
+    const { data, error } = await supabase.functions.invoke("property-analysis", {
+      body: { action: "search", postcode: pc },
+    });
+    if (error) {
+      console.error("[propertyIntelligence] search invoke error", error);
+      return {
+        status: "fallback",
+        addresses: mockAddressesForPostcode(pc),
+        devMessage: DEV_MESSAGE,
+        source: "mock",
+      };
+    }
+    console.debug("[propertyIntelligence] search response", data);
+
+    if (data?.status === "ok" && Array.isArray(data.addresses)) {
+      return { status: "ok", addresses: data.addresses as AddressCandidate[], source: "live" };
+    }
+    if (data?.status === "empty") {
+      return { status: "empty", searchedPostcode: pc, source: "live" };
+    }
+    // error/no_token → fall back to mocks with dev message
+    return {
+      status: "fallback",
+      addresses: mockAddressesForPostcode(pc),
+      devMessage: (data as any)?.devMessage ?? DEV_MESSAGE,
+      source: "mock",
+    };
+  } catch (err) {
+    console.error("[propertyIntelligence] search threw", err);
+    return {
+      status: "fallback",
+      addresses: mockAddressesForPostcode(pc),
+      devMessage: DEV_MESSAGE,
+      source: "mock",
+    };
+  }
+}
+
+export async function fetchPropertyByAddress(
+  candidate: AddressCandidate,
+): Promise<LookupResult & { devMessage?: string }> {
+  // Mock candidates never round-trip to the API.
+  if (candidate.lmkKey.startsWith("MOCK-")) {
+    return {
+      status: "found",
+      data: mockPropertyFor(candidate.label, candidate.postcode),
+      source: "mock",
+    };
   }
 
   try {
-    console.debug("[propertyIntelligence] calling property-analysis edge function", {
-      postcode,
-      selectedAddress: cleaned,
-    });
+    console.debug("[propertyIntelligence] fetchPropertyByAddress", candidate);
     const { data, error } = await supabase.functions.invoke("property-analysis", {
       body: {
-        postcode,
-        selectedAddress: cleaned,
+        action: "certificate",
+        lmkKey: candidate.lmkKey,
+        fallbackAddress: candidate.label,
       },
     });
-
     if (error) {
-      console.error("[propertyIntelligence] invoke failed — falling back to mock/manual flow", error);
-      return { status: "not_found", searchedAddress: cleaned };
+      console.error("[propertyIntelligence] cert invoke error", error);
+      return {
+        status: "found",
+        data: mockPropertyFor(candidate.label, candidate.postcode),
+        source: "mock",
+        devMessage: DEV_MESSAGE,
+      };
     }
+    console.debug("[propertyIntelligence] cert response", data);
 
-    console.debug("[propertyIntelligence] edge response:", data);
-
-    if (data && (data as any).devMessage) {
-      console.warn(`[propertyIntelligence] ${(data as any).devMessage}`);
+    if (data?.status === "found" && data.data) {
+      return { status: "found", data: data.data as PropertyIntelligence, source: "live" };
     }
-
-    if (data && data.status === "found" && data.data) {
-      console.info("[propertyIntelligence] LIVE data returned from EPC API");
-      return { status: "found", data: data.data as PropertyIntelligence };
+    if (data?.status === "not_found") {
+      return { status: "not_found", searchedAddress: candidate.label };
     }
-
-    console.info("[propertyIntelligence] No EPC found — continuing with manual questionnaire");
-    return { status: "not_found", searchedAddress: cleaned };
+    return {
+      status: "found",
+      data: mockPropertyFor(candidate.label, candidate.postcode),
+      source: "mock",
+      devMessage: (data as any)?.devMessage ?? DEV_MESSAGE,
+    };
   } catch (err) {
-    console.error("[propertyIntelligence] call threw", err);
-    return { status: "not_found", searchedAddress: cleaned };
+    console.error("[propertyIntelligence] cert threw", err);
+    return {
+      status: "found",
+      data: mockPropertyFor(candidate.label, candidate.postcode),
+      source: "mock",
+      devMessage: DEV_MESSAGE,
+    };
   }
 }
-
