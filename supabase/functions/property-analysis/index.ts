@@ -70,13 +70,62 @@ const rowLabel = (r: Record<string, unknown>): string => {
   return parts.join(", ");
 };
 
-async function fetchEpc(url: string, token: string) {
-  return await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-  });
+// The GOV.UK EPC Open Data API accepts either:
+//   (a) Basic <base64(email:api-key)>
+//   (b) The same base64 value as a Bearer token
+// Some users store the raw api-key without the email. We try Bearer as-is
+// first, then Basic with the token used as the base64 payload. Whichever
+// returns rows first wins.
+type EpcCallDebug = {
+  authMode: "bearer" | "basic-raw";
+  status: number;
+  rowCount: number;
+  bodyPreview: string;
+};
+
+async function fetchEpcWithFallback(
+  url: string,
+  token: string,
+): Promise<{ res: Response; body: string; debug: EpcCallDebug[] }> {
+  const debug: EpcCallDebug[] = [];
+
+  const attempts: Array<{ mode: EpcCallDebug["authMode"]; header: string }> = [
+    { mode: "bearer", header: `Bearer ${token}` },
+    { mode: "basic-raw", header: `Basic ${token}` },
+  ];
+
+  let lastRes: Response | null = null;
+  let lastBody = "";
+
+  for (const attempt of attempts) {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: attempt.header,
+        Accept: "application/json",
+      },
+    });
+    const body = await res.text();
+    let rowCount = 0;
+    try {
+      const parsed = JSON.parse(body);
+      rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
+    } catch {
+      rowCount = 0;
+    }
+    debug.push({
+      authMode: attempt.mode,
+      status: res.status,
+      rowCount,
+      bodyPreview: body.slice(0, 200),
+    });
+    lastRes = res;
+    lastBody = body;
+    if (res.ok && rowCount > 0) break;
+    if (res.status === 401 || res.status === 403) continue; // try next
+    if (res.ok) break; // ok but empty — no point retrying with different auth
+  }
+
+  return { res: lastRes!, body: lastBody, debug };
 }
 
 async function searchByPostcode(postcode: string, token: string) {
@@ -85,10 +134,15 @@ async function searchByPostcode(postcode: string, token: string) {
   params.set("size", "100");
   const url = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
   console.log("[property-analysis] search url:", url);
-  const res = await fetchEpc(url, token);
-  console.log("[property-analysis] search status:", res.status);
-  return res;
+  const result = await fetchEpcWithFallback(url, token);
+  for (const d of result.debug) {
+    console.log(
+      `[property-analysis] auth=${d.authMode} status=${d.status} rows=${d.rowCount} bodyPreview=${d.bodyPreview}`,
+    );
+  }
+  return result;
 }
+
 
 function toIntelligence(
   match: Record<string, unknown>,
