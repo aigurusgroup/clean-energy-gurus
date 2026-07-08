@@ -70,70 +70,42 @@ const rowLabel = (r: Record<string, unknown>): string => {
   return parts.join(", ");
 };
 
-// The GOV.UK EPC Open Data API accepts either:
-//   (a) Basic <base64(email:api-key)>
-//   (b) The same base64 value as a Bearer token
-// Some users store the raw api-key without the email. We try Bearer as-is
-// first, then Basic with the token used as the base64 payload. Whichever
-// returns rows first wins.
+// GOV.UK Energy certificate data API — Bearer token authentication only.
 type EpcCallDebug = {
-  authMode: "bearer" | "basic-raw";
   status: number;
   rowCount: number;
   bodyPreview: string;
+  contentType: string;
 };
 
-async function fetchEpcWithFallback(
+async function fetchEpc(
   url: string,
   token: string,
-): Promise<{ res: Response; body: string; debug: EpcCallDebug[] }> {
-  const debug: EpcCallDebug[] = [];
-
-  const attempts: Array<{ mode: EpcCallDebug["authMode"]; header: string }> = [
-    { mode: "bearer", header: `Bearer ${token}` },
-    { mode: "basic-raw", header: `Basic ${token}` },
-  ];
-
-  let lastRes: Response | null = null;
-  let lastBody = "";
-
-  for (const attempt of attempts) {
-    const res = await fetch(url, {
-      headers: {
-        Authorization: attempt.header,
-        Accept: "application/json",
-      },
-    });
-    const body = await res.text();
-    const contentType = res.headers.get("content-type") ?? "";
-    const looksJson = contentType.includes("json") || body.trim().startsWith("{");
-    let rowCount = 0;
-    if (looksJson) {
-      try {
-        const parsed = JSON.parse(body);
-        rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
-      } catch {
-        rowCount = 0;
-      }
-    }
-    debug.push({
-      authMode: attempt.mode,
-      status: res.status,
-      rowCount,
-      bodyPreview: body.slice(0, 200),
-    });
-    lastRes = res;
-    lastBody = body;
-    if (res.ok && looksJson && rowCount > 0) break;
-    // HTML response, or 401/403 → try next auth mode.
-    if (!looksJson || res.status === 401 || res.status === 403) continue;
-    // ok + valid JSON with 0 rows → genuinely empty, no point retrying.
-    if (res.ok && looksJson) break;
+): Promise<{ res: Response; body: string; debug: EpcCallDebug }> {
+  const res = await fetch(url, {
+    headers: {
+      Authorization: `Bearer ${token}`,
+      Accept: "application/json",
+    },
+  });
+  const body = await res.text();
+  const contentType = res.headers.get("content-type") ?? "";
+  let rowCount = 0;
+  try {
+    const parsed = JSON.parse(body);
+    rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
+  } catch {
+    rowCount = 0;
   }
-
-
-  return { res: lastRes!, body: lastBody, debug };
+  const debug: EpcCallDebug = {
+    status: res.status,
+    rowCount,
+    contentType,
+    bodyPreview: body.slice(0, 200),
+  };
+  return { res, body, debug };
 }
+
 
 async function searchByPostcode(postcode: string, token: string) {
   const params = new URLSearchParams();
