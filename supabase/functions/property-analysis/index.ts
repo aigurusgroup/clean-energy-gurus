@@ -390,9 +390,13 @@ Deno.serve(async (req) => {
       return json({ status: "not_found", searchedAddress: fallbackAddress, debug });
     }
 
+    const fieldNames = Object.keys(certObj);
+    console.log("[property-analysis] certificate field names:", fieldNames.join(","));
+    const debugWithFields = { ...debug, certificateFieldNames: fieldNames };
+
     const intel = toIntelligence({}, certObj, postcodeFromAddr);
     console.log("[property-analysis] returning live EPC certificate");
-    return json({ status: "found", data: intel, debug });
+    return json({ status: "found", data: intel, debug: debugWithFields });
   }
 
   return json({ error: "Unknown action" }, 400);
