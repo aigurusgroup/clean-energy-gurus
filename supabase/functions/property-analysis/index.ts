@@ -246,11 +246,11 @@ function toIntelligence(
   const mainHeating =
     extractHeating(c["main_heating"]) ||
     extractHeating(c["mainHeating"]) ||
+    extractHeating(c["sap_heating"]) ||
     pick(c, [
       "mainheatDescription", "mainHeatingDescription",
       "mainheat_description", "main_heating_description",
       "mainheatDesc", "mainheat_desc",
-      "sap_heating",
     ], "") ||
     pick(match, ["mainheatDescription", "mainHeatingDescription"], "");
 
