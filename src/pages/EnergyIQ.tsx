@@ -871,10 +871,11 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
 
 
 const EnergyIQ = () => {
-  const [step, setStep] = useState(-1); // -1 = intro, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
+  const [step, setStep] = useState(-1); // -1 = intro/property intake, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
   const [revealed, setRevealed] = useState(false);
   const [answers, setAnswers] = useState<Answers>({});
   const [lead, setLead] = useState({ name: "", email: "", phone: "", postcode: "", consent: false });
+  const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
   const total = QUESTIONS.length;
   const currentQ = step >= 0 && step < total ? QUESTIONS[step] : null;
