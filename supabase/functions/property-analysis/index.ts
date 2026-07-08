@@ -325,20 +325,21 @@ Deno.serve(async (req) => {
       return json({ status: "not_found", searchedAddress: fallbackAddress });
     }
 
-    let res: Response;
+    let searchResult;
     try {
-      res = await searchByPostcode(postcode, token);
+      searchResult = await searchByPostcode(postcode, token);
     } catch (err) {
       console.error("[property-analysis] cert search fetch failed", err);
       return json({ status: "error", errorCode: "fetch_failed" }, 502);
     }
+    const { res, body: rawBody } = searchResult;
     if (!res.ok) {
       return json({ status: "not_found", searchedAddress: fallbackAddress });
     }
 
     let payload: { rows?: Record<string, unknown>[] } = {};
     try {
-      payload = await res.json();
+      payload = JSON.parse(rawBody);
     } catch {
       return json({ status: "not_found", searchedAddress: fallbackAddress });
     }
@@ -354,6 +355,7 @@ Deno.serve(async (req) => {
     console.log("[property-analysis] returning live EPC certificate");
     return json({ status: "found", data });
   }
+
 
   return json({ error: "Unknown action" }, 400);
 });
