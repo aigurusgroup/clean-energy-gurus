@@ -928,14 +928,7 @@ const EnergyIQ = () => {
             Energy IQ helps you get a clearer view of where your property stands today — and what could improve it. Answer a few simple questions about your property, energy use and future goals. You'll receive an indicative Energy IQ score, along with practical next steps to help you reduce costs, improve efficiency and make more confident clean energy decisions.
           </p>
           {step === -1 && (
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                size="lg"
-                onClick={() => setStep(0)}
-                className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow"
-              >
-                Start Energy IQ Assessment <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
+            <div className="mt-6 flex flex-wrap gap-3">
               <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 text-electric" /> Takes about 2 minutes · No obligation
               </span>
