@@ -172,12 +172,12 @@ function toIntelligence(
 
 async function fetchRecommendations(lmkKey: string, token: string): Promise<string[]> {
   try {
-    const recRes = await fetchEpc(
+    const { res, body } = await fetchEpcWithFallback(
       `${EPC_DOMESTIC_RECOMMENDATIONS}/${encodeURIComponent(lmkKey)}`,
       token,
     );
-    if (!recRes.ok) return [];
-    const recPayload = (await recRes.json()) as { rows?: Record<string, unknown>[] };
+    if (!res.ok) return [];
+    const recPayload = JSON.parse(body) as { rows?: Record<string, unknown>[] };
     return (recPayload.rows ?? [])
       .map((r) => cleanText(r["improvement-descr-text"] ?? r["improvement-summary-text"], ""))
       .filter((s) => s.length)
@@ -187,6 +187,7 @@ async function fetchRecommendations(lmkKey: string, token: string): Promise<stri
     return [];
   }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
