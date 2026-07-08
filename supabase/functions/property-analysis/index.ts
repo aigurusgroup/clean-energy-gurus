@@ -113,14 +113,13 @@ async function searchByPostcode(postcode: string, token: string) {
   params.set("size", "100");
   const url = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
   console.log("[property-analysis] search url:", url);
-  const result = await fetchEpcWithFallback(url, token);
-  for (const d of result.debug) {
-    console.log(
-      `[property-analysis] auth=${d.authMode} status=${d.status} rows=${d.rowCount} bodyPreview=${d.bodyPreview}`,
-    );
-  }
+  const result = await fetchEpc(url, token);
+  console.log(
+    `[property-analysis] status=${result.debug.status} contentType=${result.debug.contentType} rows=${result.debug.rowCount} bodyPreview=${result.debug.bodyPreview}`,
+  );
   return result;
 }
+
 
 
 function toIntelligence(
@@ -151,7 +150,7 @@ function toIntelligence(
 
 async function fetchRecommendations(lmkKey: string, token: string): Promise<string[]> {
   try {
-    const { res, body } = await fetchEpcWithFallback(
+    const { res, body } = await fetchEpc(
       `${EPC_DOMESTIC_RECOMMENDATIONS}/${encodeURIComponent(lmkKey)}`,
       token,
     );
@@ -166,6 +165,7 @@ async function fetchRecommendations(lmkKey: string, token: string): Promise<stri
     return [];
   }
 }
+
 
 
 Deno.serve(async (req) => {
@@ -217,8 +217,7 @@ Deno.serve(async (req) => {
     }
 
     const { res, body: rawBody, debug } = searchResult;
-    const lastDebug = debug[debug.length - 1];
-    const contentType = res.headers.get("content-type") ?? "";
+    const contentType = debug.contentType;
     const looksHtml =
       contentType.includes("html") || rawBody.trim().toLowerCase().startsWith("<!doctype");
 
@@ -229,9 +228,8 @@ Deno.serve(async (req) => {
         httpStatus: res.status,
         debug,
         devMessage:
-          `EPC API did not accept credentials — got ${looksHtml ? "an HTML page" : `HTTP ${res.status}`} instead of JSON. ` +
-          `The EPC_API_BEARER_TOKEN must be base64(email:api-key). ` +
-          `Generate it in your terminal with: echo -n "your-email@example.com:your-api-key" | base64`,
+          `EPC API did not accept the Bearer token — got ${looksHtml ? "an HTML page" : `HTTP ${res.status}`} instead of JSON. ` +
+          `Verify the token stored in EPC_API_BEARER_TOKEN is a valid GOV.UK EPC Bearer token.`,
       });
     }
     if (res.status === 404 || res.status === 204) {
@@ -243,9 +241,10 @@ Deno.serve(async (req) => {
         errorCode: "search_failed",
         httpStatus: res.status,
         debug,
-        devMessage: `EPC API returned HTTP ${res.status}. Body: ${lastDebug?.bodyPreview ?? ""}`,
+        devMessage: `EPC API returned HTTP ${res.status}. Body: ${debug.bodyPreview}`,
       });
     }
+
 
 
     let payload: { rows?: Record<string, unknown>[] } = {};
