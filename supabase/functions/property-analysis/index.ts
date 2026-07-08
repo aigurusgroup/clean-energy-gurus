@@ -152,52 +152,148 @@ function pick(
   return fallback;
 }
 
+// GOV.UK "get-energy-performance-data" API returns enum codes for
+// property_type and built_form. Map to human labels.
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  "0": "House",
+  "1": "Bungalow",
+  "2": "Flat",
+  "3": "Maisonette",
+  "4": "Park home",
+};
+const BUILT_FORM_LABELS: Record<string, string> = {
+  "1": "Detached",
+  "2": "Semi-Detached",
+  "3": "End-Terrace",
+  "4": "Mid-Terrace",
+  "5": "Enclosed End-Terrace",
+  "6": "Enclosed Mid-Terrace",
+};
+
+const labelFromEnum = (raw: string, map: Record<string, string>): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (map[trimmed]) return map[trimmed];
+  // Some payloads may already contain the label — return as-is.
+  return trimmed;
+};
+
+// main_heating on this API is an object such as
+//   { description: "Boiler and radiators, mains gas", fuel: "mains gas", ... }
+// but the exact key set varies, so fall back to any string field.
+const extractHeating = (v: unknown): string => {
+  if (v == null) return "";
+  if (typeof v === "string") return v.trim();
+  if (Array.isArray(v)) {
+    for (const item of v) {
+      const s = extractHeating(item);
+      if (s) return s;
+    }
+    return "";
+  }
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    for (const k of [
+      "description", "desc", "type", "name",
+      "system_description", "systemDescription", "fuel",
+      "main_heating_description", "mainHeatingDescription",
+    ]) {
+      const s = o[k];
+      if (typeof s === "string" && s.trim().length) return s.trim();
+    }
+  }
+  return "";
+};
+
 function toIntelligence(
   match: Record<string, unknown>,
   cert: Record<string, unknown> | null,
   postcodeFallback: string,
 ): PropertyIntelligence {
-  // certificate detail (snake_case) if present, else search row (camelCase)
+  // Try cert first (camelCase + snake_case), then fall back to search row.
   const c = cert ?? {};
-  const line1 = pick(c, ["address_line_1", "address"], "") ||
-    pick(match, ["addressLine1", "address"], "Address on file");
-  const town = pick(c, ["post_town"], "") || pick(match, ["postTown"], "");
-  const postcode = pick(c, ["postcode"], "") || pick(match, ["postcode"], postcodeFallback);
-  const currentBand = pick(c, ["current_energy_efficiency_band", "current_energy_rating"], "") ||
-    pick(match, ["currentEnergyEfficiencyBand", "currentEnergyRating"], "");
-  const potentialBand = pick(c, ["potential_energy_efficiency_band", "potential_energy_rating"], "") ||
-    pick(match, ["potentialEnergyEfficiencyBand", "potentialEnergyRating"], "");
-  const currentScore = pick(c, ["current_energy_efficiency"], "") ||
-    pick(match, ["currentEnergyEfficiency"], "");
-  const potentialScore = pick(c, ["potential_energy_efficiency"], "") ||
-    pick(match, ["potentialEnergyEfficiency"], "");
-  const propertyType = pick(c, ["property_type"], "") || pick(match, ["propertyType"], "Unknown");
-  const builtForm = pick(c, ["built_form"], "") || pick(match, ["builtForm"], "Unknown");
-  const floorArea = pick(c, ["total_floor_area"], "") || pick(match, ["totalFloorArea"], "");
-  const mainHeating = pick(
-    c,
-    ["mainheat_description", "main_heating_description", "mainheat_desc"],
-    "",
-  ) || pick(match, ["mainheatDescription", "mainHeatingDescription"], "Unknown");
+  const line1 =
+    pick(c, ["addressLine1", "address_line_1", "address1", "address"], "") ||
+    pick(match, ["addressLine1", "address1", "address"], "");
+  const town =
+    pick(c, ["postTown", "post_town", "town"], "") ||
+    pick(match, ["postTown", "town"], "");
+  const postcode =
+    pick(c, ["postcode"], "") || pick(match, ["postcode"], postcodeFallback);
 
-  const recRaw = (cert && Array.isArray((cert as Record<string, unknown>)["recommendations"]))
-    ? (cert as Record<string, unknown>)["recommendations"] as Record<string, unknown>[]
-    : [];
-  const recs = recRaw
-    .map((r) => pick(r, ["improvement_descr_text", "improvement_summary_text", "improvement"], ""))
+  const currentBand =
+    pick(c, ["currentEnergyRating", "currentEnergyEfficiencyBand", "current_energy_rating", "current_energy_efficiency_band"], "") ||
+    pick(match, ["currentEnergyRating", "currentEnergyEfficiencyBand"], "");
+  const potentialBand =
+    pick(c, ["potentialEnergyRating", "potentialEnergyEfficiencyBand", "potential_energy_rating", "potential_energy_efficiency_band"], "") ||
+    pick(match, ["potentialEnergyRating", "potentialEnergyEfficiencyBand"], "");
+  // On this API, the numeric score lives in `energy_rating_current` /
+  // `energy_rating_potential`. Older EPC APIs called it
+  // `current_energy_efficiency`.
+  const currentScore =
+    pick(c, ["energy_rating_current", "currentEnergyEfficiency", "current_energy_efficiency"], "") ||
+    pick(match, ["currentEnergyEfficiency", "energyRatingCurrent"], "");
+  const potentialScore =
+    pick(c, ["energy_rating_potential", "potentialEnergyEfficiency", "potential_energy_efficiency"], "") ||
+    pick(match, ["potentialEnergyEfficiency", "energyRatingPotential"], "");
+
+  const propertyTypeRaw =
+    pick(c, ["propertyType", "property_type"], "") ||
+    pick(match, ["propertyType"], "");
+  const builtFormRaw =
+    pick(c, ["builtForm", "built_form"], "") ||
+    pick(match, ["builtForm"], "");
+  const floorArea =
+    pick(c, ["totalFloorArea", "total_floor_area"], "") ||
+    pick(match, ["totalFloorArea"], "");
+  const mainHeating =
+    extractHeating(c["main_heating"]) ||
+    extractHeating(c["mainHeating"]) ||
+    extractHeating(c["sap_heating"]) ||
+    pick(c, [
+      "mainheatDescription", "mainHeatingDescription",
+      "mainheat_description", "main_heating_description",
+      "mainheatDesc", "mainheat_desc",
+    ], "") ||
+    pick(match, ["mainheatDescription", "mainHeatingDescription"], "");
+
+  const suggestions = cert && Array.isArray(cert["suggested_improvements"])
+    ? cert["suggested_improvements"] as unknown[]
+    : cert && Array.isArray(cert["recommendations"])
+      ? cert["recommendations"] as unknown[]
+      : [];
+  const recs = suggestions
+    .map((r) => {
+      if (typeof r === "string") return r.trim();
+      if (r && typeof r === "object") {
+        return pick(r as Record<string, unknown>, [
+          "description", "improvementDescrText", "improvementSummaryText",
+          "improvement", "improvement_descr_text", "improvement_summary_text",
+        ], "");
+      }
+      return "";
+    })
     .filter((s) => s.length)
     .slice(0, 6);
 
+  const cScoreN = Number(currentScore);
+  const pScoreN = Number(potentialScore);
+  const fArea = Number(floorArea);
+
   return {
-    address: { line1, town, postcode: postcode.toUpperCase().replace(/\s+/g, " ") },
+    address: {
+      line1: line1 || "Address on file",
+      town,
+      postcode: postcode.toUpperCase().replace(/\s+/g, " "),
+    },
     currentRating: normaliseRating(currentBand),
-    currentScore: toInt(currentScore),
+    currentScore: Number.isFinite(cScoreN) && cScoreN > 0 ? Math.round(cScoreN) : 0,
     potentialRating: normaliseRating(potentialBand),
-    potentialScore: toInt(potentialScore),
-    propertyType: cleanText(propertyType, "Unknown"),
-    builtForm: cleanText(builtForm, "Unknown"),
-    floorAreaSqm: toInt(floorArea),
-    mainHeating: cleanText(mainHeating, "Unknown"),
+    potentialScore: Number.isFinite(pScoreN) && pScoreN > 0 ? Math.round(pScoreN) : 0,
+    propertyType: labelFromEnum(propertyTypeRaw, PROPERTY_TYPE_LABELS) || "Not available",
+    builtForm: labelFromEnum(builtFormRaw, BUILT_FORM_LABELS) || "Not available",
+    floorAreaSqm: Number.isFinite(fArea) && fArea > 0 ? Math.round(fArea) : 0,
+    mainHeating: mainHeating.trim().length ? mainHeating.trim() : "Not available",
     recommendedImprovements: recs,
   };
 }
@@ -361,9 +457,17 @@ Deno.serve(async (req) => {
       return json({ status: "not_found", searchedAddress: fallbackAddress, debug });
     }
 
+    const fieldNames = Object.keys(certObj);
+    console.log("[property-analysis] certificate field names:", fieldNames.join(","));
+    const heatingSample = {
+      main_heating: certObj["main_heating"] ?? null,
+      sap_heating: certObj["sap_heating"] ?? null,
+    };
+    const debugWithFields = { ...debug, certificateFieldNames: fieldNames, heatingSample };
+
     const intel = toIntelligence({}, certObj, postcodeFromAddr);
     console.log("[property-analysis] returning live EPC certificate");
-    return json({ status: "found", data: intel, debug });
+    return json({ status: "found", data: intel, debug: debugWithFields });
   }
 
   return json({ error: "Unknown action" }, 400);
