@@ -3,7 +3,12 @@ import { ArrowRight, CheckCircle2, Home, Sparkles, MapPin, Info } from "lucide-r
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import type { LookupResult, PropertyIntelligence } from "@/lib/propertyIntelligence";
+import {
+  searchAddresses,
+  fetchPropertyByAddress,
+  type AddressCandidate,
+  type PropertyIntelligence,
+} from "@/lib/propertyIntelligence";
 
 type Phase = "postcode" | "addresses" | "analysing" | "confirmed" | "not_found";
 
@@ -17,7 +22,6 @@ const STAGES = [
 const TOTAL_ANALYSIS_MS = 4200;
 const STAGE_STEP_MS = TOTAL_ANALYSIS_MS / STAGES.length;
 
-// UK postcode matcher (loose — space optional)
 const UK_POSTCODE =
   /^([A-PR-UWYZ][A-HK-Y]?[0-9][0-9A-HJKPS-UW]?\s*[0-9][ABD-HJLNP-UW-Z]{2})$/i;
 
@@ -25,48 +29,9 @@ const normalisePostcode = (raw: string) =>
   raw.trim().toUpperCase().replace(/\s+/g, "").replace(/^(.*)(\d[A-Z]{2})$/, "$1 $2");
 
 /**
- * DEV MOCK: given a normalised postcode, return a list of candidate addresses.
- * Replace with a real address-lookup call later without changing the UI flow.
- */
-function mockAddressesForPostcode(postcode: string): string[] {
-  // Same shape regardless of postcode so the journey is testable everywhere.
-  const town = postcode.startsWith("BN18") ? "Arundel" : "Your Town";
-  return [
-    `1 Example Road, ${town}, ${postcode}`,
-    `2 Example Road, ${town}, ${postcode}`,
-    `3 Example Road, ${town}, ${postcode}`,
-  ];
-}
-
-/**
- * DEV MOCK: given a selected address, return the mock EPC/property data.
- * Replace with a real edge-function call later without changing the UI flow.
- */
-function mockPropertyFor(address: string, postcode: string): PropertyIntelligence {
-  const line1 = address.split(",")[0]?.trim() || "1 Example Road";
-  const town = address.split(",")[1]?.trim() || "Arundel";
-  return {
-    address: { line1, town, postcode },
-    currentRating: "C",
-    currentScore: 71,
-    potentialRating: "B",
-    potentialScore: 82,
-    propertyType: "Detached House",
-    builtForm: "Detached",
-    floorAreaSqm: 148,
-    mainHeating: "Gas Boiler",
-    recommendedImprovements: [
-      "Solar PV",
-      "Battery Storage",
-      "Loft Insulation",
-      "Smart Tariff Review",
-    ],
-  };
-}
-
-/**
- * Premium postcode → address selection → analysing → confirmation flow shown
- * BEFORE the existing Energy IQ questionnaire.
+ * Premium postcode → address selection → analysing → confirmation flow.
+ * Uses the secure `property-analysis` edge function for live EPC data,
+ * with mock fallback (and a dev-only banner) if the API is unavailable.
  */
 export const PropertyIntake = ({
   onComplete,
@@ -77,20 +42,37 @@ export const PropertyIntake = ({
 }) => {
   const [phase, setPhase] = useState<Phase>("postcode");
   const [postcode, setPostcode] = useState("");
-  const [addresses, setAddresses] = useState<string[]>([]);
-  const [selectedAddress, setSelectedAddress] = useState<string>("");
+  const [addresses, setAddresses] = useState<AddressCandidate[]>([]);
+  const [selectedKey, setSelectedKey] = useState<string>("");
   const [stage, setStage] = useState(0);
-  const [result, setResult] = useState<LookupResult | null>(null);
+  const [property, setProperty] = useState<PropertyIntelligence | null>(null);
+  const [searching, setSearching] = useState(false);
+  const [devMessage, setDevMessage] = useState<string | null>(null);
 
   const postcodeValid = UK_POSTCODE.test(postcode.trim());
+  const selectedAddress = addresses.find((a) => a.lmkKey === selectedKey) ?? null;
+  const isDev = import.meta.env.DEV;
 
-  const findAddresses = () => {
-    if (!postcodeValid) return;
+  const findAddresses = async () => {
+    if (!postcodeValid || searching) return;
+    setSearching(true);
+    setDevMessage(null);
     const pc = normalisePostcode(postcode);
-    const list = mockAddressesForPostcode(pc);
-    setAddresses(list);
-    setSelectedAddress("");
-    setPhase("addresses");
+    try {
+      const res = await searchAddresses(pc);
+      if (res.status === "empty") {
+        // Genuinely no EPC records — skip straight to manual questionnaire.
+        setPhase("not_found");
+        setSearching(false);
+        return;
+      }
+      setAddresses(res.addresses);
+      setSelectedKey("");
+      if (res.status === "fallback") setDevMessage(res.devMessage);
+      setPhase("addresses");
+    } finally {
+      setSearching(false);
+    }
   };
 
   const beginAnalysis = async () => {
@@ -98,19 +80,24 @@ export const PropertyIntake = ({
     setPhase("analysing");
     setStage(0);
 
-    const pc = normalisePostcode(postcode);
+    const lookupPromise = fetchPropertyByAddress(selectedAddress);
     for (let i = 0; i < STAGES.length; i++) {
       await new Promise((r) => setTimeout(r, STAGE_STEP_MS));
       setStage(i + 1);
     }
 
-    const data = mockPropertyFor(selectedAddress, pc);
-    const res: LookupResult = { status: "found", data };
-    setResult(res);
-    setPhase("confirmed");
+    const res = await lookupPromise;
+    if (res.status === "found") {
+      setProperty(res.data);
+      if ((res as { devMessage?: string }).devMessage) {
+        setDevMessage((res as { devMessage?: string }).devMessage!);
+      }
+      setPhase("confirmed");
+    } else {
+      setPhase("not_found");
+    }
   };
 
-  // Auto-focus the postcode input on mount.
   useEffect(() => {
     if (phase !== "postcode") return;
     const el = document.getElementById("pi-postcode") as HTMLInputElement | null;
@@ -143,9 +130,9 @@ export const PropertyIntake = ({
               value={postcode}
               onChange={(e) => setPostcode(e.target.value.slice(0, 12).toUpperCase())}
               onKeyDown={(e) => {
-                if (e.key === "Enter" && postcodeValid) {
+                if (e.key === "Enter" && postcodeValid && !searching) {
                   e.preventDefault();
-                  findAddresses();
+                  void findAddresses();
                 }
               }}
               placeholder="e.g. BN18 9AA"
@@ -162,11 +149,12 @@ export const PropertyIntake = ({
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button
-            onClick={findAddresses}
-            disabled={!postcodeValid}
+            onClick={() => void findAddresses()}
+            disabled={!postcodeValid || searching}
             className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow disabled:opacity-50"
           >
-            Find My Address <ArrowRight className="ml-1.5 h-4 w-4" />
+            {searching ? "Searching…" : "Find My Address"}
+            <ArrowRight className="ml-1.5 h-4 w-4" />
           </Button>
           {onSkip && (
             <button
@@ -193,21 +181,27 @@ export const PropertyIntake = ({
           Select your address.
         </h2>
         <p className="mt-4 text-navy-soft leading-relaxed max-w-xl">
-          We found {addresses.length} addresses for{" "}
+          We found {addresses.length} {addresses.length === 1 ? "address" : "addresses"} for{" "}
           <span className="font-semibold text-navy">{normalisePostcode(postcode)}</span>.
           Choose yours to continue.
         </p>
 
+        {isDev && devMessage && (
+          <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900">
+            <strong className="font-semibold">Dev:</strong> {devMessage}
+          </div>
+        )}
+
         <ul className="mt-8 grid gap-2 max-w-xl" role="radiogroup" aria-label="Select your address">
-          {addresses.map((addr) => {
-            const selected = selectedAddress === addr;
+          {addresses.map((a) => {
+            const selected = selectedKey === a.lmkKey;
             return (
-              <li key={addr}>
+              <li key={a.lmkKey}>
                 <button
                   type="button"
                   role="radio"
                   aria-checked={selected}
-                  onClick={() => setSelectedAddress(addr)}
+                  onClick={() => setSelectedKey(a.lmkKey)}
                   className={`w-full text-left flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-all ${
                     selected
                       ? "border-electric bg-electric/5 shadow-glow"
@@ -221,7 +215,7 @@ export const PropertyIntake = ({
                   >
                     {selected && <CheckCircle2 className="h-4 w-4" />}
                   </span>
-                  <span className="text-sm font-medium text-navy">{addr}</span>
+                  <span className="text-sm font-medium text-navy">{a.label}</span>
                 </button>
               </li>
             );
@@ -230,7 +224,7 @@ export const PropertyIntake = ({
 
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button
-            onClick={beginAnalysis}
+            onClick={() => void beginAnalysis()}
             disabled={!selectedAddress}
             className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow disabled:opacity-50"
           >
@@ -241,7 +235,8 @@ export const PropertyIntake = ({
             onClick={() => {
               setPhase("postcode");
               setAddresses([]);
-              setSelectedAddress("");
+              setSelectedKey("");
+              setDevMessage(null);
             }}
             className="text-xs text-muted-foreground hover:text-navy transition-colors"
           >
@@ -318,10 +313,7 @@ export const PropertyIntake = ({
                 >
                   <span className="grid h-5 w-5 flex-shrink-0 place-items-center">
                     {done ? (
-                      <CheckCircle2
-                        className="h-4 w-4"
-                        style={{ color: "hsl(195 100% 65%)" }}
-                      />
+                      <CheckCircle2 className="h-4 w-4" style={{ color: "hsl(195 100% 65%)" }} />
                     ) : (
                       <span
                         className={`h-2 w-2 rounded-full ${
@@ -357,7 +349,7 @@ export const PropertyIntake = ({
         </p>
         <div className="mt-8 flex flex-wrap items-center gap-3">
           <Button
-            onClick={() => onComplete(null, selectedAddress || postcode)}
+            onClick={() => onComplete(null, selectedAddress?.label ?? postcode)}
             className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow"
           >
             Continue Assessment <ArrowRight className="ml-1.5 h-4 w-4" />
@@ -366,7 +358,7 @@ export const PropertyIntake = ({
             type="button"
             onClick={() => {
               setPhase("postcode");
-              setResult(null);
+              setProperty(null);
             }}
             className="text-xs text-muted-foreground hover:text-navy transition-colors"
           >
@@ -378,7 +370,6 @@ export const PropertyIntake = ({
   }
 
   // ---------------- CONFIRMED ----------------
-  const found = result?.status === "found" ? result.data : null;
   return (
     <div className="card-premium p-8 lg:p-10 animate-fade-in">
       <div className="flex items-start gap-4">
@@ -399,14 +390,20 @@ export const PropertyIntake = ({
         specific to your property.
       </p>
 
-      {found && (
+      {isDev && devMessage && (
+        <div className="mt-4 rounded-lg border border-amber-300 bg-amber-50 px-4 py-2.5 text-xs text-amber-900">
+          <strong className="font-semibold">Dev:</strong> {devMessage}
+        </div>
+      )}
+
+      {property && (
         <div className="mt-6 rounded-xl border border-border bg-surface/60 px-4 py-3 inline-flex items-center gap-2.5">
           <MapPin className="h-4 w-4 text-electric" />
           <div className="text-sm font-medium text-navy">
-            {found.address.line1}
+            {property.address.line1}
             <span className="text-navy-soft font-normal">
               {" · "}
-              {found.address.town} · {found.address.postcode}
+              {property.address.town} · {property.address.postcode}
             </span>
           </div>
         </div>
@@ -419,7 +416,7 @@ export const PropertyIntake = ({
 
       <div className="mt-8">
         <Button
-          onClick={() => onComplete(found, selectedAddress)}
+          onClick={() => onComplete(property, selectedAddress?.label ?? "")}
           className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow"
         >
           Continue Assessment <ArrowRight className="ml-1.5 h-4 w-4" />
