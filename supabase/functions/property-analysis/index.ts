@@ -1,22 +1,26 @@
 // property-analysis edge function
 //
 // Secure backend for the Energy IQ property intake.
-// Front-end MUST call ONLY this function — GOV.UK EPC API is never called
-// from the browser. The bearer token comes from EPC_API_BEARER_TOKEN and
-// never leaves the server.
+// Front-end MUST call ONLY this function — the GOV.UK EPC API is never
+// called from the browser. The bearer token comes from EPC_API_BEARER_TOKEN
+// and never leaves the server.
 //
-// Two actions:
+// API base (per GOV.UK "Energy certificate data APIs" tech docs):
+//   https://api.get-energy-performance-data.communities.gov.uk
+// Endpoints used:
+//   GET /api/domestic/search?postcode=...
+//   GET /api/certificate?certificate_number=...
 //
+// Actions:
 //   POST { action: "search", postcode }
 //     -> { status: "ok", addresses: [{ label, lmkKey, postcode }] }
 //     -> { status: "empty", searchedPostcode }
-//
 //   POST { action: "certificate", lmkKey, fallbackAddress? }
 //     -> { status: "found", data: PropertyIntelligence }
 //     -> { status: "not_found", searchedAddress }
 //
-// Legacy shape (still supported for older callers):
-//   POST { postcode, selectedAddress? }  -> { status: "found"|"not_found", ... }
+// NOTE: `lmkKey` in the response is now the GOV.UK `certificateNumber`
+// (kept named `lmkKey` so the frontend contract is unchanged).
 
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
 
@@ -35,10 +39,10 @@ interface PropertyIntelligence {
   recommendedImprovements: string[];
 }
 
-const EPC_DOMESTIC_SEARCH =
-  "https://epc.opendatacommunities.org/api/v1/domestic/search";
-const EPC_DOMESTIC_RECOMMENDATIONS =
-  "https://epc.opendatacommunities.org/api/v1/domestic/recommendations";
+const EPC_API_BASE =
+  "https://api.get-energy-performance-data.communities.gov.uk";
+const EPC_DOMESTIC_SEARCH = `${EPC_API_BASE}/api/domestic/search`;
+const EPC_CERTIFICATE = `${EPC_API_BASE}/api/certificate`;
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), {
@@ -63,25 +67,25 @@ const cleanText = (v: unknown, fallback = "Unknown"): string => {
   return s.length ? s : fallback;
 };
 
+// New GOV.UK API uses camelCase: addressLine1..4, postTown, postcode.
 const rowLabel = (r: Record<string, unknown>): string => {
-  const parts = [r["address1"], r["address2"], r["address3"], r["posttown"], r["postcode"]]
-    .map((x) => cleanText(x, ""))
-    .filter((s) => s.length);
+  const parts = [
+    r["addressLine1"], r["addressLine2"], r["addressLine3"], r["addressLine4"],
+    r["postTown"], r["postcode"],
+  ].map((x) => cleanText(x, "")).filter((s) => s.length);
   return parts.join(", ");
 };
 
-// GOV.UK Energy certificate data API — Bearer token authentication only.
 type EpcCallDebug = {
+  endpoint: string;
   status: number;
+  contentType: string;
+  jsonReturned: boolean;
   rowCount: number;
   bodyPreview: string;
-  contentType: string;
 };
 
-async function fetchEpc(
-  url: string,
-  token: string,
-): Promise<{ res: Response; body: string; debug: EpcCallDebug }> {
+async function fetchEpc(url: string, token: string) {
   const res = await fetch(url, {
     headers: {
       Authorization: `Bearer ${token}`,
@@ -90,83 +94,113 @@ async function fetchEpc(
   });
   const body = await res.text();
   const contentType = res.headers.get("content-type") ?? "";
-  let rowCount = 0;
-  try {
-    const parsed = JSON.parse(body);
-    rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
-  } catch {
-    rowCount = 0;
+  const jsonReturned = contentType.toLowerCase().includes("json");
+  let rows: Record<string, unknown>[] = [];
+  let parsed: unknown = null;
+  if (jsonReturned) {
+    try {
+      parsed = JSON.parse(body);
+      const data = (parsed as { data?: unknown })?.data;
+      if (Array.isArray(data)) rows = data as Record<string, unknown>[];
+      else if (data && typeof data === "object") {
+        // Some payloads wrap rows inside data.rows / data.results
+        const inner = (data as Record<string, unknown>);
+        if (Array.isArray(inner.rows)) rows = inner.rows as Record<string, unknown>[];
+        else if (Array.isArray(inner.results)) rows = inner.results as Record<string, unknown>[];
+      }
+    } catch {
+      // fall through
+    }
   }
   const debug: EpcCallDebug = {
+    endpoint: url,
     status: res.status,
-    rowCount,
     contentType,
+    jsonReturned,
+    rowCount: rows.length,
     bodyPreview: body.slice(0, 200),
   };
-  return { res, body, debug };
+  console.log(
+    `[property-analysis] endpoint=${url} status=${res.status} contentType=${contentType} json=${jsonReturned} rows=${rows.length}`,
+  );
+  return { res, body, parsed, rows, debug };
 }
-
 
 async function searchByPostcode(postcode: string, token: string) {
   const params = new URLSearchParams();
   params.set("postcode", postcode);
-  params.set("size", "100");
   const url = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
-  console.log("[property-analysis] search url:", url);
-  const result = await fetchEpc(url, token);
-  console.log(
-    `[property-analysis] status=${result.debug.status} contentType=${result.debug.contentType} rows=${result.debug.rowCount} bodyPreview=${result.debug.bodyPreview}`,
-  );
-  return result;
+  return await fetchEpc(url, token);
 }
 
+async function fetchCertificate(certificateNumber: string, token: string) {
+  const params = new URLSearchParams();
+  params.set("certificate_number", certificateNumber);
+  const url = `${EPC_CERTIFICATE}?${params.toString()}`;
+  return await fetchEpc(url, token);
+}
 
+function pick(
+  r: Record<string, unknown>,
+  keys: string[],
+  fallback = "",
+): string {
+  for (const k of keys) {
+    const v = r[k];
+    if (v !== undefined && v !== null && String(v).trim().length) return String(v).trim();
+  }
+  return fallback;
+}
 
 function toIntelligence(
   match: Record<string, unknown>,
-  recs: string[],
+  cert: Record<string, unknown> | null,
   postcodeFallback: string,
 ): PropertyIntelligence {
+  // certificate detail (snake_case) if present, else search row (camelCase)
+  const c = cert ?? {};
+  const line1 = pick(c, ["address_line_1", "address"], "") ||
+    pick(match, ["addressLine1", "address"], "Address on file");
+  const town = pick(c, ["post_town"], "") || pick(match, ["postTown"], "");
+  const postcode = pick(c, ["postcode"], "") || pick(match, ["postcode"], postcodeFallback);
+  const currentBand = pick(c, ["current_energy_efficiency_band", "current_energy_rating"], "") ||
+    pick(match, ["currentEnergyEfficiencyBand", "currentEnergyRating"], "");
+  const potentialBand = pick(c, ["potential_energy_efficiency_band", "potential_energy_rating"], "") ||
+    pick(match, ["potentialEnergyEfficiencyBand", "potentialEnergyRating"], "");
+  const currentScore = pick(c, ["current_energy_efficiency"], "") ||
+    pick(match, ["currentEnergyEfficiency"], "");
+  const potentialScore = pick(c, ["potential_energy_efficiency"], "") ||
+    pick(match, ["potentialEnergyEfficiency"], "");
+  const propertyType = pick(c, ["property_type"], "") || pick(match, ["propertyType"], "Unknown");
+  const builtForm = pick(c, ["built_form"], "") || pick(match, ["builtForm"], "Unknown");
+  const floorArea = pick(c, ["total_floor_area"], "") || pick(match, ["totalFloorArea"], "");
+  const mainHeating = pick(
+    c,
+    ["mainheat_description", "main_heating_description", "mainheat_desc"],
+    "",
+  ) || pick(match, ["mainheatDescription", "mainHeatingDescription"], "Unknown");
+
+  const recRaw = (cert && Array.isArray((cert as Record<string, unknown>)["recommendations"]))
+    ? (cert as Record<string, unknown>)["recommendations"] as Record<string, unknown>[]
+    : [];
+  const recs = recRaw
+    .map((r) => pick(r, ["improvement_descr_text", "improvement_summary_text", "improvement"], ""))
+    .filter((s) => s.length)
+    .slice(0, 6);
+
   return {
-    address: {
-      line1: cleanText(match["address1"] ?? match["address"], "Address on file"),
-      town: cleanText(match["posttown"], ""),
-      postcode: cleanText(match["postcode"], postcodeFallback),
-    },
-    currentRating: normaliseRating(match["current-energy-rating"]),
-    currentScore: toInt(match["current-energy-efficiency"]),
-    potentialRating: normaliseRating(match["potential-energy-rating"]),
-    potentialScore: toInt(match["potential-energy-efficiency"]),
-    propertyType: cleanText(match["property-type"], "Unknown"),
-    builtForm: cleanText(match["built-form"], "Unknown"),
-    floorAreaSqm: toInt(match["total-floor-area"]),
-    mainHeating: cleanText(
-      match["mainheat-description"] ?? match["main-heating-description"] ?? match["mainheat-desc"],
-      "Unknown",
-    ),
+    address: { line1, town, postcode: postcode.toUpperCase().replace(/\s+/g, " ") },
+    currentRating: normaliseRating(currentBand),
+    currentScore: toInt(currentScore),
+    potentialRating: normaliseRating(potentialBand),
+    potentialScore: toInt(potentialScore),
+    propertyType: cleanText(propertyType, "Unknown"),
+    builtForm: cleanText(builtForm, "Unknown"),
+    floorAreaSqm: toInt(floorArea),
+    mainHeating: cleanText(mainHeating, "Unknown"),
     recommendedImprovements: recs,
   };
 }
-
-async function fetchRecommendations(lmkKey: string, token: string): Promise<string[]> {
-  try {
-    const { res, body } = await fetchEpc(
-      `${EPC_DOMESTIC_RECOMMENDATIONS}/${encodeURIComponent(lmkKey)}`,
-      token,
-    );
-    if (!res.ok) return [];
-    const recPayload = JSON.parse(body) as { rows?: Record<string, unknown>[] };
-    return (recPayload.rows ?? [])
-      .map((r) => cleanText(r["improvement-descr-text"] ?? r["improvement-summary-text"], ""))
-      .filter((s) => s.length)
-      .slice(0, 6);
-  } catch (err) {
-    console.warn("[property-analysis] recommendations failed (non-fatal)", err);
-    return [];
-  }
-}
-
-
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -213,23 +247,31 @@ Deno.serve(async (req) => {
         status: "error",
         errorCode: "fetch_failed",
         devMessage: `EPC API fetch failed: ${String(err)}`,
-      }, 200);
+      });
     }
 
-    const { res, body: rawBody, debug } = searchResult;
-    const contentType = debug.contentType;
-    const looksHtml =
-      contentType.includes("html") || rawBody.trim().toLowerCase().startsWith("<!doctype");
+    const { res, rows, debug } = searchResult;
 
-    if (res.status === 401 || res.status === 403 || looksHtml) {
+    if (res.status === 401 || res.status === 403) {
       return json({
         status: "error",
-        errorCode: looksHtml ? "auth_html_response" : "auth_rejected",
+        errorCode: "auth_rejected",
         httpStatus: res.status,
         debug,
         devMessage:
-          `EPC API did not accept the Bearer token — got ${looksHtml ? "an HTML page" : `HTTP ${res.status}`} instead of JSON. ` +
-          `Verify the token stored in EPC_API_BEARER_TOKEN is a valid GOV.UK EPC Bearer token.`,
+          `EPC API rejected the Bearer token (HTTP ${res.status}). ` +
+          `Verify EPC_API_BEARER_TOKEN matches the token on your GOV.UK "my account" page.`,
+      });
+    }
+    if (!debug.jsonReturned) {
+      return json({
+        status: "error",
+        errorCode: "html_response",
+        httpStatus: res.status,
+        debug,
+        devMessage:
+          `EPC API returned non-JSON (${debug.contentType || "unknown"}) from ${debug.endpoint}. ` +
+          `Expected application/json.`,
       });
     }
     if (res.status === 404 || res.status === 204) {
@@ -245,19 +287,7 @@ Deno.serve(async (req) => {
       });
     }
 
-
-
-    let payload: { rows?: Record<string, unknown>[] } = {};
-    try {
-      payload = JSON.parse(rawBody);
-    } catch {
-      return json({ status: "empty", searchedPostcode: postcode, debug });
-    }
-
-    const rows = Array.isArray(payload.rows) ? payload.rows : [];
-    console.log("[property-analysis] search rows:", rows.length);
-
-    // De-dupe on address label, prefer newest lodgement date per address.
+    // De-dupe on address label, prefer newest registrationDate per address.
     const bestByLabel = new Map<string, Record<string, unknown>>();
     for (const r of rows) {
       const label = rowLabel(r);
@@ -266,8 +296,8 @@ Deno.serve(async (req) => {
       if (!current) {
         bestByLabel.set(label, r);
       } else {
-        const da = String(current["lodgement-date"] ?? "");
-        const db = String(r["lodgement-date"] ?? "");
+        const da = String(current["registrationDate"] ?? current["lodgementDate"] ?? "");
+        const db = String(r["registrationDate"] ?? r["lodgementDate"] ?? "");
         if (db.localeCompare(da) > 0) bestByLabel.set(label, r);
       }
     }
@@ -275,8 +305,8 @@ Deno.serve(async (req) => {
     const addresses = Array.from(bestByLabel.entries())
       .map(([label, r]) => ({
         label,
-        lmkKey: cleanText(r["lmk-key"], ""),
-        postcode: cleanText(r["postcode"], postcode),
+        lmkKey: pick(r, ["certificateNumber", "lmk-key", "lmkKey"], ""),
+        postcode: pick(r, ["postcode"], postcode),
       }))
       .filter((a) => a.lmkKey.length > 0)
       .sort((a, b) => a.label.localeCompare(b.label));
@@ -292,55 +322,49 @@ Deno.serve(async (req) => {
     return json({ status: "ok", addresses, debug });
   }
 
-
   // ---------- CERTIFICATE ----------
   if (action === "certificate") {
-    const lmkKey = String(body.lmkKey ?? "").trim();
+    const certificateNumber = String(body.lmkKey ?? "").trim();
     const fallbackAddress = String(body.fallbackAddress ?? "").trim();
-    console.log("[property-analysis] lmkKey:", lmkKey ? "(present)" : "(missing)");
-    if (!lmkKey) return json({ error: "lmkKey required" }, 400);
+    console.log("[property-analysis] certificateNumber present:", Boolean(certificateNumber));
+    if (!certificateNumber) return json({ error: "lmkKey required" }, 400);
 
-    // The EPC API doesn't expose a single-certificate GET, so we search by
-    // postcode extracted from fallbackAddress and pick the matching lmk-key.
-    const postcode = (fallbackAddress.match(
+    const postcodeFromAddr = (fallbackAddress.match(
       /\b([A-PR-UWYZ][A-HK-Y]?[0-9][0-9A-HJKPS-UW]?\s*[0-9][ABD-HJLNP-UW-Z]{2})\b/i,
     )?.[1] ?? "").toUpperCase();
 
-    if (!postcode) {
-      return json({ status: "not_found", searchedAddress: fallbackAddress });
-    }
-
-    let searchResult;
+    let certResult;
     try {
-      searchResult = await searchByPostcode(postcode, token);
+      certResult = await fetchCertificate(certificateNumber, token);
     } catch (err) {
-      console.error("[property-analysis] cert search fetch failed", err);
-      return json({ status: "error", errorCode: "fetch_failed" }, 502);
-    }
-    const { res, body: rawBody } = searchResult;
-    if (!res.ok) {
-      return json({ status: "not_found", searchedAddress: fallbackAddress });
+      console.error("[property-analysis] certificate fetch failed", err);
+      return json({ status: "error", errorCode: "fetch_failed", devMessage: String(err) });
     }
 
-    let payload: { rows?: Record<string, unknown>[] } = {};
-    try {
-      payload = JSON.parse(rawBody);
-    } catch {
-      return json({ status: "not_found", searchedAddress: fallbackAddress });
+    const { res, parsed, debug } = certResult;
+    if (!debug.jsonReturned || !res.ok) {
+      return json({
+        status: "not_found",
+        searchedAddress: fallbackAddress,
+        debug,
+        devMessage: !debug.jsonReturned
+          ? `Certificate endpoint returned non-JSON from ${debug.endpoint}.`
+          : `Certificate endpoint returned HTTP ${res.status}.`,
+      });
     }
 
-    const rows = Array.isArray(payload.rows) ? payload.rows : [];
-    const match = rows.find((r) => String(r["lmk-key"] ?? "") === lmkKey);
-    if (!match) {
-      return json({ status: "not_found", searchedAddress: fallbackAddress });
+    const data = (parsed as { data?: unknown } | null)?.data ?? null;
+    const certObj = (data && typeof data === "object" && !Array.isArray(data))
+      ? (data as Record<string, unknown>)
+      : null;
+    if (!certObj) {
+      return json({ status: "not_found", searchedAddress: fallbackAddress, debug });
     }
 
-    const recommendations = await fetchRecommendations(lmkKey, token);
-    const data = toIntelligence(match, recommendations, postcode);
+    const intel = toIntelligence({}, certObj, postcodeFromAddr);
     console.log("[property-analysis] returning live EPC certificate");
-    return json({ status: "found", data });
+    return json({ status: "found", data: intel, debug });
   }
-
 
   return json({ error: "Unknown action" }, 400);
 });
