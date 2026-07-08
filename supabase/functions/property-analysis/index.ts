@@ -152,16 +152,56 @@ function pick(
   return fallback;
 }
 
+// GOV.UK "get-energy-performance-data" API returns enum codes for
+// property_type and built_form. Map to human labels.
+const PROPERTY_TYPE_LABELS: Record<string, string> = {
+  "0": "House",
+  "1": "Bungalow",
+  "2": "Flat",
+  "3": "Maisonette",
+  "4": "Park home",
+};
+const BUILT_FORM_LABELS: Record<string, string> = {
+  "1": "Detached",
+  "2": "Semi-Detached",
+  "3": "End-Terrace",
+  "4": "Mid-Terrace",
+  "5": "Enclosed End-Terrace",
+  "6": "Enclosed Mid-Terrace",
+};
+
+const labelFromEnum = (raw: string, map: Record<string, string>): string => {
+  const trimmed = raw.trim();
+  if (!trimmed) return "";
+  if (map[trimmed]) return map[trimmed];
+  // Some payloads may already contain the label — return as-is.
+  return trimmed;
+};
+
+// main_heating may be a string, or an object like { description, ... }.
+const extractHeating = (v: unknown): string => {
+  if (v == null) return "";
+  if (typeof v === "string") return v.trim();
+  if (typeof v === "object") {
+    const o = v as Record<string, unknown>;
+    for (const k of ["description", "desc", "type", "name"]) {
+      const s = o[k];
+      if (typeof s === "string" && s.trim().length) return s.trim();
+    }
+  }
+  return "";
+};
+
 function toIntelligence(
   match: Record<string, unknown>,
   cert: Record<string, unknown> | null,
   postcodeFallback: string,
 ): PropertyIntelligence {
-  // Try cert first (both camelCase and snake_case), then fall back to search row.
+  // Try cert first (camelCase + snake_case), then fall back to search row.
   const c = cert ?? {};
   const line1 =
     pick(c, ["addressLine1", "address_line_1", "address1", "address"], "") ||
-    pick(match, ["addressLine1", "address1", "address"], "Address on file");
+    pick(match, ["addressLine1", "address1", "address"], "");
   const town =
     pick(c, ["postTown", "post_town", "town"], "") ||
     pick(match, ["postTown", "town"], "");
@@ -174,38 +214,52 @@ function toIntelligence(
   const potentialBand =
     pick(c, ["potentialEnergyRating", "potentialEnergyEfficiencyBand", "potential_energy_rating", "potential_energy_efficiency_band"], "") ||
     pick(match, ["potentialEnergyRating", "potentialEnergyEfficiencyBand"], "");
+  // On this API, the numeric score lives in `energy_rating_current` /
+  // `energy_rating_potential`. Older EPC APIs called it
+  // `current_energy_efficiency`.
   const currentScore =
-    pick(c, ["currentEnergyEfficiency", "current_energy_efficiency"], "") ||
-    pick(match, ["currentEnergyEfficiency"], "");
+    pick(c, ["energy_rating_current", "currentEnergyEfficiency", "current_energy_efficiency"], "") ||
+    pick(match, ["currentEnergyEfficiency", "energyRatingCurrent"], "");
   const potentialScore =
-    pick(c, ["potentialEnergyEfficiency", "potential_energy_efficiency"], "") ||
-    pick(match, ["potentialEnergyEfficiency"], "");
+    pick(c, ["energy_rating_potential", "potentialEnergyEfficiency", "potential_energy_efficiency"], "") ||
+    pick(match, ["potentialEnergyEfficiency", "energyRatingPotential"], "");
 
-  const propertyType =
+  const propertyTypeRaw =
     pick(c, ["propertyType", "property_type"], "") ||
     pick(match, ["propertyType"], "");
-  const builtForm =
+  const builtFormRaw =
     pick(c, ["builtForm", "built_form"], "") ||
     pick(match, ["builtForm"], "");
   const floorArea =
     pick(c, ["totalFloorArea", "total_floor_area"], "") ||
     pick(match, ["totalFloorArea"], "");
   const mainHeating =
+    extractHeating(c["main_heating"]) ||
+    extractHeating(c["mainHeating"]) ||
     pick(c, [
       "mainheatDescription", "mainHeatingDescription",
       "mainheat_description", "main_heating_description",
       "mainheatDesc", "mainheat_desc",
+      "sap_heating",
     ], "") ||
     pick(match, ["mainheatDescription", "mainHeatingDescription"], "");
 
-  const recRaw = (cert && Array.isArray((cert as Record<string, unknown>)["recommendations"]))
-    ? (cert as Record<string, unknown>)["recommendations"] as Record<string, unknown>[]
-    : [];
-  const recs = recRaw
-    .map((r) => pick(r, [
-      "improvementDescrText", "improvementSummaryText", "improvement",
-      "improvement_descr_text", "improvement_summary_text",
-    ], ""))
+  const suggestions = cert && Array.isArray(cert["suggested_improvements"])
+    ? cert["suggested_improvements"] as unknown[]
+    : cert && Array.isArray(cert["recommendations"])
+      ? cert["recommendations"] as unknown[]
+      : [];
+  const recs = suggestions
+    .map((r) => {
+      if (typeof r === "string") return r.trim();
+      if (r && typeof r === "object") {
+        return pick(r as Record<string, unknown>, [
+          "description", "improvementDescrText", "improvementSummaryText",
+          "improvement", "improvement_descr_text", "improvement_summary_text",
+        ], "");
+      }
+      return "";
+    })
     .filter((s) => s.length)
     .slice(0, 6);
 
@@ -223,10 +277,10 @@ function toIntelligence(
     currentScore: Number.isFinite(cScoreN) && cScoreN > 0 ? Math.round(cScoreN) : 0,
     potentialRating: normaliseRating(potentialBand),
     potentialScore: Number.isFinite(pScoreN) && pScoreN > 0 ? Math.round(pScoreN) : 0,
-    propertyType: cleanText(propertyType, "Not available"),
-    builtForm: cleanText(builtForm, "Not available"),
+    propertyType: labelFromEnum(propertyTypeRaw, PROPERTY_TYPE_LABELS) || "Not available",
+    builtForm: labelFromEnum(builtFormRaw, BUILT_FORM_LABELS) || "Not available",
     floorAreaSqm: Number.isFinite(fArea) && fArea > 0 ? Math.round(fArea) : 0,
-    mainHeating: cleanText(mainHeating, "Not available"),
+    mainHeating: mainHeating.trim().length ? mainHeating.trim() : "Not available",
     recommendedImprovements: recs,
   };
 }
