@@ -178,15 +178,25 @@ const labelFromEnum = (raw: string, map: Record<string, string>): string => {
   return trimmed;
 };
 
-// main_heating may be a string, or an object like { description, ... }.
+// main_heating on this API is an object such as
+//   { description: "Boiler and radiators, mains gas", fuel: "mains gas", ... }
+// but the exact key set varies, so fall back to any string field.
 const extractHeating = (v: unknown): string => {
   if (v == null) return "";
   if (typeof v === "string") return v.trim();
   if (typeof v === "object") {
     const o = v as Record<string, unknown>;
-    for (const k of ["description", "desc", "type", "name"]) {
+    for (const k of [
+      "description", "desc", "type", "name",
+      "system_description", "systemDescription", "fuel",
+      "main_heating_description", "mainHeatingDescription",
+    ]) {
       const s = o[k];
       if (typeof s === "string" && s.trim().length) return s.trim();
+    }
+    // Last-resort: return the first string value in the object.
+    for (const val of Object.values(o)) {
+      if (typeof val === "string" && val.trim().length) return val.trim();
     }
   }
   return "";
