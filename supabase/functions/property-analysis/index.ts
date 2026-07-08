@@ -70,13 +70,69 @@ const rowLabel = (r: Record<string, unknown>): string => {
   return parts.join(", ");
 };
 
-async function fetchEpc(url: string, token: string) {
-  return await fetch(url, {
-    headers: {
-      Authorization: `Bearer ${token}`,
-      Accept: "application/json",
-    },
-  });
+// The GOV.UK EPC Open Data API accepts either:
+//   (a) Basic <base64(email:api-key)>
+//   (b) The same base64 value as a Bearer token
+// Some users store the raw api-key without the email. We try Bearer as-is
+// first, then Basic with the token used as the base64 payload. Whichever
+// returns rows first wins.
+type EpcCallDebug = {
+  authMode: "bearer" | "basic-raw";
+  status: number;
+  rowCount: number;
+  bodyPreview: string;
+};
+
+async function fetchEpcWithFallback(
+  url: string,
+  token: string,
+): Promise<{ res: Response; body: string; debug: EpcCallDebug[] }> {
+  const debug: EpcCallDebug[] = [];
+
+  const attempts: Array<{ mode: EpcCallDebug["authMode"]; header: string }> = [
+    { mode: "bearer", header: `Bearer ${token}` },
+    { mode: "basic-raw", header: `Basic ${token}` },
+  ];
+
+  let lastRes: Response | null = null;
+  let lastBody = "";
+
+  for (const attempt of attempts) {
+    const res = await fetch(url, {
+      headers: {
+        Authorization: attempt.header,
+        Accept: "application/json",
+      },
+    });
+    const body = await res.text();
+    const contentType = res.headers.get("content-type") ?? "";
+    const looksJson = contentType.includes("json") || body.trim().startsWith("{");
+    let rowCount = 0;
+    if (looksJson) {
+      try {
+        const parsed = JSON.parse(body);
+        rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
+      } catch {
+        rowCount = 0;
+      }
+    }
+    debug.push({
+      authMode: attempt.mode,
+      status: res.status,
+      rowCount,
+      bodyPreview: body.slice(0, 200),
+    });
+    lastRes = res;
+    lastBody = body;
+    if (res.ok && looksJson && rowCount > 0) break;
+    // HTML response, or 401/403 → try next auth mode.
+    if (!looksJson || res.status === 401 || res.status === 403) continue;
+    // ok + valid JSON with 0 rows → genuinely empty, no point retrying.
+    if (res.ok && looksJson) break;
+  }
+
+
+  return { res: lastRes!, body: lastBody, debug };
 }
 
 async function searchByPostcode(postcode: string, token: string) {
@@ -85,10 +141,15 @@ async function searchByPostcode(postcode: string, token: string) {
   params.set("size", "100");
   const url = `${EPC_DOMESTIC_SEARCH}?${params.toString()}`;
   console.log("[property-analysis] search url:", url);
-  const res = await fetchEpc(url, token);
-  console.log("[property-analysis] search status:", res.status);
-  return res;
+  const result = await fetchEpcWithFallback(url, token);
+  for (const d of result.debug) {
+    console.log(
+      `[property-analysis] auth=${d.authMode} status=${d.status} rows=${d.rowCount} bodyPreview=${d.bodyPreview}`,
+    );
+  }
+  return result;
 }
+
 
 function toIntelligence(
   match: Record<string, unknown>,
@@ -118,12 +179,12 @@ function toIntelligence(
 
 async function fetchRecommendations(lmkKey: string, token: string): Promise<string[]> {
   try {
-    const recRes = await fetchEpc(
+    const { res, body } = await fetchEpcWithFallback(
       `${EPC_DOMESTIC_RECOMMENDATIONS}/${encodeURIComponent(lmkKey)}`,
       token,
     );
-    if (!recRes.ok) return [];
-    const recPayload = (await recRes.json()) as { rows?: Record<string, unknown>[] };
+    if (!res.ok) return [];
+    const recPayload = JSON.parse(body) as { rows?: Record<string, unknown>[] };
     return (recPayload.rows ?? [])
       .map((r) => cleanText(r["improvement-descr-text"] ?? r["improvement-summary-text"], ""))
       .filter((s) => s.length)
@@ -133,6 +194,7 @@ async function fetchRecommendations(lmkKey: string, token: string): Promise<stri
     return [];
   }
 }
+
 
 Deno.serve(async (req) => {
   if (req.method === "OPTIONS") return new Response("ok", { headers: corsHeaders });
@@ -170,29 +232,55 @@ Deno.serve(async (req) => {
     console.log("[property-analysis] postcode:", postcode);
     if (!postcode) return json({ error: "postcode required" }, 400);
 
-    let res: Response;
+    let searchResult;
     try {
-      res = await searchByPostcode(postcode, token);
+      searchResult = await searchByPostcode(postcode, token);
     } catch (err) {
       console.error("[property-analysis] search fetch failed", err);
-      return json({ status: "error", errorCode: "fetch_failed" }, 502);
+      return json({
+        status: "error",
+        errorCode: "fetch_failed",
+        devMessage: `EPC API fetch failed: ${String(err)}`,
+      }, 200);
     }
 
-    if (res.status === 401 || res.status === 403) {
-      return json({ status: "error", errorCode: "auth_rejected" }, 500);
+    const { res, body: rawBody, debug } = searchResult;
+    const lastDebug = debug[debug.length - 1];
+    const contentType = res.headers.get("content-type") ?? "";
+    const looksHtml =
+      contentType.includes("html") || rawBody.trim().toLowerCase().startsWith("<!doctype");
+
+    if (res.status === 401 || res.status === 403 || looksHtml) {
+      return json({
+        status: "error",
+        errorCode: looksHtml ? "auth_html_response" : "auth_rejected",
+        httpStatus: res.status,
+        debug,
+        devMessage:
+          `EPC API did not accept credentials — got ${looksHtml ? "an HTML page" : `HTTP ${res.status}`} instead of JSON. ` +
+          `The EPC_API_BEARER_TOKEN must be base64(email:api-key). ` +
+          `Generate it in your terminal with: echo -n "your-email@example.com:your-api-key" | base64`,
+      });
     }
     if (res.status === 404 || res.status === 204) {
-      return json({ status: "empty", searchedPostcode: postcode });
+      return json({ status: "empty", searchedPostcode: postcode, debug });
     }
     if (!res.ok) {
-      return json({ status: "error", errorCode: "search_failed", httpStatus: res.status }, 502);
+      return json({
+        status: "error",
+        errorCode: "search_failed",
+        httpStatus: res.status,
+        debug,
+        devMessage: `EPC API returned HTTP ${res.status}. Body: ${lastDebug?.bodyPreview ?? ""}`,
+      });
     }
+
 
     let payload: { rows?: Record<string, unknown>[] } = {};
     try {
-      payload = await res.json();
+      payload = JSON.parse(rawBody);
     } catch {
-      return json({ status: "empty", searchedPostcode: postcode });
+      return json({ status: "empty", searchedPostcode: postcode, debug });
     }
 
     const rows = Array.isArray(payload.rows) ? payload.rows : [];
@@ -223,10 +311,16 @@ Deno.serve(async (req) => {
       .sort((a, b) => a.label.localeCompare(b.label));
 
     if (!addresses.length) {
-      return json({ status: "empty", searchedPostcode: postcode });
+      return json({
+        status: "empty",
+        searchedPostcode: postcode,
+        debug,
+        devMessage: `EPC API returned HTTP 200 with 0 rows for postcode ${postcode}.`,
+      });
     }
-    return json({ status: "ok", addresses });
+    return json({ status: "ok", addresses, debug });
   }
+
 
   // ---------- CERTIFICATE ----------
   if (action === "certificate") {
@@ -245,20 +339,21 @@ Deno.serve(async (req) => {
       return json({ status: "not_found", searchedAddress: fallbackAddress });
     }
 
-    let res: Response;
+    let searchResult;
     try {
-      res = await searchByPostcode(postcode, token);
+      searchResult = await searchByPostcode(postcode, token);
     } catch (err) {
       console.error("[property-analysis] cert search fetch failed", err);
       return json({ status: "error", errorCode: "fetch_failed" }, 502);
     }
+    const { res, body: rawBody } = searchResult;
     if (!res.ok) {
       return json({ status: "not_found", searchedAddress: fallbackAddress });
     }
 
     let payload: { rows?: Record<string, unknown>[] } = {};
     try {
-      payload = await res.json();
+      payload = JSON.parse(rawBody);
     } catch {
       return json({ status: "not_found", searchedAddress: fallbackAddress });
     }
@@ -274,6 +369,7 @@ Deno.serve(async (req) => {
     console.log("[property-analysis] returning live EPC certificate");
     return json({ status: "found", data });
   }
+
 
   return json({ error: "Unknown action" }, 400);
 });
