@@ -101,7 +101,7 @@ export const PropertyIntake = ({
                 }
               }}
               placeholder="Postcode or full address"
-              className="pl-11 h-13 py-3 text-base"
+              className="pl-11 h-12 py-3 text-base"
               autoComplete="street-address"
               maxLength={200}
             />
