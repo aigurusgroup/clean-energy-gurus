@@ -105,12 +105,16 @@ async function fetchEpcWithFallback(
       },
     });
     const body = await res.text();
+    const contentType = res.headers.get("content-type") ?? "";
+    const looksJson = contentType.includes("json") || body.trim().startsWith("{");
     let rowCount = 0;
-    try {
-      const parsed = JSON.parse(body);
-      rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
-    } catch {
-      rowCount = 0;
+    if (looksJson) {
+      try {
+        const parsed = JSON.parse(body);
+        rowCount = Array.isArray(parsed?.rows) ? parsed.rows.length : 0;
+      } catch {
+        rowCount = 0;
+      }
     }
     debug.push({
       authMode: attempt.mode,
@@ -120,10 +124,13 @@ async function fetchEpcWithFallback(
     });
     lastRes = res;
     lastBody = body;
-    if (res.ok && rowCount > 0) break;
-    if (res.status === 401 || res.status === 403) continue; // try next
-    if (res.ok) break; // ok but empty — no point retrying with different auth
+    if (res.ok && looksJson && rowCount > 0) break;
+    // HTML response, or 401/403 → try next auth mode.
+    if (!looksJson || res.status === 401 || res.status === 403) continue;
+    // ok + valid JSON with 0 rows → genuinely empty, no point retrying.
+    if (res.ok && looksJson) break;
   }
+
 
   return { res: lastRes!, body: lastBody, debug };
 }
