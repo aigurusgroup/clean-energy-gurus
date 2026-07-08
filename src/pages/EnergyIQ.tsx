@@ -870,6 +870,31 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
 };
 
 
+// Map EPC data into questionnaire answers so we can skip Q1/Q5/Q12.
+function inferAnswersFromProperty(p: PropertyIntelligence): Partial<Answers> {
+  const pt = p.propertyType.toLowerCase();
+  const bf = p.builtForm.toLowerCase();
+  let propertyType: string;
+  if (pt.includes("flat") || pt.includes("maisonette")) propertyType = "flat";
+  else if (bf.includes("detached") && !bf.includes("semi")) propertyType = "detached";
+  else propertyType = "semi";
+
+  const heat = p.mainHeating.toLowerCase();
+  let heating: string;
+  if (heat.includes("heat pump")) heating = "heatpump";
+  else if (heat.includes("gas")) heating = "gas";
+  else if (heat.includes("oil") || heat.includes("lpg")) heating = "oil";
+  else if (heat.includes("electric")) heating = "electric";
+  else heating = "biomass";
+
+  const postcode = (p.address.postcode.split(" ")[0] ?? "").slice(0, 5).toUpperCase();
+
+  return { propertyType, heating, postcode };
+}
+
+// Question IDs auto-filled from EPC data — skipped from the manual flow.
+const EPC_FILLED_IDS = new Set(["propertyType", "heating", "postcode"]);
+
 const EnergyIQ = () => {
   const [step, setStep] = useState(-1); // -1 = intro/property intake, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
   const [revealed, setRevealed] = useState(false);
@@ -877,11 +902,16 @@ const EnergyIQ = () => {
   const [lead, setLead] = useState({ name: "", email: "", phone: "", postcode: "", consent: false });
   const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
-  const total = QUESTIONS.length;
-  const currentQ = step >= 0 && step < total ? QUESTIONS[step] : null;
+  // When live EPC data is available, drop the questions it already answers.
+  const visibleQuestions = useMemo(
+    () => (property ? QUESTIONS.filter((q) => !EPC_FILLED_IDS.has(q.id)) : QUESTIONS),
+    [property],
+  );
+
+  const total = visibleQuestions.length;
+  const currentQ = step >= 0 && step < total ? visibleQuestions[step] : null;
   const result = useMemo(() => scoreAnswers(answers), [answers]);
   const band = categoryBand(result.total);
-  // `recommend()` retained in helpers for compatibility; result page uses richer personalised sections instead.
   const progress = step >= 0 && step < total ? Math.round(((step) / total) * 100) : 0;
 
   const canAdvance = currentQ
@@ -889,6 +919,7 @@ const EnergyIQ = () => {
       ? (answers.postcode ?? "").trim().length >= 2
       : Boolean(answers[currentQ.id])
     : true;
+
 
   const submitLead = (e: React.FormEvent) => {
     e.preventDefault();
@@ -945,11 +976,15 @@ const EnergyIQ = () => {
             <PropertyIntake
               onComplete={(prop, _addr) => {
                 setProperty(prop);
+                if (prop) {
+                  setAnswers((prev) => ({ ...prev, ...inferAnswersFromProperty(prop) }));
+                }
                 setStep(0);
               }}
               onSkip={() => setStep(0)}
             />
           )}
+
 
           {/* QUESTIONNAIRE */}
           {currentQ && (
