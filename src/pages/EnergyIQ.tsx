@@ -902,6 +902,7 @@ const EnergyIQ = () => {
       score: result.total,
       band: band.name,
       lead,
+      property,
     };
     try {
       const prior = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
