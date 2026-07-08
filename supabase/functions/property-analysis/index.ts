@@ -456,7 +456,11 @@ Deno.serve(async (req) => {
 
     const fieldNames = Object.keys(certObj);
     console.log("[property-analysis] certificate field names:", fieldNames.join(","));
-    const debugWithFields = { ...debug, certificateFieldNames: fieldNames };
+    const heatingSample = {
+      main_heating: certObj["main_heating"] ?? null,
+      sap_heating: certObj["sap_heating"] ?? null,
+    };
+    const debugWithFields = { ...debug, certificateFieldNames: fieldNames, heatingSample };
 
     const intel = toIntelligence({}, certObj, postcodeFromAddr);
     console.log("[property-analysis] returning live EPC certificate");
