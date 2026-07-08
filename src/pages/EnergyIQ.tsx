@@ -8,6 +8,9 @@ import { Label } from "@/components/ui/label";
 import { RadioGroup, RadioGroupItem } from "@/components/ui/radio-group";
 import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
+import { PropertyIntake } from "@/components/site/PropertyIntake";
+import { PropertyIntelligencePanel } from "@/components/site/PropertyIntelligencePanel";
+import type { PropertyIntelligence } from "@/lib/propertyIntelligence";
 
 type Option = { value: string; label: string; points?: number };
 type Question = {
@@ -868,10 +871,11 @@ const ScoreReveal = ({ target, onDone }: { target: number; onDone: () => void })
 
 
 const EnergyIQ = () => {
-  const [step, setStep] = useState(-1); // -1 = intro, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
+  const [step, setStep] = useState(-1); // -1 = intro/property intake, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
   const [revealed, setRevealed] = useState(false);
   const [answers, setAnswers] = useState<Answers>({});
   const [lead, setLead] = useState({ name: "", email: "", phone: "", postcode: "", consent: false });
+  const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
   const total = QUESTIONS.length;
   const currentQ = step >= 0 && step < total ? QUESTIONS[step] : null;
@@ -898,6 +902,7 @@ const EnergyIQ = () => {
       score: result.total,
       band: band.name,
       lead,
+      property,
     };
     try {
       const prior = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
@@ -924,14 +929,7 @@ const EnergyIQ = () => {
             Energy IQ helps you get a clearer view of where your property stands today — and what could improve it. Answer a few simple questions about your property, energy use and future goals. You'll receive an indicative Energy IQ score, along with practical next steps to help you reduce costs, improve efficiency and make more confident clean energy decisions.
           </p>
           {step === -1 && (
-            <div className="mt-8 flex flex-wrap gap-3">
-              <Button
-                size="lg"
-                onClick={() => setStep(0)}
-                className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow"
-              >
-                Start Energy IQ Assessment <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
+            <div className="mt-6 flex flex-wrap gap-3">
               <span className="inline-flex items-center gap-2 text-xs text-muted-foreground">
                 <ShieldCheck className="h-4 w-4 text-electric" /> Takes about 2 minutes · No obligation
               </span>
@@ -942,6 +940,17 @@ const EnergyIQ = () => {
 
       <section className="py-14 lg:py-20">
         <div className="container-tight max-w-3xl">
+          {/* PROPERTY INTAKE — additive layer before the existing questionnaire */}
+          {step === -1 && (
+            <PropertyIntake
+              onComplete={(prop, _addr) => {
+                setProperty(prop);
+                setStep(0);
+              }}
+              onSkip={() => setStep(0)}
+            />
+          )}
+
           {/* QUESTIONNAIRE */}
           {currentQ && (
             <div className="card-premium p-8 lg:p-10">
@@ -1097,6 +1106,9 @@ const EnergyIQ = () => {
                 </section>
               )}
 
+              {/* Property Intelligence — additive, only shown when property data is present */}
+              {property && <PropertyIntelligencePanel property={property} />}
+
               {/* Key opportunities to explore */}
               {opps.length > 0 && (
                 <section className="mt-10">
@@ -1141,7 +1153,7 @@ const EnergyIQ = () => {
                 >
                   Get my full summary <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
-                <Button variant="outline" className="rounded-full h-12" onClick={() => { setAnswers({}); setRevealed(false); setStep(-1); }}>
+                <Button variant="outline" className="rounded-full h-12" onClick={() => { setAnswers({}); setRevealed(false); setProperty(null); setStep(-1); }}>
                   Start again
                 </Button>
               </div>
