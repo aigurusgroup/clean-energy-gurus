@@ -1144,23 +1144,8 @@ const EnergyIQ = () => {
               {/* Property Intelligence — additive, only shown when property data is present */}
               {property && <PropertyIntelligencePanel property={property} />}
 
-              {/* Key opportunities to explore */}
-              {opps.length > 0 && (
-                <section className="mt-10">
-                  <h3 className="text-lg font-display font-semibold text-navy">Key opportunities to explore</h3>
-                  <p className="mt-2 text-sm text-muted-foreground">
-                    These are areas that could be relevant based on what you've shared. None of them are recommendations — they are simply worth exploring further.
-                  </p>
-                  <div className="mt-5 grid gap-4 sm:grid-cols-2">
-                    {opps.map((o) => (
-                      <article key={o.title} className="rounded-xl border border-border bg-surface/40 p-5">
-                        <h4 className="text-base font-display font-semibold text-navy">{o.title}</h4>
-                        <p className="mt-2 text-sm text-navy-soft leading-relaxed">{o.body}</p>
-                      </article>
-                    ))}
-                  </div>
-                </section>
-              )}
+              {/* Your Personalised Roadmap — replaces the old Key opportunities list */}
+              <PersonalisedRoadmap />
 
               {/* Suggested next steps */}
               <section className="mt-10">
