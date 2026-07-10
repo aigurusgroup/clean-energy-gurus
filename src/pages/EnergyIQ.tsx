@@ -10,6 +10,7 @@ import { Checkbox } from "@/components/ui/checkbox";
 import { toast } from "@/hooks/use-toast";
 import { PropertyIntake } from "@/components/site/PropertyIntake";
 import { PropertyIntelligencePanel } from "@/components/site/PropertyIntelligencePanel";
+import { PersonalisedRoadmap } from "@/components/site/PersonalisedRoadmap";
 import type { PropertyIntelligence } from "@/lib/propertyIntelligence";
 
 type Option = { value: string; label: string; points?: number };
