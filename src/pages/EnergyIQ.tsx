@@ -1354,11 +1354,25 @@ const EnergyIQ = () => {
                 <CheckCircle2 className="h-7 w-7" />
               </div>
               <h2 className="mt-6 text-2xl lg:text-3xl font-display font-semibold text-navy">
-                Thanks {lead.name.split(" ")[0] || "there"} — your Energy IQ is on its way.
+                Thanks {lead.firstName || "there"} — your Energy IQ is on its way.
               </h2>
               <p className="mt-4 text-navy-soft leading-relaxed max-w-xl mx-auto">
                 Your indicative score of <strong className="text-navy">{result.total}/100 ({band.name})</strong> has been saved. A member of the Clean Energy Gurus team will be in touch with your full summary and recommended next steps.
               </p>
+
+              {import.meta.env.DEV && savedAssessment && (
+                <div className="mt-6 mx-auto max-w-md rounded-xl border border-dashed border-electric/40 bg-electric/5 p-4 text-left text-xs text-navy-soft">
+                  <div className="font-semibold uppercase tracking-[0.18em] text-electric mb-2">
+                    Dev: assessment saved
+                  </div>
+                  <ul className="space-y-1 font-mono">
+                    <li>assessment_id: <span className="text-navy">{savedAssessment.assessmentId}</span></li>
+                    <li>answers stored: <span className="text-navy">{savedAssessment.answersStored}</span></li>
+                    <li>live EPC data stored: <span className="text-navy">{savedAssessment.epcStored ? "yes" : "no"}</span></li>
+                  </ul>
+                </div>
+              )}
+
               <div className="mt-8 flex flex-wrap gap-3 justify-center">
                 <Link to="/">
                   <Button variant="outline" className="rounded-full h-12">Back to home</Button>
