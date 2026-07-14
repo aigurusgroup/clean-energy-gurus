@@ -151,7 +151,12 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      submit_energy_iq_assessment: {
+        Args: { assessment: Json }
+        Returns: {
+          assessment_id: string
+        }[]
+      }
     }
     Enums: {
       [_ in never]: never
