@@ -12,6 +12,10 @@ import { PropertyIntake } from "@/components/site/PropertyIntake";
 import { PropertyIntelligencePanel } from "@/components/site/PropertyIntelligencePanel";
 import { PersonalisedRoadmap } from "@/components/site/PersonalisedRoadmap";
 import type { PropertyIntelligence } from "@/lib/propertyIntelligence";
+import { supabase } from "@/integrations/supabase/client";
+
+const QUESTIONNAIRE_VERSION = "v1";
+const CALCULATION_VERSION = "v1";
 
 type Option = { value: string; label: string; points?: number };
 type Question = {
