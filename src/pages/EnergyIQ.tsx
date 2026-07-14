@@ -940,27 +940,104 @@ const EnergyIQ = () => {
     : true;
 
 
-  const submitLead = (e: React.FormEvent) => {
+  const submitLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lead.name.trim() || !lead.email.trim() || !lead.phone.trim() || !lead.consent) {
-      toast({ title: "Please complete all fields", description: "Name, email, phone and consent are required." });
+    if (
+      !lead.firstName.trim() ||
+      !lead.lastName.trim() ||
+      !lead.email.trim() ||
+      !lead.phone.trim() ||
+      !lead.privacyConsent
+    ) {
+      toast({
+        title: "Please complete all required fields",
+        description: "First name, last name, email, phone and privacy consent are required.",
+      });
       return;
     }
-    const record = {
-      submittedAt: new Date().toISOString(),
+
+    setSaving(true);
+
+    const skippedQuestions = property ? Array.from(EPC_FILLED_IDS) : [];
+    const findings = energyIQStory(answers);
+    const identifiedOpportunities = opportunities(answers);
+    const roadmap = identifiedOpportunities.map((o) => ({
+      title: o.title,
+      body: o.body,
+    }));
+    const resultSummary = bandOutcome(result.total);
+
+    const postcodeFinal =
+      (lead.postcode || answers.postcode || property?.address.postcode || "").toUpperCase();
+
+    const payload = {
+      first_name: lead.firstName.trim(),
+      last_name: lead.lastName.trim(),
+      email: lead.email.trim(),
+      telephone: lead.phone.trim(),
+      marketing_consent: lead.marketingConsent,
+      privacy_consent: lead.privacyConsent,
+      completed_at: new Date().toISOString(),
+
+      full_address: property
+        ? `${property.address.line1}, ${property.address.town}, ${property.address.postcode}`
+        : null,
+      postcode: postcodeFinal || null,
+      epc_identifier: null,
+      current_epc_rating: property?.currentRating ?? null,
+      current_epc_score: property?.currentScore ?? null,
+      potential_epc_rating: property?.potentialRating ?? null,
+      potential_epc_score: property?.potentialScore ?? null,
+      property_type: property?.propertyType ?? null,
+      built_form: property?.builtForm ?? null,
+      floor_area: property?.floorAreaSqm ?? null,
+      main_heating: property?.mainHeating ?? null,
+      epc_recommendations: property?.recommendedImprovements ?? [],
+      property_data_found: Boolean(property),
+
       answers,
-      score: result.total,
-      band: band.name,
-      lead,
-      property,
+      skipped_questions: skippedQuestions,
+      questionnaire_version: QUESTIONNAIRE_VERSION,
+
+      energy_iq_score: result.total,
+      energy_iq_band: band.name,
+      result_summary: resultSummary,
+      findings,
+      identified_opportunities: identifiedOpportunities,
+      personalised_roadmap: roadmap,
+      calculation_version: CALCULATION_VERSION,
     };
-    try {
-      const prior = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      prior.push(record);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(prior));
-    } catch {}
+
+    const { data, error } = await supabase
+      .from("energy_iq_assessments")
+      .insert(payload)
+      .select("assessment_id")
+      .single();
+
+    setSaving(false);
+
+    if (error || !data) {
+      if (import.meta.env.DEV) {
+        // Developer-only detail; safe (no PII).
+        // eslint-disable-next-line no-console
+        console.error("[EnergyIQ] Save failed:", error);
+      }
+      toast({
+        title: "We couldn't save your assessment",
+        description:
+          "Something went wrong on our end. Your answers are safe — please try submitting again in a moment.",
+      });
+      return;
+    }
+
+    setSavedAssessment({
+      assessmentId: data.assessment_id,
+      answersStored: Object.keys(answers).length,
+      epcStored: Boolean(property),
+    });
     setStep(total + 2);
   };
+
 
   return (
     <SiteLayout>
