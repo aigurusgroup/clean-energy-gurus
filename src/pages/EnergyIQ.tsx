@@ -1389,40 +1389,82 @@ const EnergyIQ = () => {
 
           {/* THANK YOU */}
           {step === total + 2 && (
-            <div className="card-premium p-10 text-center">
-              <div className="mx-auto h-14 w-14 rounded-full bg-electric/10 grid place-items-center text-electric">
-                <CheckCircle2 className="h-7 w-7" />
-              </div>
-              <h2 className="mt-6 text-2xl lg:text-3xl font-display font-semibold text-navy">
-                Thanks {lead.firstName || "there"} — your Energy IQ is on its way.
-              </h2>
-              <p className="mt-4 text-navy-soft leading-relaxed max-w-xl mx-auto">
-                Your indicative score of <strong className="text-navy">{result.total}/100 ({band.name})</strong> has been saved. A member of the Clean Energy Gurus team will be in touch with your full summary and recommended next steps.
-              </p>
-
-              {import.meta.env.DEV && savedAssessment && (
-                <div className="mt-6 mx-auto max-w-md rounded-xl border border-dashed border-electric/40 bg-electric/5 p-4 text-left text-xs text-navy-soft">
-                  <div className="font-semibold uppercase tracking-[0.18em] text-electric mb-2">
-                    Dev: assessment saved
-                  </div>
-                  <ul className="space-y-1 font-mono">
-                    <li>assessment_id: <span className="text-navy">{savedAssessment.assessmentId}</span></li>
-                    <li>answers stored: <span className="text-navy">{savedAssessment.answersStored}</span></li>
-                    <li>live EPC data stored: <span className="text-navy">{savedAssessment.epcStored ? "yes" : "no"}</span></li>
-                  </ul>
+            <div className="mx-auto max-w-2xl">
+              <div className="card-premium p-10 lg:p-14 text-center relative overflow-hidden">
+                <div className="pointer-events-none absolute inset-x-0 -top-24 h-48 arc-glow opacity-70" />
+                <div className="relative mx-auto h-16 w-16 rounded-full bg-gradient-electric grid place-items-center text-white shadow-glow">
+                  <CheckCircle2 className="h-8 w-8" strokeWidth={2.25} />
                 </div>
-              )}
+                <span className="mt-8 inline-flex eyebrow">Assessment complete</span>
+                <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
+                  Your Energy IQ has been created.
+                </h2>
+                <p className="mt-5 text-navy-soft leading-relaxed max-w-lg mx-auto">
+                  Thank you for completing your Energy IQ assessment. Your personalised results have been securely saved and are now being prepared by the Clean Energy Gurus platform.
+                </p>
 
-              <div className="mt-8 flex flex-wrap gap-3 justify-center">
+                {savedAssessment && (
+                  <div className="mt-10 mx-auto max-w-sm rounded-2xl border border-border/70 bg-surface/60 px-6 py-6">
+                    <div className="text-xs font-semibold uppercase tracking-[0.22em] text-navy-soft">
+                      Assessment Reference
+                    </div>
+                    <div className="mt-2 font-mono text-lg lg:text-xl text-navy tracking-wide break-all">
+                      {savedAssessment.assessmentId}
+                    </div>
+                    <div className="mt-3 text-xs text-muted-foreground leading-relaxed">
+                      Please keep this reference for future enquiries about your assessment.
+                    </div>
+                  </div>
+                )}
+              </div>
+
+              <div className="card-premium mt-6 p-8 lg:p-10 text-left">
+                <h3 className="text-lg font-display font-semibold text-navy">What happens next</h3>
+                <ul className="mt-5 space-y-3.5">
+                  {[
+                    "Securely save your assessment",
+                    "Prepare your personalised Energy IQ report",
+                    "Send your results to the email address you provided",
+                    "Contact you if you've requested further guidance",
+                  ].map((item) => (
+                    <li key={item} className="flex gap-3 text-navy">
+                      <CheckCircle2 className="h-5 w-5 text-electric flex-shrink-0 mt-0.5" />
+                      <span className="text-[15px] leading-relaxed">{item}</span>
+                    </li>
+                  ))}
+                </ul>
+              </div>
+
+              <div className="mt-6 rounded-2xl border border-border/60 bg-accent/40 p-6 lg:p-7 text-sm text-navy-soft leading-relaxed">
+                Your Energy IQ assessment provides an indicative view of your property's current position. Any technical recommendations or installation proposals will always be confirmed through a full property review.
+              </div>
+
+              <div className="mt-10 flex flex-wrap gap-3 justify-center">
                 <Link to="/">
-                  <Button variant="outline" className="rounded-full h-12">Back to home</Button>
+                  <Button className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
+                    Return to Home <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Button>
                 </Link>
                 <Link to="/knowledge">
-                  <Button className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
-                    Explore the Knowledge Centre <ArrowRight className="ml-1.5 h-4 w-4" />
+                  <Button variant="outline" className="rounded-full h-12 px-6">
+                    Explore the Knowledge Centre
                   </Button>
                 </Link>
               </div>
+
+              {import.meta.env.DEV && savedAssessment && (
+                <details className="mt-10 mx-auto max-w-md rounded-xl border border-dashed border-electric/40 bg-electric/5 p-4 text-left text-xs text-navy-soft">
+                  <summary className="cursor-pointer font-semibold uppercase tracking-[0.18em] text-electric">
+                    Developer Information
+                  </summary>
+                  <ul className="mt-3 space-y-1 font-mono">
+                    <li>Assessment ID: <span className="text-navy">{savedAssessment.assessmentId}</span></li>
+                    <li>Number of answers stored: <span className="text-navy">{savedAssessment.answersStored}</span></li>
+                    <li>Live EPC data stored: <span className="text-navy">{savedAssessment.epcStored ? "Yes" : "No"}</span></li>
+                    <li>Assessment saved successfully: <span className="text-navy">Yes</span></li>
+                  </ul>
+                </details>
+              )}
             </div>
           )}
         </div>
