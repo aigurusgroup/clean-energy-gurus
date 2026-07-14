@@ -17,6 +17,25 @@ import { supabase } from "@/integrations/supabase/client";
 const QUESTIONNAIRE_VERSION = "v1";
 const CALCULATION_VERSION = "v1";
 
+function createAssessmentId() {
+  const random =
+    typeof crypto !== "undefined" && "randomUUID" in crypto
+      ? crypto.randomUUID().replace(/-/g, "")
+      : Math.random().toString(36).slice(2) + Date.now().toString(36);
+
+  return `EIQ-${random.slice(0, 10).toUpperCase()}`;
+}
+
+function inferFailingField(message?: string | null, details?: string | null) {
+  const text = `${message ?? ""} ${details ?? ""}`;
+  return (
+    text.match(/column "([^"]+)"/)?.[1] ??
+    text.match(/null value in column "([^"]+)"/)?.[1] ??
+    text.match(/invalid input syntax for type [^:]+: "?([a-zA-Z0-9_]+)"?/)?.[1] ??
+    "not identified"
+  );
+}
+
 type Option = { value: string; label: string; points?: number };
 type Question = {
   id: string;
@@ -970,7 +989,10 @@ const EnergyIQ = () => {
     const postcodeFinal =
       (lead.postcode || answers.postcode || property?.address.postcode || "").toUpperCase();
 
+    const assessmentId = createAssessmentId();
+
     const payload = {
+      assessment_id: assessmentId,
       first_name: lead.firstName.trim(),
       last_name: lead.lastName.trim(),
       email: lead.email.trim(),
@@ -1008,19 +1030,32 @@ const EnergyIQ = () => {
       calculation_version: CALCULATION_VERSION,
     };
 
-    const { data, error } = await supabase
-      .from("energy_iq_assessments")
-      .insert(payload)
-      .select("assessment_id")
-      .single();
+    if (import.meta.env.DEV) {
+      // Developer-only detail; confirms the save path without exposing customer data.
+      // eslint-disable-next-line no-console
+      console.info("[EnergyIQ] Assessment insert attempted", {
+        assessmentId,
+        fields: Object.keys(payload),
+        answersStored: Object.keys(answers).length,
+        epcStored: Boolean(property),
+      });
+    }
+
+    const { error } = await supabase.from("energy_iq_assessments").insert(payload);
 
     setSaving(false);
 
-    if (error || !data) {
+    if (error) {
       if (import.meta.env.DEV) {
         // Developer-only detail; safe (no PII).
         // eslint-disable-next-line no-console
-        console.error("[EnergyIQ] Save failed:", error);
+        console.error("[EnergyIQ] Assessment insert failed", {
+          code: error.code,
+          message: error.message,
+          details: error.details,
+          hint: error.hint,
+          failingField: inferFailingField(error.message, error.details),
+        });
       }
       toast({
         title: "We couldn't save your assessment",
@@ -1030,8 +1065,13 @@ const EnergyIQ = () => {
       return;
     }
 
+    if (import.meta.env.DEV) {
+      // eslint-disable-next-line no-console
+      console.info("[EnergyIQ] Assessment insert succeeded", { assessmentId });
+    }
+
     setSavedAssessment({
-      assessmentId: data.assessment_id,
+      assessmentId,
       answersStored: Object.keys(answers).length,
       epcStored: Boolean(property),
     });
