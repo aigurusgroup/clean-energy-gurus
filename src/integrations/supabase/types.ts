@@ -14,7 +14,138 @@ export type Database = {
   }
   public: {
     Tables: {
-      [_ in never]: never
+      energy_iq_assessments: {
+        Row: {
+          ai_recommendation_status: string
+          answers: Json
+          assessment_id: string
+          built_form: string | null
+          calculation_version: string
+          completed_at: string
+          created_at: string
+          current_epc_rating: string | null
+          current_epc_score: number | null
+          email: string
+          energy_iq_band: string
+          energy_iq_score: number
+          epc_identifier: string | null
+          epc_recommendations: Json
+          findings: Json
+          first_name: string
+          floor_area: number | null
+          full_address: string | null
+          ghl_contact_id: string | null
+          ghl_opportunity_id: string | null
+          ghl_sync_error: string | null
+          ghl_sync_status: string
+          id: string
+          identified_opportunities: Json
+          last_name: string
+          main_heating: string | null
+          marketing_consent: boolean
+          pdf_status: string
+          pdf_url: string | null
+          personalised_roadmap: Json
+          postcode: string | null
+          potential_epc_rating: string | null
+          potential_epc_score: number | null
+          privacy_consent: boolean
+          property_data_found: boolean
+          property_type: string | null
+          questionnaire_version: string
+          result_summary: string | null
+          skipped_questions: Json
+          telephone: string
+          updated_at: string
+        }
+        Insert: {
+          ai_recommendation_status?: string
+          answers?: Json
+          assessment_id?: string
+          built_form?: string | null
+          calculation_version?: string
+          completed_at?: string
+          created_at?: string
+          current_epc_rating?: string | null
+          current_epc_score?: number | null
+          email: string
+          energy_iq_band: string
+          energy_iq_score: number
+          epc_identifier?: string | null
+          epc_recommendations?: Json
+          findings?: Json
+          first_name: string
+          floor_area?: number | null
+          full_address?: string | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
+          ghl_sync_error?: string | null
+          ghl_sync_status?: string
+          id?: string
+          identified_opportunities?: Json
+          last_name: string
+          main_heating?: string | null
+          marketing_consent?: boolean
+          pdf_status?: string
+          pdf_url?: string | null
+          personalised_roadmap?: Json
+          postcode?: string | null
+          potential_epc_rating?: string | null
+          potential_epc_score?: number | null
+          privacy_consent?: boolean
+          property_data_found?: boolean
+          property_type?: string | null
+          questionnaire_version?: string
+          result_summary?: string | null
+          skipped_questions?: Json
+          telephone: string
+          updated_at?: string
+        }
+        Update: {
+          ai_recommendation_status?: string
+          answers?: Json
+          assessment_id?: string
+          built_form?: string | null
+          calculation_version?: string
+          completed_at?: string
+          created_at?: string
+          current_epc_rating?: string | null
+          current_epc_score?: number | null
+          email?: string
+          energy_iq_band?: string
+          energy_iq_score?: number
+          epc_identifier?: string | null
+          epc_recommendations?: Json
+          findings?: Json
+          first_name?: string
+          floor_area?: number | null
+          full_address?: string | null
+          ghl_contact_id?: string | null
+          ghl_opportunity_id?: string | null
+          ghl_sync_error?: string | null
+          ghl_sync_status?: string
+          id?: string
+          identified_opportunities?: Json
+          last_name?: string
+          main_heating?: string | null
+          marketing_consent?: boolean
+          pdf_status?: string
+          pdf_url?: string | null
+          personalised_roadmap?: Json
+          postcode?: string | null
+          potential_epc_rating?: string | null
+          potential_epc_score?: number | null
+          privacy_consent?: boolean
+          property_data_found?: boolean
+          property_type?: string | null
+          questionnaire_version?: string
+          result_summary?: string | null
+          skipped_questions?: Json
+          telephone?: string
+          updated_at?: string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never

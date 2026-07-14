@@ -12,6 +12,10 @@ import { PropertyIntake } from "@/components/site/PropertyIntake";
 import { PropertyIntelligencePanel } from "@/components/site/PropertyIntelligencePanel";
 import { PersonalisedRoadmap } from "@/components/site/PersonalisedRoadmap";
 import type { PropertyIntelligence } from "@/lib/propertyIntelligence";
+import { supabase } from "@/integrations/supabase/client";
+
+const QUESTIONNAIRE_VERSION = "v1";
+const CALCULATION_VERSION = "v1";
 
 type Option = { value: string; label: string; points?: number };
 type Question = {
@@ -214,7 +218,7 @@ function recommend(answers: Answers) {
   return recs.slice(0, 5);
 }
 
-const STORAGE_KEY = "energyIQ.submissions";
+
 
 // ————— Personalised result helpers —————
 
@@ -900,7 +904,21 @@ const EnergyIQ = () => {
   const [step, setStep] = useState(-1); // -1 = intro/property intake, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
   const [revealed, setRevealed] = useState(false);
   const [answers, setAnswers] = useState<Answers>({});
-  const [lead, setLead] = useState({ name: "", email: "", phone: "", postcode: "", consent: false });
+  const [lead, setLead] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    postcode: "",
+    privacyConsent: false,
+    marketingConsent: false,
+  });
+  const [saving, setSaving] = useState(false);
+  const [savedAssessment, setSavedAssessment] = useState<{
+    assessmentId: string;
+    answersStored: number;
+    epcStored: boolean;
+  } | null>(null);
   const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
   // When live EPC data is available, drop the questions it already answers.
@@ -922,27 +940,104 @@ const EnergyIQ = () => {
     : true;
 
 
-  const submitLead = (e: React.FormEvent) => {
+  const submitLead = async (e: React.FormEvent) => {
     e.preventDefault();
-    if (!lead.name.trim() || !lead.email.trim() || !lead.phone.trim() || !lead.consent) {
-      toast({ title: "Please complete all fields", description: "Name, email, phone and consent are required." });
+    if (
+      !lead.firstName.trim() ||
+      !lead.lastName.trim() ||
+      !lead.email.trim() ||
+      !lead.phone.trim() ||
+      !lead.privacyConsent
+    ) {
+      toast({
+        title: "Please complete all required fields",
+        description: "First name, last name, email, phone and privacy consent are required.",
+      });
       return;
     }
-    const record = {
-      submittedAt: new Date().toISOString(),
+
+    setSaving(true);
+
+    const skippedQuestions = property ? Array.from(EPC_FILLED_IDS) : [];
+    const findings = energyIQStory(answers);
+    const identifiedOpportunities = opportunities(answers);
+    const roadmap = identifiedOpportunities.map((o) => ({
+      title: o.title,
+      body: o.body,
+    }));
+    const resultSummary = bandOutcome(result.total);
+
+    const postcodeFinal =
+      (lead.postcode || answers.postcode || property?.address.postcode || "").toUpperCase();
+
+    const payload = {
+      first_name: lead.firstName.trim(),
+      last_name: lead.lastName.trim(),
+      email: lead.email.trim(),
+      telephone: lead.phone.trim(),
+      marketing_consent: lead.marketingConsent,
+      privacy_consent: lead.privacyConsent,
+      completed_at: new Date().toISOString(),
+
+      full_address: property
+        ? `${property.address.line1}, ${property.address.town}, ${property.address.postcode}`
+        : null,
+      postcode: postcodeFinal || null,
+      epc_identifier: null,
+      current_epc_rating: property?.currentRating ?? null,
+      current_epc_score: property?.currentScore ?? null,
+      potential_epc_rating: property?.potentialRating ?? null,
+      potential_epc_score: property?.potentialScore ?? null,
+      property_type: property?.propertyType ?? null,
+      built_form: property?.builtForm ?? null,
+      floor_area: property?.floorAreaSqm ?? null,
+      main_heating: property?.mainHeating ?? null,
+      epc_recommendations: property?.recommendedImprovements ?? [],
+      property_data_found: Boolean(property),
+
       answers,
-      score: result.total,
-      band: band.name,
-      lead,
-      property,
+      skipped_questions: skippedQuestions,
+      questionnaire_version: QUESTIONNAIRE_VERSION,
+
+      energy_iq_score: result.total,
+      energy_iq_band: band.name,
+      result_summary: resultSummary,
+      findings,
+      identified_opportunities: identifiedOpportunities,
+      personalised_roadmap: roadmap,
+      calculation_version: CALCULATION_VERSION,
     };
-    try {
-      const prior = JSON.parse(localStorage.getItem(STORAGE_KEY) || "[]");
-      prior.push(record);
-      localStorage.setItem(STORAGE_KEY, JSON.stringify(prior));
-    } catch {}
+
+    const { data, error } = await supabase
+      .from("energy_iq_assessments")
+      .insert(payload)
+      .select("assessment_id")
+      .single();
+
+    setSaving(false);
+
+    if (error || !data) {
+      if (import.meta.env.DEV) {
+        // Developer-only detail; safe (no PII).
+        // eslint-disable-next-line no-console
+        console.error("[EnergyIQ] Save failed:", error);
+      }
+      toast({
+        title: "We couldn't save your assessment",
+        description:
+          "Something went wrong on our end. Your answers are safe — please try submitting again in a moment.",
+      });
+      return;
+    }
+
+    setSavedAssessment({
+      assessmentId: data.assessment_id,
+      answersStored: Object.keys(answers).length,
+      epcStored: Boolean(property),
+    });
     setStep(total + 2);
   };
+
 
   return (
     <SiteLayout>
@@ -1194,16 +1289,20 @@ const EnergyIQ = () => {
                 Enter your details and we'll send you your Energy IQ summary, including your indicative score, key opportunities and suggested next steps. A member of the Clean Energy Gurus team may also contact you to discuss your property and answer any questions.
               </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Label htmlFor="iq-name">Name</Label>
-                  <Input id="iq-name" value={lead.name} onChange={(e) => setLead({ ...lead, name: e.target.value })} maxLength={100} required />
+                <div>
+                  <Label htmlFor="iq-first">First name</Label>
+                  <Input id="iq-first" value={lead.firstName} onChange={(e) => setLead({ ...lead, firstName: e.target.value })} maxLength={80} required />
+                </div>
+                <div>
+                  <Label htmlFor="iq-last">Last name</Label>
+                  <Input id="iq-last" value={lead.lastName} onChange={(e) => setLead({ ...lead, lastName: e.target.value })} maxLength={80} required />
                 </div>
                 <div>
                   <Label htmlFor="iq-email">Email</Label>
                   <Input id="iq-email" type="email" value={lead.email} onChange={(e) => setLead({ ...lead, email: e.target.value })} maxLength={255} required />
                 </div>
                 <div>
-                  <Label htmlFor="iq-phone">Phone</Label>
+                  <Label htmlFor="iq-phone">Telephone</Label>
                   <Input id="iq-phone" type="tel" value={lead.phone} onChange={(e) => setLead({ ...lead, phone: e.target.value })} maxLength={30} required />
                 </div>
                 <div className="sm:col-span-2">
@@ -1218,20 +1317,30 @@ const EnergyIQ = () => {
                 </div>
                 <label className="sm:col-span-2 flex items-start gap-3 text-sm text-navy-soft">
                   <Checkbox
-                    checked={lead.consent}
-                    onCheckedChange={(v) => setLead({ ...lead, consent: Boolean(v) })}
+                    checked={lead.privacyConsent}
+                    onCheckedChange={(v) => setLead({ ...lead, privacyConsent: Boolean(v) })}
                     className="mt-0.5"
                   />
                   <span>
-                    I consent to Clean Energy Gurus contacting me about my Energy IQ summary and next steps. I understand this is not a quotation or installation recommendation.
+                    I agree that Clean Energy Gurus may store the details I've provided and contact me about my Energy IQ summary and next steps, in line with their privacy notice. I understand this is not a quotation or installation recommendation. <span className="text-electric">(required)</span>
+                  </span>
+                </label>
+                <label className="sm:col-span-2 flex items-start gap-3 text-sm text-navy-soft">
+                  <Checkbox
+                    checked={lead.marketingConsent}
+                    onCheckedChange={(v) => setLead({ ...lead, marketingConsent: Boolean(v) })}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    Optional: I'd also like to receive occasional updates, guides and clean energy insights from Clean Energy Gurus. I can unsubscribe at any time.
                   </span>
                 </label>
               </div>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button type="submit" className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
-                  Send my Energy IQ summary <ArrowRight className="ml-1.5 h-4 w-4" />
+                <Button type="submit" disabled={saving} className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
+                  {saving ? "Saving…" : "Send my Energy IQ summary"} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
-                <Button type="button" variant="outline" className="rounded-full h-12" onClick={() => setStep(total)}>
+                <Button type="button" variant="outline" className="rounded-full h-12" onClick={() => setStep(total)} disabled={saving}>
                   Back to score
                 </Button>
               </div>
@@ -1245,11 +1354,25 @@ const EnergyIQ = () => {
                 <CheckCircle2 className="h-7 w-7" />
               </div>
               <h2 className="mt-6 text-2xl lg:text-3xl font-display font-semibold text-navy">
-                Thanks {lead.name.split(" ")[0] || "there"} — your Energy IQ is on its way.
+                Thanks {lead.firstName || "there"} — your Energy IQ is on its way.
               </h2>
               <p className="mt-4 text-navy-soft leading-relaxed max-w-xl mx-auto">
                 Your indicative score of <strong className="text-navy">{result.total}/100 ({band.name})</strong> has been saved. A member of the Clean Energy Gurus team will be in touch with your full summary and recommended next steps.
               </p>
+
+              {import.meta.env.DEV && savedAssessment && (
+                <div className="mt-6 mx-auto max-w-md rounded-xl border border-dashed border-electric/40 bg-electric/5 p-4 text-left text-xs text-navy-soft">
+                  <div className="font-semibold uppercase tracking-[0.18em] text-electric mb-2">
+                    Dev: assessment saved
+                  </div>
+                  <ul className="space-y-1 font-mono">
+                    <li>assessment_id: <span className="text-navy">{savedAssessment.assessmentId}</span></li>
+                    <li>answers stored: <span className="text-navy">{savedAssessment.answersStored}</span></li>
+                    <li>live EPC data stored: <span className="text-navy">{savedAssessment.epcStored ? "yes" : "no"}</span></li>
+                  </ul>
+                </div>
+              )}
+
               <div className="mt-8 flex flex-wrap gap-3 justify-center">
                 <Link to="/">
                   <Button variant="outline" className="rounded-full h-12">Back to home</Button>
