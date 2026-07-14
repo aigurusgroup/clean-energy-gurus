@@ -218,7 +218,7 @@ function recommend(answers: Answers) {
   return recs.slice(0, 5);
 }
 
-const STORAGE_KEY = "energyIQ.submissions";
+
 
 // ————— Personalised result helpers —————
 
