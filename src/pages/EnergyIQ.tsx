@@ -1527,10 +1527,24 @@ const EnergyIQ = () => {
                     Developer Information
                   </summary>
                   <ul className="mt-3 space-y-1 font-mono">
-                    <li>Assessment ID: <span className="text-navy">{savedAssessment.assessmentId}</span></li>
-                    <li>Number of answers stored: <span className="text-navy">{savedAssessment.answersStored}</span></li>
+                    <li>✓ Assessment saved: <span className="text-navy">{savedAssessment.assessmentId}</span></li>
+                    <li>Answers stored: <span className="text-navy">{savedAssessment.answersStored}</span></li>
                     <li>Live EPC data stored: <span className="text-navy">{savedAssessment.epcStored ? "Yes" : "No"}</span></li>
-                    <li>Assessment saved successfully: <span className="text-navy">Yes</span></li>
+                    {savedAssessment.ghlStatus === "synced" && (
+                      <>
+                        <li>✓ GHL contact synced: <span className="text-navy">{savedAssessment.ghlContactId}</span></li>
+                        <li>✓ Custom fields updated: <span className="text-navy">{savedAssessment.ghlCustomFieldsUpdated}</span></li>
+                        {savedAssessment.ghlMissingCustomFields && savedAssessment.ghlMissingCustomFields.length > 0 && (
+                          <li className="text-amber-700">Missing custom fields in GHL: {savedAssessment.ghlMissingCustomFields.join(", ")}</li>
+                        )}
+                      </>
+                    )}
+                    {savedAssessment.ghlStatus === "failed" && (
+                      <li className="text-red-600">GHL sync failed: {savedAssessment.ghlError}</li>
+                    )}
+                    {!savedAssessment.ghlStatus && (
+                      <li className="text-navy-soft">GHL sync: in progress…</li>
+                    )}
                   </ul>
                 </details>
               )}
