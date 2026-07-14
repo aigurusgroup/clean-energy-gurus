@@ -1289,16 +1289,20 @@ const EnergyIQ = () => {
                 Enter your details and we'll send you your Energy IQ summary, including your indicative score, key opportunities and suggested next steps. A member of the Clean Energy Gurus team may also contact you to discuss your property and answer any questions.
               </p>
               <div className="mt-8 grid gap-4 sm:grid-cols-2">
-                <div className="sm:col-span-2">
-                  <Label htmlFor="iq-name">Name</Label>
-                  <Input id="iq-name" value={lead.name} onChange={(e) => setLead({ ...lead, name: e.target.value })} maxLength={100} required />
+                <div>
+                  <Label htmlFor="iq-first">First name</Label>
+                  <Input id="iq-first" value={lead.firstName} onChange={(e) => setLead({ ...lead, firstName: e.target.value })} maxLength={80} required />
+                </div>
+                <div>
+                  <Label htmlFor="iq-last">Last name</Label>
+                  <Input id="iq-last" value={lead.lastName} onChange={(e) => setLead({ ...lead, lastName: e.target.value })} maxLength={80} required />
                 </div>
                 <div>
                   <Label htmlFor="iq-email">Email</Label>
                   <Input id="iq-email" type="email" value={lead.email} onChange={(e) => setLead({ ...lead, email: e.target.value })} maxLength={255} required />
                 </div>
                 <div>
-                  <Label htmlFor="iq-phone">Phone</Label>
+                  <Label htmlFor="iq-phone">Telephone</Label>
                   <Input id="iq-phone" type="tel" value={lead.phone} onChange={(e) => setLead({ ...lead, phone: e.target.value })} maxLength={30} required />
                 </div>
                 <div className="sm:col-span-2">
@@ -1313,20 +1317,30 @@ const EnergyIQ = () => {
                 </div>
                 <label className="sm:col-span-2 flex items-start gap-3 text-sm text-navy-soft">
                   <Checkbox
-                    checked={lead.consent}
-                    onCheckedChange={(v) => setLead({ ...lead, consent: Boolean(v) })}
+                    checked={lead.privacyConsent}
+                    onCheckedChange={(v) => setLead({ ...lead, privacyConsent: Boolean(v) })}
                     className="mt-0.5"
                   />
                   <span>
-                    I consent to Clean Energy Gurus contacting me about my Energy IQ summary and next steps. I understand this is not a quotation or installation recommendation.
+                    I agree that Clean Energy Gurus may store the details I've provided and contact me about my Energy IQ summary and next steps, in line with their privacy notice. I understand this is not a quotation or installation recommendation. <span className="text-electric">(required)</span>
+                  </span>
+                </label>
+                <label className="sm:col-span-2 flex items-start gap-3 text-sm text-navy-soft">
+                  <Checkbox
+                    checked={lead.marketingConsent}
+                    onCheckedChange={(v) => setLead({ ...lead, marketingConsent: Boolean(v) })}
+                    className="mt-0.5"
+                  />
+                  <span>
+                    Optional: I'd also like to receive occasional updates, guides and clean energy insights from Clean Energy Gurus. I can unsubscribe at any time.
                   </span>
                 </label>
               </div>
               <div className="mt-8 flex flex-wrap gap-3">
-                <Button type="submit" className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
-                  Send my Energy IQ summary <ArrowRight className="ml-1.5 h-4 w-4" />
+                <Button type="submit" disabled={saving} className="rounded-full h-12 px-6 bg-gradient-electric text-white border-0 shadow-glow">
+                  {saving ? "Saving…" : "Send my Energy IQ summary"} <ArrowRight className="ml-1.5 h-4 w-4" />
                 </Button>
-                <Button type="button" variant="outline" className="rounded-full h-12" onClick={() => setStep(total)}>
+                <Button type="button" variant="outline" className="rounded-full h-12" onClick={() => setStep(total)} disabled={saving}>
                   Back to score
                 </Button>
               </div>
