@@ -937,6 +937,11 @@ const EnergyIQ = () => {
     assessmentId: string;
     answersStored: number;
     epcStored: boolean;
+    ghlStatus?: "synced" | "failed" | "pending";
+    ghlContactId?: string | null;
+    ghlCustomFieldsUpdated?: number;
+    ghlMissingCustomFields?: string[];
+    ghlError?: string | null;
   } | null>(null);
   const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
