@@ -904,7 +904,21 @@ const EnergyIQ = () => {
   const [step, setStep] = useState(-1); // -1 = intro/property intake, 0..N-1 questions, N = score, N+1 = lead form, N+2 = thanks
   const [revealed, setRevealed] = useState(false);
   const [answers, setAnswers] = useState<Answers>({});
-  const [lead, setLead] = useState({ name: "", email: "", phone: "", postcode: "", consent: false });
+  const [lead, setLead] = useState({
+    firstName: "",
+    lastName: "",
+    email: "",
+    phone: "",
+    postcode: "",
+    privacyConsent: false,
+    marketingConsent: false,
+  });
+  const [saving, setSaving] = useState(false);
+  const [savedAssessment, setSavedAssessment] = useState<{
+    assessmentId: string;
+    answersStored: number;
+    epcStored: boolean;
+  } | null>(null);
   const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
   // When live EPC data is available, drop the questions it already answers.
