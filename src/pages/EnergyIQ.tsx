@@ -1075,12 +1075,76 @@ const EnergyIQ = () => {
       console.info("[EnergyIQ] Assessment insert succeeded", { assessmentId });
     }
 
-    setSavedAssessment({
+    const savedBase = {
       assessmentId,
       answersStored: Object.keys(answers).length,
       epcStored: Boolean(property),
-    });
+    };
+    setSavedAssessment(savedBase);
     setStep(total + 2);
+
+    // Fire-and-forget GHL sync — never blocks the customer journey.
+    try {
+      const { data: ghlData, error: ghlError } = await supabase.functions.invoke(
+        "ghl-sync-contact",
+        {
+          body: {
+            assessment_id: assessmentId,
+            first_name: payload.first_name,
+            last_name: payload.last_name,
+            email: payload.email,
+            telephone: payload.telephone,
+            full_address: payload.full_address,
+            postcode: payload.postcode,
+            energy_iq_score: payload.energy_iq_score,
+            energy_iq_band: payload.energy_iq_band,
+            completed_at: payload.completed_at,
+          },
+        },
+      );
+
+      if (ghlError || !ghlData?.ok) {
+        const details =
+          (ghlData && (ghlData.details || ghlData.error)) ||
+          ghlError?.message ||
+          "Unknown error";
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.error("[EnergyIQ] GHL sync failed", details);
+        }
+        setSavedAssessment({
+          ...savedBase,
+          ghlStatus: "failed",
+          ghlError: String(details).slice(0, 300),
+        });
+      } else {
+        if (import.meta.env.DEV) {
+          // eslint-disable-next-line no-console
+          console.info("[EnergyIQ] GHL sync succeeded", {
+            contactId: ghlData.contact_id,
+            customFieldsUpdated: ghlData.custom_fields_updated,
+            missing: ghlData.missing_custom_fields,
+          });
+        }
+        setSavedAssessment({
+          ...savedBase,
+          ghlStatus: "synced",
+          ghlContactId: ghlData.contact_id,
+          ghlCustomFieldsUpdated: ghlData.custom_fields_updated,
+          ghlMissingCustomFields: ghlData.missing_custom_fields ?? [],
+        });
+      }
+    } catch (err) {
+      if (import.meta.env.DEV) {
+        // eslint-disable-next-line no-console
+        console.error("[EnergyIQ] GHL sync threw", err);
+      }
+      setSavedAssessment({
+        ...savedBase,
+        ghlStatus: "failed",
+        ghlError: err instanceof Error ? err.message : String(err),
+      });
+    }
   };
 
 
