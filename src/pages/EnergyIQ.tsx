@@ -85,13 +85,13 @@ const QUESTIONS: Question[] = [
   {
     id: "billBand",
     category: "usage",
-    label: "Approximate energy spend",
-    help: "Use whichever you know — monthly bill or annual electricity.",
+    label: "Annual electricity usage",
+    help: "Enter your annual electricity usage (kWh) if you know it. If not, choose the option that best matches your electricity bill.",
     options: [
-      { value: "low", label: "Under £100/month or under 3,000 kWh/year", points: 6 },
-      { value: "mid", label: "£100–£250/month or 3,000–6,000 kWh/year", points: 12 },
-      { value: "high", label: "£250–£800/month or 6,000–15,000 kWh/year", points: 17 },
-      { value: "vhigh", label: "£800+/month or 15,000+ kWh/year", points: 20 },
+      { value: "low", label: "Under £100/month (typically under 3,000 kWh/year)", points: 6 },
+      { value: "mid", label: "£100–£250/month (typically 3,000–6,000 kWh/year)", points: 12 },
+      { value: "high", label: "£250–£800/month (typically 6,000–15,000 kWh/year)", points: 17 },
+      { value: "vhigh", label: "Over £800/month (typically 15,000+ kWh/year)", points: 20 },
     ],
   },
   {
@@ -192,6 +192,16 @@ const CATEGORY_MAX = 20;
 
 type Answers = Record<string, string>;
 
+function kwhToBillBand(kwhStr: string | undefined): string | null {
+  if (!kwhStr) return null;
+  const n = parseInt(String(kwhStr).replace(/[^0-9]/g, ""), 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n < 3000) return "low";
+  if (n < 6000) return "mid";
+  if (n < 15000) return "high";
+  return "vhigh";
+}
+
 function scoreAnswers(answers: Answers) {
   const raw: Record<Question["category"], number> = {
     property: 0, usage: 0, tech: 0, control: 0, readiness: 0,
@@ -199,11 +209,12 @@ function scoreAnswers(answers: Answers) {
   const maxRaw: Record<Question["category"], number> = {
     property: 0, usage: 0, tech: 0, control: 0, readiness: 0,
   };
+  const derivedBand = kwhToBillBand(answers.annualKwh);
   for (const q of QUESTIONS) {
     if (!q.options.length) continue;
     const maxQ = Math.max(...q.options.map((o) => o.points ?? 0));
     maxRaw[q.category] += maxQ;
-    const ans = answers[q.id];
+    const ans = q.id === "billBand" && derivedBand ? derivedBand : answers[q.id];
     const opt = q.options.find((o) => o.value === ans);
     raw[q.category] += opt?.points ?? 0;
   }
@@ -960,7 +971,9 @@ const EnergyIQ = () => {
   const canAdvance = currentQ
     ? currentQ.id === "postcode"
       ? (answers.postcode ?? "").trim().length >= 2
-      : Boolean(answers[currentQ.id])
+      : currentQ.id === "billBand"
+        ? (kwhToBillBand(answers.annualKwh) !== null) || Boolean(answers.billBand)
+        : Boolean(answers[currentQ.id])
     : true;
 
 
@@ -1220,6 +1233,66 @@ const EnergyIQ = () => {
                     className="max-w-xs"
                     maxLength={5}
                   />
+                ) : currentQ.id === "billBand" ? (
+                  (() => {
+                    const kwhEntered = kwhToBillBand(answers.annualKwh) !== null;
+                    return (
+                      <div className="space-y-6">
+                        <div>
+                          <label htmlFor="annualKwh" className="block text-sm font-medium text-navy mb-2">
+                            Annual electricity usage (kWh)
+                          </label>
+                          <Input
+                            id="annualKwh"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={answers.annualKwh ?? ""}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
+                              setAnswers({ ...answers, annualKwh: digits });
+                            }}
+                            placeholder="e.g. 4250"
+                            className="max-w-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-medium text-navy mb-3">
+                            Don't know your annual usage?
+                          </div>
+                          <RadioGroup
+                            value={kwhEntered ? "" : (answers.billBand ?? "")}
+                            onValueChange={(v) => setAnswers({ ...answers, billBand: v })}
+                            className="grid gap-3"
+                          >
+                            {currentQ.options.map((o) => {
+                              const active = !kwhEntered && answers.billBand === o.value;
+                              return (
+                                <label
+                                  key={o.value}
+                                  className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-all ${
+                                    kwhEntered
+                                      ? "border-border opacity-50 cursor-not-allowed"
+                                      : active
+                                        ? "border-electric bg-electric/5 shadow-glow cursor-pointer"
+                                        : "border-border hover:border-electric/50 hover:bg-accent cursor-pointer"
+                                  }`}
+                                >
+                                  <RadioGroupItem value={o.value} id={`billBand-${o.value}`} disabled={kwhEntered} />
+                                  <span className="text-sm font-medium text-navy">{o.label}</span>
+                                </label>
+                              );
+                            })}
+                          </RadioGroup>
+                        </div>
+
+                        <div className="rounded-xl border border-electric/30 bg-electric/5 p-4 text-sm text-navy-soft leading-relaxed">
+                          Entering your actual annual electricity usage will provide a more accurate Energy IQ assessment. If you're unsure, simply choose the option that best reflects your monthly electricity costs.
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <RadioGroup
                     value={answers[currentQ.id] ?? ""}
