@@ -956,11 +956,18 @@ const EnergyIQ = () => {
   } | null>(null);
   const [property, setProperty] = useState<PropertyIntelligence | null>(null);
 
+  // Questions hidden from the active flow (schema/state still kept for downstream logic).
+  const HIDDEN_IDS = new Set<string>(["spaceSuitability"]);
+
   // When live EPC data is available, drop the questions it already answers.
   const visibleQuestions = useMemo(
-    () => (property ? QUESTIONS.filter((q) => !EPC_FILLED_IDS.has(q.id)) : QUESTIONS),
+    () => {
+      const base = property ? QUESTIONS.filter((q) => !EPC_FILLED_IDS.has(q.id)) : QUESTIONS;
+      return base.filter((q) => !HIDDEN_IDS.has(q.id));
+    },
     [property],
   );
+
 
   const total = visibleQuestions.length;
   const currentQ = step >= 0 && step < total ? visibleQuestions[step] : null;
