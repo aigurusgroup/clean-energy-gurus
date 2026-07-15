@@ -60,17 +60,6 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "userType",
-    category: "readiness",
-    label: "Which best describes you?",
-    options: [
-      { value: "homeowner", label: "Homeowner", points: 4 },
-      { value: "business", label: "Business owner / operator", points: 5 },
-      { value: "landlord", label: "Landlord / portfolio owner", points: 5 },
-      { value: "agri", label: "Farmer / agricultural site owner", points: 5 },
-    ],
-  },
-  {
     id: "spaceSuitability",
     category: "property",
     label: "Do you have suitable roof space, land or parking?",
