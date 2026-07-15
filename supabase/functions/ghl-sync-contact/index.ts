@@ -19,7 +19,69 @@ const CUSTOM_FIELD_NAMES = {
   band: "Energy IQ Band",
   reference: "Assessment Reference",
   date: "Assessment Date",
+  roof: "Roof / Land Suitability",
+  annualKwh: "Annual Electricity Usage (kWh)",
+  spendEstimate: "Estimated Electricity Spend",
+  solar: "Existing Solar PV",
+  battery: "Existing Battery Storage",
+  ev: "EV Charging Position",
+  monitoring: "Energy Monitoring Status",
+  goal: "Main Energy Goal",
+  timeline: "Timeline for Making Changes",
+  marketing: "Marketing Consent",
+  privacy: "Privacy & Assessment Consent",
 } as const;
+
+// Value → human label maps for each questionnaire answer we sync.
+// Keep in step with src/pages/EnergyIQ.tsx question definitions.
+const LABELS: Record<string, Record<string, string>> = {
+  spaceSuitability: {
+    plenty: "Yes — plenty of suitable space",
+    some: "Some — likely workable",
+    limited: "Limited space",
+    unsure: "Not sure",
+  },
+  billBand: {
+    low: "Under £100/month (typically under 3,000 kWh/year)",
+    mid: "£100–£250/month (typically 3,000–6,000 kWh/year)",
+    high: "£250–£800/month (typically 6,000–15,000 kWh/year)",
+    vhigh: "Over £800/month (typically 15,000+ kWh/year)",
+  },
+  solar: { yes: "Yes", no: "No", planning: "Planning / quoted" },
+  battery: { yes: "Yes", no: "No", considering: "Considering it" },
+  ev: {
+    have: "Already have a charger installed",
+    need: "Need one / planning EV soon",
+    none: "No EV planned",
+  },
+  monitoring: {
+    active: "Yes — actively monitored and optimised",
+    basic: "Basic app / occasional check",
+    interested: "Not yet, but interested",
+    no: "No — I don't have visibility",
+  },
+  goal: {
+    cost: "Lower costs",
+    independence: "Greater independence",
+    ev: "EV charging",
+    resilience: "Resilience / backup power",
+    sustainability: "Sustainability",
+    improvement: "Property improvement / asset value",
+  },
+  timeline: {
+    now: "Ready now — within 3 months",
+    soon: "3–6 months",
+    year: "6–12 months",
+    explore: "Just exploring",
+  },
+};
+
+function labelFor(field: string, value: unknown): string | null {
+  if (value == null || value === "") return null;
+  const map = LABELS[field];
+  if (!map) return String(value);
+  return map[String(value)] ?? String(value);
+}
 
 type SyncBody = {
   assessment_id: string;
@@ -32,6 +94,9 @@ type SyncBody = {
   energy_iq_score: number;
   energy_iq_band: string;
   completed_at: string;
+  answers?: Record<string, unknown> | null;
+  marketing_consent?: boolean | null;
+  privacy_consent?: boolean | null;
 };
 
 function json(status: number, body: unknown) {
