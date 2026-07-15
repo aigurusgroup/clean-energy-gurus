@@ -304,6 +304,7 @@ Deno.serve(async (req) => {
       is_new: upsertJson.new === true,
       custom_fields_updated: customFields.length,
       missing_custom_fields: missingFields,
+      field_errors: fieldErrors,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
