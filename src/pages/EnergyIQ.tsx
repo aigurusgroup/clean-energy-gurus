@@ -192,6 +192,16 @@ const CATEGORY_MAX = 20;
 
 type Answers = Record<string, string>;
 
+function kwhToBillBand(kwhStr: string | undefined): string | null {
+  if (!kwhStr) return null;
+  const n = parseInt(String(kwhStr).replace(/[^0-9]/g, ""), 10);
+  if (!Number.isFinite(n) || n <= 0) return null;
+  if (n < 3000) return "low";
+  if (n < 6000) return "mid";
+  if (n < 15000) return "high";
+  return "vhigh";
+}
+
 function scoreAnswers(answers: Answers) {
   const raw: Record<Question["category"], number> = {
     property: 0, usage: 0, tech: 0, control: 0, readiness: 0,
@@ -199,11 +209,12 @@ function scoreAnswers(answers: Answers) {
   const maxRaw: Record<Question["category"], number> = {
     property: 0, usage: 0, tech: 0, control: 0, readiness: 0,
   };
+  const derivedBand = kwhToBillBand(answers.annualKwh);
   for (const q of QUESTIONS) {
     if (!q.options.length) continue;
     const maxQ = Math.max(...q.options.map((o) => o.points ?? 0));
     maxRaw[q.category] += maxQ;
-    const ans = answers[q.id];
+    const ans = q.id === "billBand" && derivedBand ? derivedBand : answers[q.id];
     const opt = q.options.find((o) => o.value === ans);
     raw[q.category] += opt?.points ?? 0;
   }
