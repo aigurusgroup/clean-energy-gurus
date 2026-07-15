@@ -1233,6 +1233,66 @@ const EnergyIQ = () => {
                     className="max-w-xs"
                     maxLength={5}
                   />
+                ) : currentQ.id === "billBand" ? (
+                  (() => {
+                    const kwhEntered = kwhToBillBand(answers.annualKwh) !== null;
+                    return (
+                      <div className="space-y-6">
+                        <div>
+                          <label htmlFor="annualKwh" className="block text-sm font-medium text-navy mb-2">
+                            Annual electricity usage (kWh)
+                          </label>
+                          <Input
+                            id="annualKwh"
+                            type="text"
+                            inputMode="numeric"
+                            pattern="[0-9]*"
+                            value={answers.annualKwh ?? ""}
+                            onChange={(e) => {
+                              const digits = e.target.value.replace(/[^0-9]/g, "").slice(0, 7);
+                              setAnswers({ ...answers, annualKwh: digits });
+                            }}
+                            placeholder="e.g. 4250"
+                            className="max-w-xs"
+                          />
+                        </div>
+
+                        <div>
+                          <div className="text-sm font-medium text-navy mb-3">
+                            Don't know your annual usage?
+                          </div>
+                          <RadioGroup
+                            value={kwhEntered ? "" : (answers.billBand ?? "")}
+                            onValueChange={(v) => setAnswers({ ...answers, billBand: v })}
+                            className="grid gap-3"
+                          >
+                            {currentQ.options.map((o) => {
+                              const active = !kwhEntered && answers.billBand === o.value;
+                              return (
+                                <label
+                                  key={o.value}
+                                  className={`flex items-center gap-3 rounded-xl border px-4 py-3.5 transition-all ${
+                                    kwhEntered
+                                      ? "border-border opacity-50 cursor-not-allowed"
+                                      : active
+                                        ? "border-electric bg-electric/5 shadow-glow cursor-pointer"
+                                        : "border-border hover:border-electric/50 hover:bg-accent cursor-pointer"
+                                  }`}
+                                >
+                                  <RadioGroupItem value={o.value} id={`billBand-${o.value}`} disabled={kwhEntered} />
+                                  <span className="text-sm font-medium text-navy">{o.label}</span>
+                                </label>
+                              );
+                            })}
+                          </RadioGroup>
+                        </div>
+
+                        <div className="rounded-xl border border-electric/30 bg-electric/5 p-4 text-sm text-navy-soft leading-relaxed">
+                          Entering your actual annual electricity usage will provide a more accurate Energy IQ assessment. If you're unsure, simply choose the option that best reflects your monthly electricity costs.
+                        </div>
+                      </div>
+                    );
+                  })()
                 ) : (
                   <RadioGroup
                     value={answers[currentQ.id] ?? ""}
