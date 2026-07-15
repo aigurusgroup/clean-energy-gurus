@@ -85,13 +85,13 @@ const QUESTIONS: Question[] = [
   {
     id: "billBand",
     category: "usage",
-    label: "Approximate energy spend",
-    help: "Use whichever you know — monthly bill or annual electricity.",
+    label: "Annual electricity usage",
+    help: "Enter your annual electricity usage (kWh) if you know it. If not, choose the option that best matches your electricity bill.",
     options: [
-      { value: "low", label: "Under £100/month or under 3,000 kWh/year", points: 6 },
-      { value: "mid", label: "£100–£250/month or 3,000–6,000 kWh/year", points: 12 },
-      { value: "high", label: "£250–£800/month or 6,000–15,000 kWh/year", points: 17 },
-      { value: "vhigh", label: "£800+/month or 15,000+ kWh/year", points: 20 },
+      { value: "low", label: "Under £100/month (typically under 3,000 kWh/year)", points: 6 },
+      { value: "mid", label: "£100–£250/month (typically 3,000–6,000 kWh/year)", points: 12 },
+      { value: "high", label: "£250–£800/month (typically 6,000–15,000 kWh/year)", points: 17 },
+      { value: "vhigh", label: "Over £800/month (typically 15,000+ kWh/year)", points: 20 },
     ],
   },
   {
