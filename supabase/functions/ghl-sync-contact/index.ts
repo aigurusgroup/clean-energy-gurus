@@ -90,8 +90,19 @@ Deno.serve(async (req) => {
   const supabaseUrl = Deno.env.get("SUPABASE_URL");
   const serviceKey = Deno.env.get("SUPABASE_SERVICE_ROLE_KEY");
 
-  if (!token || !locationId) {
-    return json(500, { error: "GHL credentials not configured" });
+  const missingSecrets: string[] = [];
+  if (!token) missingSecrets.push("GHL_PRIVATE_INTEGRATION_TOKEN");
+  if (!locationId) missingSecrets.push("GHL_LOCATION_ID");
+  console.log("GHL secrets check", {
+    hasToken: !!token,
+    hasLocationId: !!locationId,
+    missing: missingSecrets,
+  });
+  if (missingSecrets.length > 0) {
+    return json(500, {
+      error: "GHL credentials not configured",
+      missing: missingSecrets,
+    });
   }
   if (!supabaseUrl || !serviceKey) {
     return json(500, { error: "Supabase service credentials not configured" });
