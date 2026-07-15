@@ -971,7 +971,9 @@ const EnergyIQ = () => {
   const canAdvance = currentQ
     ? currentQ.id === "postcode"
       ? (answers.postcode ?? "").trim().length >= 2
-      : Boolean(answers[currentQ.id])
+      : currentQ.id === "billBand"
+        ? (kwhToBillBand(answers.annualKwh) !== null) || Boolean(answers.billBand)
+        : Boolean(answers[currentQ.id])
     : true;
 
 
