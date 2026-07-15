@@ -1112,6 +1112,9 @@ const EnergyIQ = () => {
             energy_iq_score: payload.energy_iq_score,
             energy_iq_band: payload.energy_iq_band,
             completed_at: payload.completed_at,
+            answers: payload.answers,
+            marketing_consent: payload.marketing_consent,
+            privacy_consent: payload.privacy_consent,
           },
         },
       );

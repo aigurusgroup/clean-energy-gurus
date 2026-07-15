@@ -19,7 +19,69 @@ const CUSTOM_FIELD_NAMES = {
   band: "Energy IQ Band",
   reference: "Assessment Reference",
   date: "Assessment Date",
+  roof: "Roof / Land Suitability",
+  annualKwh: "Annual Electricity Usage (kWh)",
+  spendEstimate: "Estimated Electricity Spend",
+  solar: "Existing Solar PV",
+  battery: "Existing Battery Storage",
+  ev: "EV Charging Position",
+  monitoring: "Energy Monitoring Status",
+  goal: "Main Energy Goal",
+  timeline: "Timeline for Making Changes",
+  marketing: "Marketing Consent",
+  privacy: "Privacy & Assessment Consent",
 } as const;
+
+// Value → human label maps for each questionnaire answer we sync.
+// Keep in step with src/pages/EnergyIQ.tsx question definitions.
+const LABELS: Record<string, Record<string, string>> = {
+  spaceSuitability: {
+    plenty: "Yes — plenty of suitable space",
+    some: "Some — likely workable",
+    limited: "Limited space",
+    unsure: "Not sure",
+  },
+  billBand: {
+    low: "Under £100/month (typically under 3,000 kWh/year)",
+    mid: "£100–£250/month (typically 3,000–6,000 kWh/year)",
+    high: "£250–£800/month (typically 6,000–15,000 kWh/year)",
+    vhigh: "Over £800/month (typically 15,000+ kWh/year)",
+  },
+  solar: { yes: "Yes", no: "No", planning: "Planning / quoted" },
+  battery: { yes: "Yes", no: "No", considering: "Considering it" },
+  ev: {
+    have: "Already have a charger installed",
+    need: "Need one / planning EV soon",
+    none: "No EV planned",
+  },
+  monitoring: {
+    active: "Yes — actively monitored and optimised",
+    basic: "Basic app / occasional check",
+    interested: "Not yet, but interested",
+    no: "No — I don't have visibility",
+  },
+  goal: {
+    cost: "Lower costs",
+    independence: "Greater independence",
+    ev: "EV charging",
+    resilience: "Resilience / backup power",
+    sustainability: "Sustainability",
+    improvement: "Property improvement / asset value",
+  },
+  timeline: {
+    now: "Ready now — within 3 months",
+    soon: "3–6 months",
+    year: "6–12 months",
+    explore: "Just exploring",
+  },
+};
+
+function labelFor(field: string, value: unknown): string | null {
+  if (value == null || value === "") return null;
+  const map = LABELS[field];
+  if (!map) return String(value);
+  return map[String(value)] ?? String(value);
+}
 
 type SyncBody = {
   assessment_id: string;
@@ -32,6 +94,9 @@ type SyncBody = {
   energy_iq_score: number;
   energy_iq_band: string;
   completed_at: string;
+  answers?: Record<string, unknown> | null;
+  marketing_consent?: boolean | null;
+  privacy_consent?: boolean | null;
 };
 
 function json(status: number, body: unknown) {
@@ -130,17 +195,63 @@ Deno.serve(async (req) => {
   try {
     // 1. Look up custom field IDs by name (do NOT hardcode).
     const fieldMap = await fetchCustomFieldIdMap(token, locationId);
-    const customFields: Array<{ id: string; field_value: string | number }> = [];
+    const customFields: Array<{ id: string; field_value: string | number | string[] }> = [];
     const missingFields: string[] = [];
-    const addField = (name: string, value: string | number) => {
-      const id = fieldMap[name.trim().toLowerCase()];
-      if (id) customFields.push({ id, field_value: value });
-      else missingFields.push(name);
+    const fieldErrors: Array<{ field: string; reason: string }> = [];
+    const addField = (
+      name: string,
+      value: string | number | string[] | null | undefined,
+    ) => {
+      try {
+        if (value === null || value === undefined || value === "") return;
+        if (Array.isArray(value) && value.length === 0) return;
+        const id = fieldMap[name.trim().toLowerCase()];
+        if (id) customFields.push({ id, field_value: value });
+        else missingFields.push(name);
+      } catch (e) {
+        fieldErrors.push({
+          field: name,
+          reason: e instanceof Error ? e.message : String(e),
+        });
+      }
     };
     addField(CUSTOM_FIELD_NAMES.score, body.energy_iq_score);
     addField(CUSTOM_FIELD_NAMES.band, body.energy_iq_band);
     addField(CUSTOM_FIELD_NAMES.reference, body.assessment_id);
     addField(CUSTOM_FIELD_NAMES.date, body.completed_at);
+
+    // Questionnaire answers → contact custom fields.
+    const a = (body.answers ?? {}) as Record<string, unknown>;
+    addField(CUSTOM_FIELD_NAMES.roof, labelFor("spaceSuitability", a.spaceSuitability));
+
+    // Annual kWh: prefer the customer's entered number; otherwise leave blank.
+    const rawKwh = a.annualKwh;
+    const kwhNum =
+      typeof rawKwh === "number"
+        ? rawKwh
+        : typeof rawKwh === "string" && rawKwh.trim() !== "" && !Number.isNaN(Number(rawKwh))
+          ? Number(rawKwh)
+          : null;
+    if (kwhNum !== null && kwhNum > 0) {
+      addField(CUSTOM_FIELD_NAMES.annualKwh, kwhNum);
+    } else {
+      // Only populate the estimate field when no actual kWh was entered.
+      addField(CUSTOM_FIELD_NAMES.spendEstimate, labelFor("billBand", a.billBand));
+    }
+
+    addField(CUSTOM_FIELD_NAMES.solar, labelFor("solar", a.solar));
+    addField(CUSTOM_FIELD_NAMES.battery, labelFor("battery", a.battery));
+    addField(CUSTOM_FIELD_NAMES.ev, labelFor("ev", a.ev));
+    addField(CUSTOM_FIELD_NAMES.monitoring, labelFor("monitoring", a.monitoring));
+    addField(CUSTOM_FIELD_NAMES.goal, labelFor("goal", a.goal));
+    addField(CUSTOM_FIELD_NAMES.timeline, labelFor("timeline", a.timeline));
+
+    // Consents — sent as array for checkbox-style fields; GHL also accepts these on text fields.
+    if (body.marketing_consent === true) addField(CUSTOM_FIELD_NAMES.marketing, ["Yes"]);
+    else if (body.marketing_consent === false) addField(CUSTOM_FIELD_NAMES.marketing, ["No"]);
+    if (body.privacy_consent === true) addField(CUSTOM_FIELD_NAMES.privacy, ["Yes"]);
+    else if (body.privacy_consent === false) addField(CUSTOM_FIELD_NAMES.privacy, ["No"]);
+
 
     // 2. Upsert contact by email.
     const upsertBody: Record<string, unknown> = {
@@ -193,6 +304,7 @@ Deno.serve(async (req) => {
       is_new: upsertJson.new === true,
       custom_fields_updated: customFields.length,
       missing_custom_fields: missingFields,
+      field_errors: fieldErrors,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : String(e);
