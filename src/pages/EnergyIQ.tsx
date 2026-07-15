@@ -60,18 +60,6 @@ const QUESTIONS: Question[] = [
     ],
   },
   {
-    id: "spaceSuitability",
-    category: "property",
-    label: "Do you have suitable roof space, land or parking?",
-    help: "Roof for solar, land for ground-mount, or off-street parking for EV charging.",
-    options: [
-      { value: "plenty", label: "Yes — plenty of suitable space", points: 10 },
-      { value: "some", label: "Some — likely workable", points: 7 },
-      { value: "limited", label: "Limited space", points: 3 },
-      { value: "unsure", label: "Not sure", points: 5 },
-    ],
-  },
-  {
     id: "billBand",
     category: "usage",
     label: "Annual electricity usage",
