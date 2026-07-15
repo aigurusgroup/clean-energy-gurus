@@ -195,17 +195,63 @@ Deno.serve(async (req) => {
   try {
     // 1. Look up custom field IDs by name (do NOT hardcode).
     const fieldMap = await fetchCustomFieldIdMap(token, locationId);
-    const customFields: Array<{ id: string; field_value: string | number }> = [];
+    const customFields: Array<{ id: string; field_value: string | number | string[] }> = [];
     const missingFields: string[] = [];
-    const addField = (name: string, value: string | number) => {
-      const id = fieldMap[name.trim().toLowerCase()];
-      if (id) customFields.push({ id, field_value: value });
-      else missingFields.push(name);
+    const fieldErrors: Array<{ field: string; reason: string }> = [];
+    const addField = (
+      name: string,
+      value: string | number | string[] | null | undefined,
+    ) => {
+      try {
+        if (value === null || value === undefined || value === "") return;
+        if (Array.isArray(value) && value.length === 0) return;
+        const id = fieldMap[name.trim().toLowerCase()];
+        if (id) customFields.push({ id, field_value: value });
+        else missingFields.push(name);
+      } catch (e) {
+        fieldErrors.push({
+          field: name,
+          reason: e instanceof Error ? e.message : String(e),
+        });
+      }
     };
     addField(CUSTOM_FIELD_NAMES.score, body.energy_iq_score);
     addField(CUSTOM_FIELD_NAMES.band, body.energy_iq_band);
     addField(CUSTOM_FIELD_NAMES.reference, body.assessment_id);
     addField(CUSTOM_FIELD_NAMES.date, body.completed_at);
+
+    // Questionnaire answers → contact custom fields.
+    const a = (body.answers ?? {}) as Record<string, unknown>;
+    addField(CUSTOM_FIELD_NAMES.roof, labelFor("spaceSuitability", a.spaceSuitability));
+
+    // Annual kWh: prefer the customer's entered number; otherwise leave blank.
+    const rawKwh = a.annualKwh;
+    const kwhNum =
+      typeof rawKwh === "number"
+        ? rawKwh
+        : typeof rawKwh === "string" && rawKwh.trim() !== "" && !Number.isNaN(Number(rawKwh))
+          ? Number(rawKwh)
+          : null;
+    if (kwhNum !== null && kwhNum > 0) {
+      addField(CUSTOM_FIELD_NAMES.annualKwh, kwhNum);
+    } else {
+      // Only populate the estimate field when no actual kWh was entered.
+      addField(CUSTOM_FIELD_NAMES.spendEstimate, labelFor("billBand", a.billBand));
+    }
+
+    addField(CUSTOM_FIELD_NAMES.solar, labelFor("solar", a.solar));
+    addField(CUSTOM_FIELD_NAMES.battery, labelFor("battery", a.battery));
+    addField(CUSTOM_FIELD_NAMES.ev, labelFor("ev", a.ev));
+    addField(CUSTOM_FIELD_NAMES.monitoring, labelFor("monitoring", a.monitoring));
+    addField(CUSTOM_FIELD_NAMES.goal, labelFor("goal", a.goal));
+    addField(CUSTOM_FIELD_NAMES.timeline, labelFor("timeline", a.timeline));
+
+    // Consents — sent as array for checkbox-style fields; GHL also accepts these on text fields.
+    if (body.marketing_consent === true) addField(CUSTOM_FIELD_NAMES.marketing, ["Yes"]);
+    else if (body.marketing_consent === false) addField(CUSTOM_FIELD_NAMES.marketing, ["No"]);
+    if (body.privacy_consent === true) addField(CUSTOM_FIELD_NAMES.privacy, ["Yes"]);
+    else if (body.privacy_consent === false) addField(CUSTOM_FIELD_NAMES.privacy, ["No"]);
+
 
     // 2. Upsert contact by email.
     const upsertBody: Record<string, unknown> = {
