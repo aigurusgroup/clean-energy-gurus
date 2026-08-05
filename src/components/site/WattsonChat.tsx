@@ -61,7 +61,8 @@ export const WattsonChat = () => {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, open]);
+  }, [messages, open, loading]);
+
 
   const send = async (text: string) => {
     const value = text.trim();
