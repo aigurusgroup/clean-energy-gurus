@@ -331,7 +331,7 @@ const FriendsAndFamily = () => {
 
               <div className="mt-9 flex justify-center">
                 <Link to="/energy-iq">
-                  <Button size="lg" className="bg-gradient-electric text-primary-foreground border-0 rounded-full px-9 h-13 sm:h-14 text-base shadow-glow">
+                  <Button size="lg" className="bg-gradient-electric text-primary-foreground border-0 rounded-full px-9 h-12 sm:h-14 text-base shadow-glow">
                     Start My Energy IQ <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
                 </Link>
