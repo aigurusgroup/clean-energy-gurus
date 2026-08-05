@@ -11,6 +11,7 @@ import HowWeWork from "./pages/HowWeWork";
 import PartnerNetwork from "./pages/PartnerNetwork";
 import Contact from "./pages/Contact";
 import Partners from "./pages/Partners";
+import FriendsAndFamily from "./pages/FriendsAndFamily";
 import SolarCalculatorPage from "./pages/SolarCalculatorPage";
 import EnergyIQ from "./pages/EnergyIQ";
 import { EVCharging } from "./pages/ServicePages";
