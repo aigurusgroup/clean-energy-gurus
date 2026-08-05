@@ -41,6 +41,8 @@ const Avatar = ({ className = "h-8 w-8" }: { className?: string }) => (
 export const WattsonChat = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [messages, setMessages] = useState<Msg[]>([
     { id: 0, role: "wattson", text: OPENING },
   ]);
@@ -61,17 +63,85 @@ export const WattsonChat = () => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
   }, [messages, open]);
 
-  const send = (text: string) => {
+  const send = async (text: string) => {
     const value = text.trim();
-    if (!value) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: prev.length, role: "visitor", text: value },
-      { id: prev.length + 1, role: "wattson", text: PLACEHOLDER_REPLY },
-    ]);
+    if (!value || loading) return;
+
+    const history = [
+      ...messages
+        .filter((m) => m.id !== 0)
+        .map((m) => ({ role: m.role === "wattson" ? "assistant" : "user", content: m.text })),
+      { role: "user", content: value },
+    ];
+
+    const userId = Date.now();
+    const replyId = userId + 1;
+    setMessages((prev) => [...prev, { id: userId, role: "visitor", text: value }]);
     setInput("");
+    setLoading(true);
     inputRef.current?.focus();
+
+    try {
+      const res = await fetch(CHAT_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ messages: history }),
+      });
+
+      if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let answer = "";
+      let started = false;
+
+      while (true) {
+        const { done, value: chunk } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(chunk, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+          try {
+            const delta = JSON.parse(data)?.choices?.[0]?.delta?.content;
+            if (typeof delta !== "string" || !delta) continue;
+            answer += delta;
+            if (!started) {
+              started = true;
+              setLoading(false);
+              setMessages((prev) => [...prev, { id: replyId, role: "wattson", text: answer }]);
+            } else {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === replyId ? { ...m, text: answer } : m)),
+              );
+            }
+          } catch {
+            /* ignore malformed chunk */
+          }
+        }
+      }
+
+      if (!answer.trim()) throw new Error("empty response");
+    } catch (err) {
+      console.error("Wattson chat error", err);
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== replyId),
+        { id: replyId, role: "wattson", text: ERROR_REPLY },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <>
