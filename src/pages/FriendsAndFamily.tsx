@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import wattson from "@/assets/wattson-avatar.png";
+import wattsonImg from "@/assets/wattson-founding-friends.png";
 
 /**
  * Private, unlisted page for Clean Energy Gurus "Founding Friends".
@@ -66,26 +66,27 @@ const FriendsAndFamily = () => {
 
             {/* Wattson — subtle personal welcome */}
             <div className="lg:col-span-5">
-              <div className="relative mx-auto max-w-sm">
-                <div className="absolute -inset-6 bg-gradient-electric opacity-10 blur-3xl rounded-full" />
-                <div className="relative card-premium p-7 sm:p-8 text-center">
-                  <img
-                    src={wattson}
-                    alt="Wattson, the Clean Energy Gurus guide"
-                    className="mx-auto h-28 w-28 sm:h-32 sm:w-32 rounded-full object-cover ring-4 ring-background shadow-elegant"
-                    width={512}
-                    height={512}
-                    loading="lazy"
-                  />
-                  <p className="mt-5 text-[17px] font-display font-medium text-navy leading-snug">
+              <div className="relative mx-auto max-w-[340px] sm:max-w-[380px]">
+                <div className="absolute inset-0 bg-gradient-electric opacity-10 blur-3xl rounded-full" />
+                <img
+                  src={wattsonImg}
+                  alt="Wattson, the Clean Energy Gurus guide, holding an Energy IQ mug"
+                  className="relative w-full h-auto object-contain drop-shadow-xl"
+                  width={1024}
+                  height={1024}
+                  loading="lazy"
+                />
+                <div className="relative -mt-4 mx-auto max-w-xs rounded-2xl border border-border/60 bg-background/85 backdrop-blur px-5 py-4 text-center shadow-elegant">
+                  <p className="text-[15px] sm:text-base font-display font-medium text-navy leading-snug">
                     “You bring the feedback. I'll bring the Watts.”
                   </p>
-                  <p className="mt-2.5 text-xs uppercase tracking-widest text-muted-foreground">
+                  <p className="mt-2 text-[11px] uppercase tracking-widest text-muted-foreground">
                     Wattson — your energy guide
                   </p>
                 </div>
               </div>
             </div>
+
           </div>
         </div>
       </section>
