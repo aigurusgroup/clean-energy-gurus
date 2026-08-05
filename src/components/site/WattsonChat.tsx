@@ -220,7 +220,7 @@ export const WattsonChat = () => {
                 <div key={m.id} className="flex gap-2.5">
                   <Avatar className="h-7 w-7 mt-0.5" />
                   <div className="rounded-2xl rounded-tl-sm bg-background border border-border px-3.5 py-2.5 text-sm text-navy-soft whitespace-pre-line leading-relaxed shadow-card">
-                    {m.text}
+                    {renderMessage(m.text)}
                   </div>
                 </div>
               ) : (
