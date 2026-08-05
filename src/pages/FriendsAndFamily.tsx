@@ -3,7 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
-import wattsonAsset from "@/assets/wattson-founding-friends.png.asset.json";
+import wattsonImg from "@/assets/wattson-founding-friends.png";
 
 /**
  * Private, unlisted page for Clean Energy Gurus "Founding Friends".
@@ -69,7 +69,7 @@ const FriendsAndFamily = () => {
               <div className="relative mx-auto max-w-[340px] sm:max-w-[380px]">
                 <div className="absolute inset-0 bg-gradient-electric opacity-10 blur-3xl rounded-full" />
                 <img
-                  src={wattsonAsset.url}
+                  src={wattsonImg}
                   alt="Wattson, the Clean Energy Gurus guide, holding an Energy IQ mug"
                   className="relative w-full h-auto object-contain drop-shadow-xl"
                   width={1024}
