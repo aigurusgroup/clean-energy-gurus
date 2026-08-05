@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Sparkles } from "lucide-react";
+import { ArrowRight, Check, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import wattsonImg from "@/assets/wattson-founding-friends.png";
@@ -92,49 +92,95 @@ const FriendsAndFamily = () => {
       </section>
 
 
-      {/* ── Section 2: Why we're asking (to be written) ───────────────── */}
-      <section id="why" className="py-20 lg:py-24 scroll-mt-24">
-        <div className="container-tight max-w-3xl">
-          <span className="eyebrow">Why we're asking you</span>
-          <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
-            Section placeholder — content to follow.
-          </h2>
-        </div>
-      </section>
-
-      {/* ── Section 3: What Energy IQ gives you (to be written) ───────── */}
-      <section id="what-you-get" className="py-20 lg:py-24 bg-gradient-soft scroll-mt-24">
-        <div className="container-tight max-w-3xl">
-          <span className="eyebrow">What you'll receive</span>
-          <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
-            Section placeholder — content to follow.
-          </h2>
-        </div>
-      </section>
-
-      {/* ── Section 4: Value anchor ───────────────────────────────────── */}
-      <section id="value" className="py-20 lg:py-24 scroll-mt-24">
+      {/* ── Section 2: What you'll receive ────────────────────────────── */}
+      <section id="what-you-get" className="py-20 lg:py-24 scroll-mt-24">
         <div className="container-tight">
-          <div className="relative overflow-hidden rounded-3xl bg-navy text-white p-8 sm:p-12 lg:p-16">
-            <div className="absolute inset-0 grid-bg opacity-10" />
-            <div className="absolute -bottom-32 -left-32 h-[380px] w-[380px] bg-gradient-electric opacity-25 blur-3xl rounded-full" />
-            <div className="relative grid gap-8 sm:grid-cols-2 items-center max-w-3xl mx-auto text-center sm:text-left">
-              <div>
-                <p className="text-sm uppercase tracking-widest text-white/55">Complete Energy IQ service</p>
-                <p className="mt-3 text-2xl sm:text-3xl font-display font-semibold text-white/70 line-through decoration-white/30">
-                  Typically £629 + VAT
-                </p>
+          <div className="max-w-3xl">
+            <span className="eyebrow">Your invitation</span>
+            <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
+              What you'll receive
+            </h2>
+            <p className="mt-5 text-lg text-navy-soft leading-relaxed">
+              By completing Energy IQ, you'll receive a personalised assessment designed to help
+              you better understand your home's energy position — and where opportunities may
+              exist to make smarter energy choices.
+            </p>
+          </div>
+
+          <ul className="mt-12 grid gap-4 sm:grid-cols-2 lg:gap-5">
+            {[
+              "Your personalised Energy IQ assessment",
+              "A clear picture of your home's current energy position",
+              "Identification of potential opportunities for improvement",
+              "Guidance around technologies that may be relevant to your home",
+              "Your personalised Energy IQ report",
+              "The option to explore the results further with Clean Energy Gurus, if you choose",
+            ].map((item) => (
+              <li
+                key={item}
+                className="flex items-start gap-3.5 rounded-2xl border border-border/60 bg-card p-5 shadow-sm"
+              >
+                <span className="mt-0.5 flex h-7 w-7 shrink-0 items-center justify-center rounded-full bg-gradient-electric">
+                  <Check className="h-4 w-4 text-primary-foreground" strokeWidth={3} />
+                </span>
+                <span className="text-[15px] leading-relaxed text-navy">{item}</span>
+              </li>
+            ))}
+          </ul>
+
+          {/* Value anchor */}
+          <div className="mt-14 lg:mt-16 relative overflow-hidden rounded-3xl bg-navy text-white p-8 sm:p-12">
+            <div className="absolute inset-0 grid-bg opacity-10 pointer-events-none" />
+            <div className="absolute -bottom-32 -left-32 h-[380px] w-[380px] bg-gradient-electric opacity-20 blur-3xl rounded-full pointer-events-none" />
+            <div className="relative mx-auto max-w-3xl">
+              <div className="grid gap-8 sm:grid-cols-2 text-center sm:text-left">
+                <div>
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.18em] text-white/55">
+                    Complete Energy IQ service
+                  </p>
+                  <p className="mt-3 text-2xl sm:text-3xl font-display font-semibold text-white/60">
+                    Typically £629 + VAT
+                  </p>
+                </div>
+                <div className="sm:border-l sm:border-white/15 sm:pl-8">
+                  <p className="text-xs sm:text-sm uppercase tracking-[0.18em] text-electric">
+                    Founding Friends
+                  </p>
+                  <p className="mt-3 text-3xl sm:text-4xl font-display font-semibold text-white">
+                    Complimentary
+                  </p>
+                </div>
               </div>
-              <div className="sm:border-l sm:border-white/15 sm:pl-8">
-                <p className="text-sm uppercase tracking-widest text-electric">Founding Friends</p>
-                <p className="mt-3 text-3xl sm:text-4xl font-display font-semibold text-white">
-                  Complimentary
-                </p>
-              </div>
+              <p className="mt-8 pt-6 border-t border-white/10 text-center sm:text-left text-white/75">
+                Your only contribution is your honest feedback.
+              </p>
             </div>
+          </div>
+
+          {/* Reassurance */}
+          <div className="mt-10 grid gap-4 sm:grid-cols-3 max-w-4xl">
+            {[
+              { title: "No charge", body: "There is nothing to pay at any stage of your Energy IQ assessment." },
+              { title: "No obligation", body: "You are under no obligation to purchase anything afterwards." },
+              { title: "Why you?", body: "You're helping us test, refine and improve Energy IQ before wider rollout." },
+            ].map((c) => (
+              <div key={c.title} className="rounded-2xl border border-border/60 bg-background/60 p-5">
+                <p className="font-display font-semibold text-navy">{c.title}</p>
+                <p className="mt-2 text-sm leading-relaxed text-navy-soft">{c.body}</p>
+              </div>
+            ))}
+          </div>
+
+          <div className="mt-12 flex justify-center sm:justify-start">
+            <Link to="/energy-iq">
+              <Button size="lg" className="bg-gradient-electric text-primary-foreground border-0 rounded-full px-8 h-12 shadow-glow">
+                Start My Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
+              </Button>
+            </Link>
           </div>
         </div>
       </section>
+
 
       {/* ── Section 5: What we ask in return (to be written) ──────────── */}
       <section id="feedback" className="py-20 lg:py-24 scroll-mt-24">
