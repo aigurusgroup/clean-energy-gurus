@@ -27,6 +27,32 @@ const ERROR_REPLY =
 
 const CHAT_ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wattson-chat`;
 
+// Renders markdown-style internal links, e.g. [Energy IQ](/energy-iq), as clickable
+// router links. Everything else is left as plain text.
+const LINK_RE = /\[([^\]\n]+)\]\((\/[^)\s]*)\)/g;
+
+const renderMessage = (text: string): ReactNode[] => {
+  const nodes: ReactNode[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  LINK_RE.lastIndex = 0;
+  while ((match = LINK_RE.exec(text)) !== null) {
+    if (match.index > last) nodes.push(<Fragment key={`t${last}`}>{text.slice(last, match.index)}</Fragment>);
+    nodes.push(
+      <Link
+        key={`l${match.index}`}
+        to={match[2]}
+        className="font-semibold text-electric underline underline-offset-2 hover:opacity-80"
+      >
+        {match[1]}
+      </Link>,
+    );
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) nodes.push(<Fragment key={`t${last}`}>{text.slice(last)}</Fragment>);
+  return nodes;
+};
+
 
 const Avatar = ({ className = "h-8 w-8" }: { className?: string }) => (
   <img
