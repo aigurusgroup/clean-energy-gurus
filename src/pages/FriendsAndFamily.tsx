@@ -57,7 +57,7 @@ const FriendsAndFamily = () => {
               </div>
               <div className="mt-9">
                 <Link to="/energy-iq">
-                  <Button size="lg" className="bg-gradient-electric text-primary-foreground border-0 rounded-full px-8 h-13 py-3.5 shadow-glow">
+                  <Button size="lg" className="bg-gradient-electric text-primary-foreground border-0 rounded-full px-8 h-12 shadow-glow">
                     Start My Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
                   </Button>
                 </Link>
