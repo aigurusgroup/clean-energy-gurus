@@ -242,15 +242,72 @@ const FriendsAndFamily = () => {
       </section>
 
 
-      {/* ── Section 6: No obligation / optional next step ─────────────── */}
-      <section id="next-step" className="py-20 lg:py-24 bg-gradient-soft scroll-mt-24">
-        <div className="container-tight max-w-3xl">
-          <span className="eyebrow">No obligation</span>
-          <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
-            Section placeholder — content to follow.
-          </h2>
+      {/* ── Section 4: Like what you discover? (optional next step) ───── */}
+      <section id="next-step" className="py-20 lg:py-24 scroll-mt-24">
+        <div className="container-tight">
+          <div className="max-w-3xl">
+            <span className="eyebrow">Entirely optional</span>
+            <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
+              Like what you discover?
+            </h2>
+            <div className="mt-6 space-y-5 text-lg text-navy-soft leading-relaxed">
+              <p>
+                Energy IQ is designed to give you a clearer picture of your home and its energy
+                potential.
+              </p>
+              <p>
+                For some of our Founding Friends, that insight might simply be useful to have.
+                For others, it might uncover an opportunity they'd genuinely like to explore
+                further.
+              </p>
+              <p className="text-navy font-medium">If that's you, the next step is entirely optional.</p>
+            </div>
+          </div>
+
+          <div className="mt-12 rounded-3xl border border-border/60 bg-card p-8 sm:p-10 shadow-elegant">
+            <div className="grid gap-8 lg:grid-cols-12 lg:items-center">
+              <div className="lg:col-span-8">
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-electric/10 text-electric">
+                  <CalendarCheck className="h-5 w-5" />
+                </span>
+                <p className="mt-4 font-display text-xl sm:text-2xl font-semibold text-navy">
+                  Take the next step
+                </p>
+                <div className="mt-4 space-y-4 text-[15px] sm:text-base leading-relaxed text-navy-soft">
+                  <p>
+                    If you'd like to explore any of the recommendations from your Energy IQ
+                    report, you can choose to book a home survey with the Clean Energy Gurus team.
+                  </p>
+                  <p>
+                    We can then take a closer look at your property, your energy use and the
+                    technologies that could make sense for your home.
+                  </p>
+                </div>
+              </div>
+              <div className="lg:col-span-4 lg:border-l lg:border-border/60 lg:pl-8">
+                <Link to="/contact" className="block">
+                  <Button
+                    size="lg"
+                    variant="outline"
+                    className="w-full rounded-full h-12 border-navy/20 text-navy hover:bg-navy hover:text-white"
+                  >
+                    Book a Home Survey <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Button>
+                </Link>
+                <p className="mt-4 text-sm leading-relaxed text-muted-foreground text-center lg:text-left">
+                  Completing Energy IQ doesn't commit you to a survey, and a survey doesn't commit
+                  you to anything either.
+                </p>
+              </div>
+            </div>
+          </div>
+
+          <p className="mt-8 text-center text-[15px] sm:text-base text-navy-soft">
+            No pressure. No obligation. Just the option to explore what's possible.
+          </p>
         </div>
       </section>
+
 
       {/* ── Section 7: Closing invitation CTA (to be written) ─────────── */}
       <section id="closing" className="py-20 lg:py-24 scroll-mt-24">
