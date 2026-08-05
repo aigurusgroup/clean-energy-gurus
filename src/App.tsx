@@ -116,6 +116,9 @@ const App = () => (
           {/* Partner application (kept, not in main nav) */}
           <Route path="/partners" element={<Partners />} />
 
+          {/* Private, unlisted Founding Friends invitation — not in any nav or sitemap */}
+          <Route path="/friendsandfamily" element={<FriendsAndFamily />} />
+
           {/* Legal */}
           <Route path="/terms" element={<Terms />} />
           <Route path="/privacy" element={<Privacy />} />
