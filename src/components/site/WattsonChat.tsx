@@ -1,4 +1,5 @@
-import { useEffect, useRef, useState } from "react";
+import { useEffect, useRef, useState, Fragment, type ReactNode } from "react";
+import { Link } from "react-router-dom";
 import { MessageCircle, Send, X } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -25,6 +26,32 @@ const ERROR_REPLY =
   "Sorry — I couldn't get through to my energy brain just then. Could you try asking me again in a moment?";
 
 const CHAT_ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wattson-chat`;
+
+// Renders markdown-style internal links, e.g. [Energy IQ](/energy-iq), as clickable
+// router links. Everything else is left as plain text.
+const LINK_RE = /\[([^\]\n]+)\]\((\/[^)\s]*)\)/g;
+
+const renderMessage = (text: string): ReactNode[] => {
+  const nodes: ReactNode[] = [];
+  let last = 0;
+  let match: RegExpExecArray | null;
+  LINK_RE.lastIndex = 0;
+  while ((match = LINK_RE.exec(text)) !== null) {
+    if (match.index > last) nodes.push(<Fragment key={`t${last}`}>{text.slice(last, match.index)}</Fragment>);
+    nodes.push(
+      <Link
+        key={`l${match.index}`}
+        to={match[2]}
+        className="font-semibold text-electric underline underline-offset-2 hover:opacity-80"
+      >
+        {match[1]}
+      </Link>,
+    );
+    last = match.index + match[0].length;
+  }
+  if (last < text.length) nodes.push(<Fragment key={`t${last}`}>{text.slice(last)}</Fragment>);
+  return nodes;
+};
 
 
 const Avatar = ({ className = "h-8 w-8" }: { className?: string }) => (
@@ -193,7 +220,7 @@ export const WattsonChat = () => {
                 <div key={m.id} className="flex gap-2.5">
                   <Avatar className="h-7 w-7 mt-0.5" />
                   <div className="rounded-2xl rounded-tl-sm bg-background border border-border px-3.5 py-2.5 text-sm text-navy-soft whitespace-pre-line leading-relaxed shadow-card">
-                    {m.text}
+                    {renderMessage(m.text)}
                   </div>
                 </div>
               ) : (
