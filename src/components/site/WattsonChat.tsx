@@ -204,7 +204,7 @@ export const WattsonChat = () => {
               ),
             )}
 
-            {messages.length === 1 && (
+            {messages.length === 1 && !loading && (
               <div className="flex flex-wrap gap-2 pl-9 pt-1">
                 {SUGGESTIONS.map((s) => (
                   <button
@@ -217,7 +217,23 @@ export const WattsonChat = () => {
                 ))}
               </div>
             )}
+
+            {loading && (
+              <div className="flex gap-2.5" aria-label="Wattson is typing">
+                <Avatar className="h-7 w-7 mt-0.5" />
+                <div className="rounded-2xl rounded-tl-sm bg-background border border-border px-3.5 py-3 shadow-card flex items-center gap-1.5">
+                  {[0, 150, 300].map((d) => (
+                    <span
+                      key={d}
+                      style={{ animationDelay: `${d}ms` }}
+                      className="h-1.5 w-1.5 rounded-full bg-electric animate-bounce motion-reduce:animate-none"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
+
           </div>
 
           {/* Composer */}
@@ -240,11 +256,12 @@ export const WattsonChat = () => {
               type="submit"
               size="icon"
               aria-label="Send message"
-              disabled={!input.trim()}
+              disabled={!input.trim() || loading}
               className="rounded-full bg-gradient-electric text-white border-0 shrink-0 hover:opacity-95"
             >
               <Send className="h-4 w-4" />
             </Button>
+
           </form>
         </div>
       )}
