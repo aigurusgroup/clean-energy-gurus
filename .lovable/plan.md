@@ -1,31 +1,40 @@
-## Animate the Energy IQ score gauge on home page load
+# Wattson chatbot — front-end interface only
 
-Add an intro animation to the decorative Energy IQ score gauge in `src/components/site/Hero.tsx` so it comes alive when a visitor lands on the home page. Purely presentational — no changes to scoring logic, routes, or copy.
+Add a branded floating chat widget called "Wattson" to every page. UI only: no AI backend, no changes to Energy IQ, routing, or existing page design.
 
-### What will animate
+## What the visitor sees
 
-1. **Gauge ring sweep** — the coloured progress arc draws from 0 up to 74 over ~1.6s using an ease-out curve (animating `stroke-dashoffset`).
-2. **Number count-up** — the big `74` counts from 0 → 74 in sync with the ring, using `requestAnimationFrame` (no dependencies).
-3. **Tick marks** — fade/scale in with a subtle stagger just after the ring starts.
-4. **"Good ✓" pill + subtitle** — fade+rise in once the count-up finishes (existing `animate-fade-in` style, delayed).
-5. **Floating label cards** — staggered fade-in-up (top-left → top-right → bottom-left → bottom-right) after the gauge lands.
-6. **Soft glow pulse** — one-shot pulse on the gauge's drop-shadow at the end for a "settled" feel.
+**Floating button (bottom-right, all pages)**
+- Pill-shaped button: circular Wattson avatar + label "Ask Wattson".
+- Brand styling: electric gradient accent, soft glow/elegant shadow, rounded-full, subtle hover lift.
+- Mobile: collapses to a compact circular avatar button (label hidden) so it never crowds the screen.
+- Safe-area aware spacing so it sits above mobile browser chrome.
 
-### Behaviour details
+**Chat window (opens on click)**
+- Desktop: compact panel anchored bottom-right (~380px wide, ~560px tall, capped to viewport).
+- Mobile: near-full-screen sheet with a close control.
+- Header: Wattson avatar, name "Wattson", subtitle "Your Clean Energy Guide", close button.
+- Opening message from Wattson, exactly as specified (greeting, role, what he can help with, "What can I help you understand?").
+- Four suggested-question chips below the opening message:
+  - Is solar right for my home?
+  - How does battery storage work?
+  - What is Energy IQ?
+  - I'm not sure where to start
+- Message list styled for two roles: Wattson messages on the light surface with avatar, visitor messages as a filled brand bubble aligned right.
+- Composer at the bottom: text input with placeholder "Ask Wattson a question…" plus a send icon button.
 
-- Runs **once on mount** (page load / route enter), not on every re-render.
-- Respects `prefers-reduced-motion`: if reduced motion is set, skip the sweep/count-up and render the final state immediately.
-- No scroll trigger needed — the gauge is above the fold.
-- No new dependencies; uses `useEffect` + `requestAnimationFrame` + existing Tailwind keyframes (`fade-in`, `fade-in-up`) plus the existing `iq-ring-pulse` keyframe already defined in `src/index.css`.
+**Interim behaviour (no AI yet)**
+- Clicking a suggestion or sending text adds the visitor's message to the transcript and shows a short placeholder Wattson reply noting he's still being connected. This keeps the interface demonstrable and is a single function to swap for the real backend later.
 
-### Files touched
+## Wattson avatar
 
-- `src/components/site/Hero.tsx` — turn `ScoreGauge` into a small stateful component with the animated ring offset and count-up; add staggered animation delays to floating labels.
+No Wattson image exists in the project assets. I'll generate a clean placeholder mascot avatar (friendly energy-spark character in brand navy/electric colours, transparent PNG) saved to `src/assets/wattson-avatar.png`, imported in one place so you can replace that single file with the real Wattson artwork later.
 
-### Out of scope
+## Technical notes
 
-- Animating the bottom live stat tiles (Solar / Battery / EV / Tariff).
-- Re-triggering the animation on scroll or hover.
-- Hooking the gauge to real Energy IQ data.
-
-Nothing will be published.
+- New components: `src/components/site/WattsonChat.tsx` (button + window + message state) and small internal subcomponents if the file grows.
+- Mounted once in `src/components/site/SiteLayout.tsx` so it appears on every page using the shared layout.
+- Uses existing semantic tokens only (`navy`, `electric`, `surface`, `muted`, `border`, `bg-gradient-electric`, `shadow-elegant`, `shadow-glow`) and existing shadcn `Button` / `Input`; no hardcoded colours.
+- Animations reuse existing keyframes (`fade-in`, `scale-in`) and respect reduced-motion.
+- Accessibility: `aria-label` on the toggle, focus moves to the input on open, Escape closes, `aria-live` region for new messages.
+- Nothing is published.
