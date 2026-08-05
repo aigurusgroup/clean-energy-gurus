@@ -21,8 +21,11 @@ const SUGGESTIONS = [
   "I'm not sure where to start",
 ];
 
-const PLACEHOLDER_REPLY =
-  "Thanks — I'm still being connected to my energy brain. Very soon I'll be able to answer this in full. In the meantime, our team can help through the contact page.";
+const ERROR_REPLY =
+  "Sorry — I couldn't get through to my energy brain just then. Could you try asking me again in a moment?";
+
+const CHAT_ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wattson-chat`;
+
 
 const Avatar = ({ className = "h-8 w-8" }: { className?: string }) => (
   <img
@@ -38,6 +41,8 @@ const Avatar = ({ className = "h-8 w-8" }: { className?: string }) => (
 export const WattsonChat = () => {
   const [open, setOpen] = useState(false);
   const [input, setInput] = useState("");
+  const [loading, setLoading] = useState(false);
+
   const [messages, setMessages] = useState<Msg[]>([
     { id: 0, role: "wattson", text: OPENING },
   ]);
@@ -56,19 +61,88 @@ export const WattsonChat = () => {
 
   useEffect(() => {
     endRef.current?.scrollIntoView({ behavior: "smooth", block: "end" });
-  }, [messages, open]);
+  }, [messages, open, loading]);
 
-  const send = (text: string) => {
+
+  const send = async (text: string) => {
     const value = text.trim();
-    if (!value) return;
-    setMessages((prev) => [
-      ...prev,
-      { id: prev.length, role: "visitor", text: value },
-      { id: prev.length + 1, role: "wattson", text: PLACEHOLDER_REPLY },
-    ]);
+    if (!value || loading) return;
+
+    const history = [
+      ...messages
+        .filter((m) => m.id !== 0)
+        .map((m) => ({ role: m.role === "wattson" ? "assistant" : "user", content: m.text })),
+      { role: "user", content: value },
+    ];
+
+    const userId = Date.now();
+    const replyId = userId + 1;
+    setMessages((prev) => [...prev, { id: userId, role: "visitor", text: value }]);
     setInput("");
+    setLoading(true);
     inputRef.current?.focus();
+
+    try {
+      const res = await fetch(CHAT_ENDPOINT, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: `Bearer ${import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY}`,
+          apikey: import.meta.env.VITE_SUPABASE_PUBLISHABLE_KEY,
+        },
+        body: JSON.stringify({ messages: history }),
+      });
+
+      if (!res.ok || !res.body) throw new Error(`chat failed: ${res.status}`);
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let buffer = "";
+      let answer = "";
+      let started = false;
+
+      while (true) {
+        const { done, value: chunk } = await reader.read();
+        if (done) break;
+        buffer += decoder.decode(chunk, { stream: true });
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+
+        for (const line of lines) {
+          if (!line.startsWith("data:")) continue;
+          const data = line.slice(5).trim();
+          if (!data || data === "[DONE]") continue;
+          try {
+            const delta = JSON.parse(data)?.choices?.[0]?.delta?.content;
+            if (typeof delta !== "string" || !delta) continue;
+            answer += delta;
+            if (!started) {
+              started = true;
+              setLoading(false);
+              setMessages((prev) => [...prev, { id: replyId, role: "wattson", text: answer }]);
+            } else {
+              setMessages((prev) =>
+                prev.map((m) => (m.id === replyId ? { ...m, text: answer } : m)),
+              );
+            }
+          } catch {
+            /* ignore malformed chunk */
+          }
+        }
+      }
+
+      if (!answer.trim()) throw new Error("empty response");
+    } catch (err) {
+      console.error("Wattson chat error", err);
+      setMessages((prev) => [
+        ...prev.filter((m) => m.id !== replyId),
+        { id: replyId, role: "wattson", text: ERROR_REPLY },
+      ]);
+    } finally {
+      setLoading(false);
+    }
   };
+
 
   return (
     <>
@@ -131,7 +205,7 @@ export const WattsonChat = () => {
               ),
             )}
 
-            {messages.length === 1 && (
+            {messages.length === 1 && !loading && (
               <div className="flex flex-wrap gap-2 pl-9 pt-1">
                 {SUGGESTIONS.map((s) => (
                   <button
@@ -144,7 +218,23 @@ export const WattsonChat = () => {
                 ))}
               </div>
             )}
+
+            {loading && (
+              <div className="flex gap-2.5" aria-label="Wattson is typing">
+                <Avatar className="h-7 w-7 mt-0.5" />
+                <div className="rounded-2xl rounded-tl-sm bg-background border border-border px-3.5 py-3 shadow-card flex items-center gap-1.5">
+                  {[0, 150, 300].map((d) => (
+                    <span
+                      key={d}
+                      style={{ animationDelay: `${d}ms` }}
+                      className="h-1.5 w-1.5 rounded-full bg-electric animate-bounce motion-reduce:animate-none"
+                    />
+                  ))}
+                </div>
+              </div>
+            )}
             <div ref={endRef} />
+
           </div>
 
           {/* Composer */}
@@ -167,11 +257,12 @@ export const WattsonChat = () => {
               type="submit"
               size="icon"
               aria-label="Send message"
-              disabled={!input.trim()}
+              disabled={!input.trim() || loading}
               className="rounded-full bg-gradient-electric text-white border-0 shrink-0 hover:opacity-95"
             >
               <Send className="h-4 w-4" />
             </Button>
+
           </form>
         </div>
       )}
