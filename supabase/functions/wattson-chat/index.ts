@@ -1,4 +1,5 @@
 import { corsHeaders } from "npm:@supabase/supabase-js@2/cors";
+import { CEG_KNOWLEDGE } from "./ceg-knowledge.ts";
 
 const SYSTEM_PROMPT = `You are Wattson, the friendly digital energy guide for Clean Energy Gurus.
 
