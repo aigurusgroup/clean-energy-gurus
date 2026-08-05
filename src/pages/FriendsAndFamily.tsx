@@ -309,21 +309,64 @@ const FriendsAndFamily = () => {
       </section>
 
 
-      {/* ── Section 7: Closing invitation CTA (to be written) ─────────── */}
-      <section id="closing" className="py-20 lg:py-24 scroll-mt-24">
-        <div className="container-tight max-w-3xl text-center">
-          <h2 className="text-3xl lg:text-4xl font-display font-semibold text-navy">
-            Section placeholder — closing invitation.
-          </h2>
-          <div className="mt-8 flex justify-center">
-            <Link to="/energy-iq">
-              <Button size="lg" className="bg-gradient-electric text-white border-0 rounded-full px-7 h-12 shadow-glow">
-                Start My Energy IQ <ArrowRight className="ml-1.5 h-4 w-4" />
-              </Button>
-            </Link>
+      {/* ── Section 5: Closing invitation CTA ─────────────────────────── */}
+      <section id="closing" className="py-20 lg:py-24 bg-gradient-soft scroll-mt-24">
+        <div className="container-tight">
+          <div className="relative overflow-hidden rounded-3xl border border-border/60 bg-card px-6 py-12 sm:px-12 sm:py-16 shadow-elegant">
+            <div className="absolute -top-28 -right-24 h-[320px] w-[320px] bg-gradient-electric opacity-10 blur-3xl rounded-full pointer-events-none" />
+            <div className="relative mx-auto max-w-2xl text-center">
+              <h2 className="text-3xl lg:text-4xl font-display font-semibold text-navy">
+                Ready to give Energy IQ a try?
+              </h2>
+              <div className="mt-6 space-y-4 text-lg text-navy-soft leading-relaxed">
+                <p>
+                  You're helping us shape something we believe can make understanding home energy
+                  much simpler.
+                </p>
+                <p>
+                  Complete your Energy IQ assessment, receive your personalised report completely
+                  complimentary, and tell us what you think.
+                </p>
+              </div>
+
+              <div className="mt-9 flex justify-center">
+                <Link to="/energy-iq">
+                  <Button size="lg" className="bg-gradient-electric text-primary-foreground border-0 rounded-full px-9 h-12 sm:h-14 text-base shadow-glow">
+                    Start My Energy IQ <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+                </Link>
+              </div>
+
+              <p className="mt-6 text-[15px] text-navy">
+                Typically <span className="font-medium">£629 + VAT</span> — complimentary for our
+                Founding Friends.
+              </p>
+              <p className="mt-2 text-sm text-muted-foreground">
+                No payment. No obligation. Just your honest feedback.
+              </p>
+
+              {/* Wattson sign-off */}
+              <div className="mt-10 pt-8 border-t border-border/60 flex items-center justify-center gap-3">
+                <img
+                  src={wattsonImg}
+                  alt="Wattson, the Clean Energy Gurus guide"
+                  className="h-12 w-12 rounded-full object-cover object-top bg-gradient-soft"
+                  loading="lazy"
+                />
+                <p className="text-left">
+                  <span className="block text-[15px] font-display font-medium text-navy">
+                    “Helping you one Watt at a time.”
+                  </span>
+                  <span className="block text-[11px] uppercase tracking-widest text-muted-foreground">
+                    Wattson — your energy guide
+                  </span>
+                </p>
+              </div>
+            </div>
           </div>
         </div>
       </section>
+
     </SiteLayout>
   );
 };
