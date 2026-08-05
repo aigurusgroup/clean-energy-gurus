@@ -182,15 +182,65 @@ const FriendsAndFamily = () => {
       </section>
 
 
-      {/* ── Section 5: What we ask in return (to be written) ──────────── */}
-      <section id="feedback" className="py-20 lg:py-24 scroll-mt-24">
-        <div className="container-tight max-w-3xl">
-          <span className="eyebrow">All we ask in return</span>
-          <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
-            Section placeholder — content to follow.
-          </h2>
+      {/* ── Section 3: All we ask is your honest feedback ─────────────── */}
+      <section id="feedback" className="py-20 lg:py-24 bg-gradient-soft scroll-mt-24">
+        <div className="container-tight">
+          <div className="max-w-3xl">
+            <span className="eyebrow">All we ask in return</span>
+            <h2 className="mt-3 text-3xl lg:text-4xl font-display font-semibold text-navy">
+              All we ask is your honest feedback.
+            </h2>
+            <div className="mt-6 space-y-5 text-lg text-navy-soft leading-relaxed">
+              <p>
+                Energy IQ is something we're genuinely excited about, but before we introduce it
+                to a wider audience, we want to learn from the people experiencing it first.
+              </p>
+              <p className="text-navy font-medium">That's where you come in.</p>
+              <p>
+                Once you've completed your Energy IQ journey, we'd simply love to know what you
+                thought.
+              </p>
+            </div>
+          </div>
+
+          <div className="mt-12 grid gap-5 md:grid-cols-3">
+            {[
+              {
+                icon: Heart,
+                title: "What did you like?",
+                body: "What felt useful, clear or genuinely valuable?",
+              },
+              {
+                icon: Lightbulb,
+                title: "What could be better?",
+                body: "Was anything confusing, unnecessary or missing?",
+              },
+              {
+                icon: MessageCircle,
+                title: "Would you recommend it?",
+                body: "Did Energy IQ give you a better understanding of your home and its energy potential?",
+              },
+            ].map(({ icon: Icon, title, body }) => (
+              <div
+                key={title}
+                className="rounded-2xl border border-border/60 bg-card p-6 shadow-sm"
+              >
+                <span className="flex h-11 w-11 items-center justify-center rounded-xl bg-gradient-electric/10 text-electric">
+                  <Icon className="h-5 w-5" />
+                </span>
+                <p className="mt-4 font-display text-lg font-semibold text-navy">{title}</p>
+                <p className="mt-2 text-[15px] leading-relaxed text-navy-soft">{body}</p>
+              </div>
+            ))}
+          </div>
+
+          <p className="mt-10 max-w-2xl text-[15px] sm:text-base leading-relaxed text-navy-soft border-l-2 border-electric/40 pl-5">
+            There are no right answers. Honest feedback — good or bad — is exactly what we're
+            looking for.
+          </p>
         </div>
       </section>
+
 
       {/* ── Section 6: No obligation / optional next step ─────────────── */}
       <section id="next-step" className="py-20 lg:py-24 bg-gradient-soft scroll-mt-24">
