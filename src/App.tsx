@@ -11,6 +11,7 @@ import HowWeWork from "./pages/HowWeWork";
 import PartnerNetwork from "./pages/PartnerNetwork";
 import Contact from "./pages/Contact";
 import Partners from "./pages/Partners";
+import FriendsAndFamily from "./pages/FriendsAndFamily";
 import SolarCalculatorPage from "./pages/SolarCalculatorPage";
 import EnergyIQ from "./pages/EnergyIQ";
 import { EVCharging } from "./pages/ServicePages";
@@ -115,6 +116,9 @@ const App = () => (
 
           {/* Partner application (kept, not in main nav) */}
           <Route path="/partners" element={<Partners />} />
+
+          {/* Private, unlisted Founding Friends invitation — not in any nav or sitemap */}
+          <Route path="/friendsandfamily" element={<FriendsAndFamily />} />
 
           {/* Legal */}
           <Route path="/terms" element={<Terms />} />
