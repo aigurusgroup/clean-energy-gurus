@@ -1,6 +1,6 @@
 import { useEffect } from "react";
 import { Link } from "react-router-dom";
-import { ArrowRight, Check, Heart, Lightbulb, MessageCircle, Sparkles } from "lucide-react";
+import { ArrowRight, CalendarCheck, Check, Heart, Lightbulb, MessageCircle, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
 import wattsonImg from "@/assets/wattson-founding-friends.png";
