@@ -3,6 +3,7 @@ import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { SiteLayout } from "@/components/site/SiteLayout";
+import wattson from "@/assets/wattson-avatar.png";
 
 /**
  * Private, unlisted page for Clean Energy Gurus "Founding Friends".
