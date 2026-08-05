@@ -8,7 +8,7 @@ type Msg = { id: number; role: "wattson" | "visitor"; text: string };
 
 const OPENING = `Hi, I'm Wattson 👋
 
-I'm Clean Energy Gurus' digital energy guide.
+I'm your Clean Energy Guru guide — helping you one Watt at a time ⚡
 
 Whether you're curious about solar, batteries, EV charging or just trying to make sense of your energy options, ask me anything.
 
