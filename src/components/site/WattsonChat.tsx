@@ -21,8 +21,11 @@ const SUGGESTIONS = [
   "I'm not sure where to start",
 ];
 
-const PLACEHOLDER_REPLY =
-  "Thanks — I'm still being connected to my energy brain. Very soon I'll be able to answer this in full. In the meantime, our team can help through the contact page.";
+const ERROR_REPLY =
+  "Sorry — I couldn't get through to my energy brain just then. Could you try asking me again in a moment?";
+
+const CHAT_ENDPOINT = `${import.meta.env.VITE_SUPABASE_URL}/functions/v1/wattson-chat`;
+
 
 const Avatar = ({ className = "h-8 w-8" }: { className?: string }) => (
   <img

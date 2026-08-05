@@ -1,1 +1,4 @@
 project_id = "nmyufixcdwxpwigxmpvp"
+
+[functions.wattson-chat]
+verify_jwt = false
