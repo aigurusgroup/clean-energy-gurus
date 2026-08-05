@@ -34,6 +34,11 @@ jobs:
         env:
           VITE_GOOGLE_MAPS_API_KEY: ${{ secrets.VITE_GOOGLE_MAPS_API_KEY }}
 
+      - name: Add SPA fallback for client-side routing
+        run: |
+          cp ./dist/index.html ./dist/404.html
+          touch ./dist/.nojekyll
+
       - name: Setup Pages
         uses: actions/configure-pages@v5
 
